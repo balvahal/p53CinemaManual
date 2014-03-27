@@ -1,0 +1,92 @@
+function [ObjectsLabeled, MaximaImage] = SEGMENTATION_identifyPrimaryObjectsGeneral(OriginalImage, varargin)
+    defaultMinDiameter = 15;
+    defaultImageResizeFactor = 0.5;
+    defaultMaximaSuppressionSize = 5;
+
+    p = inputParser;
+    p.addRequired('OriginalImage', @isnumeric);
+    addOptional(p,'SecondaryImage', @isnumeric);
+    addOptional(p,'LocalMaximaType', 'Shape', @ischar);
+    addOptional(p,'WatershedTransformImageType', 'Distance', @ischar)
+    addOptional(p,'MinDiameter', defaultMinDiameter, @isnumeric)
+    addOptional(p,'ImageResizeFactor', defaultImageResizeFactor, @isnumeric)
+    addOptional(p,'MaximaSuppressionSize', defaultMaximaSuppressionSize, @isnumeric)
+    p.parse(OriginalImage, varargin{:});
+    
+    MinDiameter = p.Results.MinDiameter;
+    ImageResizeFactor = p.Results.ImageResizeFactor;
+    MaximaSuppressionSize = p.Results.MaximaSuppressionSize; 
+    
+    OriginalImage_normalized = imnormalize(double(OriginalImage));
+    SizeOfSmoothingFilter=MinDiameter;
+    BlurredImage = imfilter(OriginalImage_normalized, fspecial('gaussian', round(SizeOfSmoothingFilter), round(SizeOfSmoothingFilter/3.5)), 'replicate');
+    
+    edgeImage = imfill(edge(BlurredImage, 'canny'), 'holes');
+    threshold = quantile(BlurredImage(edgeImage), 0.1);
+    Objects = imfill(edgeImage + logical(OriginalImage_normalized > threshold), 'holes');
+    Objects = imopen(Objects, strel('disk',1));
+    
+    ObjectsLabeled = bwlabel(Objects);
+    props = regionprops(ObjectsLabeled, 'Solidity');
+    primarySegmentation = ismember(ObjectsLabeled, find([props.Solidity] >= 0.95));
+
+    props = bwconncomp(primarySegmentation);
+    SizeOfSmoothingFilter = round(2 * sqrt(median(cellfun(@length, props.PixelIdxList))) / pi);
+    MaximaSuppressionSize = round(0.5 * SizeOfSmoothingFilter);
+    MaximaMask = getnhood(strel('disk', MaximaSuppressionSize));
+    
+    Objects = Objects & ~primarySegmentation;
+    BlurredImage(~Objects) = 0;
+%     ObjectsLabeled = bwlabel(Objects);
+%     beanshapes = zeros(1, length(props));
+%     props = regionprops(ObjectsLabeled, 'FilledImage');
+%     for k=1:length(props)
+%         convexHull = bwconvhull(props(k).FilledImage) & ~props(k).FilledImage;
+%         convexHull = imopen(convexHull, strel('square', 3));
+%         components = bwconncomp(convexHull);
+%         beanshapes(k) = components.NumObjects;
+%     end
+%     primarySegmentation = primarySegmentation | ismember(ObjectsLabeled, find(beanshapes < 2));
+%     Objects = Objects & ~primarySegmentation;
+    
+    % IDENTIFY LOCAL MAXIMA IN THE INTENSITY OF DISTANCE TRANSFORMED IMAGE    
+    if strcmp(p.Results.LocalMaximaType, 'Intensity')
+        if(~isempty(p.Results.SecondaryImage))
+            BlurredImage = imnormalize(OriginalImage) + imnormalize(p.Results.SecondaryImage);
+            BlurredImage = imfilter(BlurredImage, fspecial('gaussian', round(SizeOfSmoothingFilter), round(SizeOfSmoothingFilter/3.5)));
+        end
+        ResizedBlurredImage = imresize(BlurredImage,ImageResizeFactor,'bilinear');
+        MaximaImage = ResizedBlurredImage;
+        MaximaImage(ResizedBlurredImage < ordfilt2(ResizedBlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
+        MaximaImage = imresize(MaximaImage,size(BlurredImage),'bilinear');
+        MaximaImage(~Objects) = 0;
+        %imshow(imoverlay(OriginalImage_normalized, bwperim(Objects) + imdilate(MaximaImage, strel('disk', 1)), [0.3 1 0.3]))
+        MaximaImage = bwmorph(MaximaImage,'shrink',inf);
+    else
+        DistanceTransformedImage = bwdist(~Objects, 'euclidean');
+        DistanceTransformedImage = DistanceTransformedImage + 0.001*rand(size(DistanceTransformedImage));
+        ResizedDistanceTransformedImage = imresize(DistanceTransformedImage,ImageResizeFactor,'bilinear');
+        MaximaImage = ones(size(ResizedDistanceTransformedImage));
+        MaximaImage(ResizedDistanceTransformedImage < ordfilt2(ResizedDistanceTransformedImage,sum(MaximaMask(:)),MaximaMask)) = 0;
+        MaximaImage = imresize(MaximaImage,size(Objects),'bilinear');
+        MaximaImage(~Objects) = 0;
+        MaximaImage = bwmorph(MaximaImage,'shrink',inf);
+    end
+    
+    %GENERATE WATERSHEDS TO SEPARATE TOUCHING NUCLEI
+    if strcmp(p.Results.WatershedTransformImageType,'Intensity')
+        %%% Overlays the objects markers (maxima) on the inverted original image so
+        %%% there are black dots on top of each dark object on a white background.
+        Overlaid = imimposemin(-BlurredImage,MaximaImage);
+    else
+        if ~exist('DistanceTransformedImage','var')
+            DistanceTransformedImage = bwdist(~Objects);
+        end
+        Overlaid = imimposemin(-DistanceTransformedImage,MaximaImage);
+    end
+    
+    WatershedBoundaries = watershed(Overlaid) > 0;
+    Objects = Objects.*WatershedBoundaries | primarySegmentation;
+    ObjectsLabeled = bwlabel(Objects); 
+    ObjectsLabeled = imfill(ObjectsLabeled, 'holes');
+end
