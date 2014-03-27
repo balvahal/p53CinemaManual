@@ -755,9 +755,32 @@ if(isInsideCoordinates(currentPoint, imageCanvasPosition))
             setappdata(handles.figure1, 'trackingStartPoint', 0);
         end
         handles.annotationLayers.pointLayer(currentFrame).point(handles.cell_id,:) = currentAbsolutePoint;
-        frameSkip = 2;
+        handles.annotationLayers.pointLayer(currentFrame).value(handles.cell_id) = 1;
+        frameSkip = 3;
         
-        imageCanvas_setImage(handles, currentFrame + frameSkip);
+        if(currentFrame + abs(frameSkip) <= length(handles.imageSequence) && ...
+                handles.annotationLayers.pointLayer(currentFrame + abs(frameSkip)).point(handles.cell_id,1) > 0)
+            currentFrameCentroid = handles.annotationLayers.pointLayer(currentFrame).point(handles.cell_id,:);
+            interpolatedCentroid = handles.annotationLayers.pointLayer(currentFrame + abs(frameSkip)).point(handles.cell_id,:);
+            for i=1:(abs(frameSkip) - 1)
+                if(~handles.annotationLayers.pointLayer(currentFrame + i).value(handles.cell_id))
+                    handles.annotationLayers.pointLayer(currentFrame + i).point(handles.cell_id,:) = currentFrameCentroid + round(abs(currentFrameCentroid - interpolatedCentroid) * i / abs(frameSkip));
+                end
+            end
+        end
+        if(currentFrame - abs(frameSkip) > 0 && ...
+                handles.annotationLayers.pointLayer(currentFrame - abs(frameSkip)).point(handles.cell_id,1) > 0)
+            currentFrameCentroid = handles.annotationLayers.pointLayer(currentFrame).point(handles.cell_id,:);
+            interpolatedCentroid = handles.annotationLayers.pointLayer(currentFrame - abs(frameSkip)).point(handles.cell_id,:);
+            for i=1:(abs(frameSkip) - 1)
+                if(~handles.annotationLayers.pointLayer(currentFrame - i).value(handles.cell_id))
+                    handles.annotationLayers.pointLayer(currentFrame - i).point(handles.cell_id,:) = currentFrameCentroid - round(abs(currentFrameCentroid - interpolatedCentroid) * (frameSkip - i) / abs(frameSkip));
+                end
+            end
+        end
+        
+        nextFrame = min(max(currentFrame + frameSkip, 1), length(handles.imageFilenames));
+        imageCanvas_setImage(handles, nextFrame);
 %         IM = double(getappdata(handles.figure1, 'IM'));
 %         IM = IM - mean(IM(:));
 %         referencePoint = currentAbsolutePoint;
@@ -847,7 +870,7 @@ if(strcmp(get(handles.movieSlider, 'Enable'), 'off') || handles.imageScanningMod
     return;
 end
 currentIndex = str2double(get(handles.currentFrameText, 'String'));
-nextIndex = min(max(currentIndex + eventdata.VerticalScrollCount,1),handles.dataLength);
+nextIndex = min(max(currentIndex + eventdata.VerticalScrollCount,1),length(handles.imageFilenames));
 imageCanvas_setImage(handles, nextIndex);
 drawnow;
 
