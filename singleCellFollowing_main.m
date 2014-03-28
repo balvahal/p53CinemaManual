@@ -427,7 +427,7 @@ end
 maxPointsPerImage = 1000;
 handles.annotationLayers.pointLayer = repmat(struct('n', 0, 'point', zeros(maxPointsPerImage,2), 'value', zeros(maxPointsPerImage,1), 'version', zeros(maxPointsPerImage,1)), handles.dataLength, 1);
 handles.annotationLayers.divisionLayer = repmat(struct('point', zeros(maxPointsPerImage,2),'cell_id', zeros(maxPointsPerImage,1)), handles.dataLength, 1);
-handles.annotationLayers.trackLayer = repmat(struct('point', zeros(maxPointsPerImage,2), 'value', zeros(maxPointsPerImage,1), 'cell', zeros(maxPointsPerImage,1)), handles.dataLength, 1);
+handles.annotationLayers.localMaximaLayer = repmat(struct('point', zeros(maxPointsPerImage,2), 'value', zeros(maxPointsPerImage,1), 'cell', zeros(maxPointsPerImage,1)), handles.dataLength, 1);
 
 newHeight = max(min(handles.maxHeight, str2double(get(handles.canvasHeightText, 'String'))), handles.minHeight);
 newWidth = max(min(handles.maxWidth, str2double(get(handles.canvasWidthText, 'String'))), handles.minWidth);
@@ -480,6 +480,11 @@ set(handles.frameProgressionLabel, 'String', ['1/' num2str(length(handles.imageF
 set(handles.movieSlider, 'Enable', 'on');
 set(handles.startStopTrackToogleButton, 'Value', 0);
 
+if(get(handles.preprocessCheckbox, 'Value'))
+    for i=1:length(handles.imageFilenames)
+        handles.annotationLayers.localMaximaLayer(i).point = getImageMaxima(handles.imageSequence(:,:,i));
+    end
+end
 
 handles.lh = addlistener(handles.movieSlider, 'ContinuousValueChange', @(source, event) imageCanvas_setImage(handles, getSliderIndex(handles)));
 guidata(hObject, handles);
@@ -529,7 +534,7 @@ currentFileSequenceIdx = find(currentFileSequenceIdx);
 currentFileSequenceIdx = currentFileSequenceIdx(imageOrdering);
 
 % Speeding up for test, load subset of images
-currentFileSequenceIdx = currentFileSequenceIdx(1:20);
+%currentFileSequenceIdx = currentFileSequenceIdx(1:20);
 
 imageFilenames = imageFilenames(currentFileSequenceIdx);
 dataLength = max(unique(handles.database.timepoint(currentDatasetIdx)));
@@ -750,35 +755,41 @@ if(isInsideCoordinates(currentPoint, imageCanvasPosition))
         % only check once, when the user has clicked the startStop button
         if(getappdata(handles.figure1, 'trackingStartPoint'))
             handles.cell_id = defineCellId(handles);
+            handles.highlightedCell = handles.cell_id;
             fprintf('new cell!\n');
             guidata(hObject, handles);
             setappdata(handles.figure1, 'trackingStartPoint', 0);
         end
-        handles.annotationLayers.pointLayer(currentFrame).point(handles.cell_id,:) = currentAbsolutePoint;
+        selectedPoint = getClosestCentroid(handles.annotationLayers.localMaximaLayer(currentFrame).point, currentAbsolutePoint, 15);
+        handles.annotationLayers.pointLayer(currentFrame).point(handles.cell_id,:) = selectedPoint;
         handles.annotationLayers.pointLayer(currentFrame).value(handles.cell_id) = 1;
-        frameSkip = 3;
+        frameSkip = 2;
         
-        if(currentFrame + abs(frameSkip) <= length(handles.imageSequence) && ...
-                handles.annotationLayers.pointLayer(currentFrame + abs(frameSkip)).point(handles.cell_id,1) > 0)
-            currentFrameCentroid = handles.annotationLayers.pointLayer(currentFrame).point(handles.cell_id,:);
-            interpolatedCentroid = handles.annotationLayers.pointLayer(currentFrame + abs(frameSkip)).point(handles.cell_id,:);
-            for i=1:(abs(frameSkip) - 1)
-                if(~handles.annotationLayers.pointLayer(currentFrame + i).value(handles.cell_id))
-                    handles.annotationLayers.pointLayer(currentFrame + i).point(handles.cell_id,:) = currentFrameCentroid + round(abs(currentFrameCentroid - interpolatedCentroid) * i / abs(frameSkip));
+        if(currentFrame + abs(frameSkip) <= length(handles.imageFilenames))
+            if(handles.annotationLayers.pointLayer(currentFrame + abs(frameSkip)).point(handles.cell_id,1) > 0)
+                currentFrameCentroid = handles.annotationLayers.pointLayer(currentFrame).point(handles.cell_id,:);
+                interpolatedCentroid = handles.annotationLayers.pointLayer(currentFrame + abs(frameSkip)).point(handles.cell_id,:);
+                for i=1:(abs(frameSkip) - 1)
+                    if(~handles.annotationLayers.pointLayer(currentFrame + i).value(handles.cell_id))
+                        handles.annotationLayers.pointLayer(currentFrame + i).point(handles.cell_id,:) = currentFrameCentroid + round(abs(currentFrameCentroid - interpolatedCentroid) * i / abs(frameSkip));
+                    end
                 end
             end
         end
-        if(currentFrame - abs(frameSkip) > 0 && ...
-                handles.annotationLayers.pointLayer(currentFrame - abs(frameSkip)).point(handles.cell_id,1) > 0)
-            currentFrameCentroid = handles.annotationLayers.pointLayer(currentFrame).point(handles.cell_id,:);
-            interpolatedCentroid = handles.annotationLayers.pointLayer(currentFrame - abs(frameSkip)).point(handles.cell_id,:);
-            for i=1:(abs(frameSkip) - 1)
-                if(~handles.annotationLayers.pointLayer(currentFrame - i).value(handles.cell_id))
-                    handles.annotationLayers.pointLayer(currentFrame - i).point(handles.cell_id,:) = currentFrameCentroid - round(abs(currentFrameCentroid - interpolatedCentroid) * (frameSkip - i) / abs(frameSkip));
+        if(currentFrame - abs(frameSkip) > 0)
+            if(handles.annotationLayers.pointLayer(currentFrame - abs(frameSkip)).point(handles.cell_id,1) > 0)
+                currentFrameCentroid = handles.annotationLayers.pointLayer(currentFrame).point(handles.cell_id,:);
+                interpolatedCentroid = handles.annotationLayers.pointLayer(currentFrame - abs(frameSkip)).point(handles.cell_id,:);
+                for i=1:(abs(frameSkip) - 1)
+                    if(~handles.annotationLayers.pointLayer(currentFrame - i).value(handles.cell_id))
+                        handles.annotationLayers.pointLayer(currentFrame - i).point(handles.cell_id,:) = currentFrameCentroid - round(abs(currentFrameCentroid - interpolatedCentroid) * (frameSkip - i) / abs(frameSkip));
+                    end
                 end
             end
         end
-        
+        guidata(hObject, handles);
+        imageCanvas_refreshImage(handles);
+        drawnow;
         nextFrame = min(max(currentFrame + frameSkip, 1), length(handles.imageFilenames));
         imageCanvas_setImage(handles, nextFrame);
 %         IM = double(getappdata(handles.figure1, 'IM'));
@@ -814,12 +825,23 @@ if(isInsideCoordinates(currentPoint, imageCanvasPosition))
 %             end
 %             
 %         end
-        guidata(hObject, handles);
+        
     end
     if(get(handles.divisionToogleButton, 'Value'))
         %Do something
     end
     imageCanvas_refreshImage(handles);
+end
+
+function point = getClosestCentroid(reference, query, distanceThreshold)
+if(~isempty(reference))
+    distances = sqrt(sum((repmat(fliplr(query), size(reference,1), 1) - reference) .^ 2,2));
+    [minValue, minLoc] = min(distances);
+    if(minValue < distanceThreshold)
+        point = [reference(minLoc,2),reference(minLoc,1)];
+    else
+        point = query;
+    end
 end
 
 function [cell_id] = defineCellId(handles)
