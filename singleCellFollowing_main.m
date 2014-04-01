@@ -760,10 +760,14 @@ if(isInsideCoordinates(currentPoint, imageCanvasPosition))
             guidata(hObject, handles);
             setappdata(handles.figure1, 'trackingStartPoint', 0);
         end
-        selectedPoint = getClosestCentroid(handles.annotationLayers.localMaximaLayer(currentFrame).point, currentAbsolutePoint, 15);
+        if(get(handles.preprocessCheckbox, 'Value'))
+            selectedPoint = getClosestCentroid(handles.annotationLayers.localMaximaLayer(currentFrame).point, currentAbsolutePoint, 15);
+        else
+            selectedPoint = currentAbsolutePoint;
+        end
         handles.annotationLayers.pointLayer(currentFrame).point(handles.cell_id,:) = selectedPoint;
         handles.annotationLayers.pointLayer(currentFrame).value(handles.cell_id) = 1;
-        frameSkip = 2;
+        frameSkip = 3;
         
         if(currentFrame + abs(frameSkip) <= length(handles.imageFilenames))
             if(handles.annotationLayers.pointLayer(currentFrame + abs(frameSkip)).point(handles.cell_id,1) > 0)
