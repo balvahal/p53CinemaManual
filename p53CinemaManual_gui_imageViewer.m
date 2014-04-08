@@ -20,7 +20,7 @@ fx = Char_SS(3) - (Char_SS(3)*.1 + fwidth);
 fy = Char_SS(4) - (Char_SS(4)*.1 + fheight);
 f = figure('Visible','off','Units','characters','MenuBar','none',...
     'Renderer','OpenGL','Position',[fx fy fwidth fheight],...
-    'DeleteFcn',{@fDeleteFcn},...
+    'CloseRequestFcn',{@fCloseRequestFcn},...
     'ButtonDownFcn',{@fButtonDownFcn},...
     'WindowButtonMotionFcn',{@fHover});
 %% Create the axes that will show the image
@@ -66,10 +66,9 @@ set(f,'Visible','on');
 %
 %%
 %
-    function fDeleteFcn(~,~)
+    function fCloseRequestFcn(~,~)
         %do nothing. This means only the master object can close this
         %window.
-        disp('deleted');
     end
 %%
 %
