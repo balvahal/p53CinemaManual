@@ -159,12 +159,14 @@ end
 
 
 subImage = prepareOverlayImage(handles);
-centroids = getValidCentroids(handles);
+centroids = getValidCentroids(handles.annotationLayers.pointLayer(currentFrame));
+divisionPoints = getValidCentroids(handles.annotationLayers.divisionLayer(currentFrame));
 set(handles.implot, 'CData', subImage);
 delete(findobj(handles.imageCanvas, 'Color', 'red'));
 delete(findobj(handles.imageCanvas, 'Color', 'green'));
 hold(handles.imageCanvas, 'on');
 plot(centroids(:,1), centroids(:,2), 'r*');
+plot(divisionPoints(:,1), divisionPoints(:,2), 'g*');
 plot(highlightedCellPosition(1), highlightedCellPosition(2), 'o', 'MarkerSize', 20, 'color', [0,1,0], 'linewidth', 2);
 hold(handles.imageCanvas, 'off');
 
@@ -182,13 +184,15 @@ if(handles.highlightedCell > 0 && ~isempty(handles.highlightedCell))
 else
     highlightedCellPosition = [0,0];
 end
-centroids = getValidCentroids(handles);
+centroids = getValidCentroids(handles.annotationLayers.pointLayer(currentFrame));
+divisionPoints = getValidCentroids(handles.annotationLayers.divisionLayer(currentFrame));
 set(handles.implot, 'CData', subImage);
+
 delete(findobj(handles.imageCanvas, 'Color', 'red'));
 delete(findobj(handles.imageCanvas, 'Color', 'green'));
-
 hold(handles.imageCanvas, 'on');
 plot(centroids(:,1), centroids(:,2), 'r*');
+plot(divisionPoints(:,1), divisionPoints(:,2), 'g*');
 plot(highlightedCellPosition(1), highlightedCellPosition(2), 'o', 'MarkerSize', 20, 'color', [0,1,0], 'linewidth', 2);
 hold(handles.imageCanvas, 'off');
 
@@ -201,9 +205,9 @@ trackedCentroids = handles.annotationLayers.pointLayer(currentTime).point(:,:);
 subsettingRectangle = {handles.imorigin(2):(handles.imorigin(2) + handles.definedSizePixels(1)-1), handles.imorigin(1):(handles.imorigin(1) + handles.definedSizePixels(2)-1)};
 subImage = IM(subsettingRectangle{1}, subsettingRectangle{2});
 
-function centroids = getValidCentroids(handles)
-currentFrame = str2double(get(handles.currentFrameText, 'String'));
-centroids = handles.annotationLayers.pointLayer(currentFrame).point;
+function centroids = getValidCentroids(centroidArray)
+%currentFrame = str2double(get(handles.currentFrameText, 'String'));
+centroids = centroidArray.point;
 centroids = centroids(centroids(:,1) > 0,:);
 
 % --- Executes during object creation, after setting all properties.
@@ -696,8 +700,15 @@ end
 if(strcmp(eventdata.Key,'backspace'))
     currentFrame = str2double(get(handles.currentFrameText, 'String'));
     currentTimepoint = handles.imageTimepoints(currentFrame);
-    for i=1:currentTimepoint
-        handles.annotationLayers.pointLayer(i).point(handles.cell_id,:) = [0,0];
+    if(handles.highlightedCell)
+        if(get(handles.divisionToogleButton, 'Value'))
+            handles.annotationLayers.divisionLayer(currentTimepoint).point(handles.highlightedCell,:) = [0,0];
+        else
+            for i=1:currentTimepoint
+                handles.annotationLayers.pointLayer(i).point(handles.highlightedCell,:) = [0,0];
+                handles.annotationLayers.divisionLayer(i).point(handles.highlightedCell,:) = [0,0];
+            end
+        end
     end
 end
 imageCanvas_refreshImage(handles);
@@ -749,7 +760,7 @@ if(isInsideCoordinates(currentPoint, imageCanvasPosition))
     currentAbsolutePoint = transformedPoint + double(handles.imorigin) - 1; % Sensitive to image scaling
     currentFrame = str2double(get(handles.currentFrameText, 'String'));
     % TRACK PROPAGATION ALGORITHM
-    if(get(handles.startStopTrackToogleButton, 'Value') && ~getappdata(handles.figure1, 'isEditing') && ~get(handles.divisionToogleButton, 'Value'))
+    if(get(handles.startStopTrackToogleButton, 'Value') && ~getappdata(handles.figure1, 'isEditing'))
         referencePoint = currentAbsolutePoint;        
         % Look for existing cell track, usefull for editing tracks,
         % only check once, when the user has clicked the startStop button
@@ -759,6 +770,8 @@ if(isInsideCoordinates(currentPoint, imageCanvasPosition))
             fprintf('new cell!\n');
             guidata(hObject, handles);
             setappdata(handles.figure1, 'trackingStartPoint', 0);
+        else
+            handles.cell_id = handles.highlightedCell;
         end
         if(get(handles.preprocessCheckbox, 'Value'))
             selectedPoint = getClosestCentroid(handles.annotationLayers.localMaximaLayer(currentFrame).point, currentAbsolutePoint, 15);
@@ -767,26 +780,34 @@ if(isInsideCoordinates(currentPoint, imageCanvasPosition))
         end
         handles.annotationLayers.pointLayer(currentFrame).point(handles.cell_id,:) = selectedPoint;
         handles.annotationLayers.pointLayer(currentFrame).value(handles.cell_id) = 1;
-        frameSkip = 3;
-        
-        if(currentFrame + abs(frameSkip) <= length(handles.imageFilenames))
-            if(handles.annotationLayers.pointLayer(currentFrame + abs(frameSkip)).point(handles.cell_id,1) > 0)
-                currentFrameCentroid = handles.annotationLayers.pointLayer(currentFrame).point(handles.cell_id,:);
-                interpolatedCentroid = handles.annotationLayers.pointLayer(currentFrame + abs(frameSkip)).point(handles.cell_id,:);
-                for i=1:(abs(frameSkip) - 1)
-                    if(~handles.annotationLayers.pointLayer(currentFrame + i).value(handles.cell_id))
-                        handles.annotationLayers.pointLayer(currentFrame + i).point(handles.cell_id,:) = currentFrameCentroid + round(abs(currentFrameCentroid - interpolatedCentroid) * i / abs(frameSkip));
-                    end
-                end
-            end
+        if(get(handles.divisionToogleButton, 'Value'))
+            handles.annotationLayers.divisionLayer(currentFrame).point(handles.cell_id,:) = selectedPoint;
         end
+        frameSkip = 1;
+        if(get(handles.trackingModeCheckbox, 'Value'))
+            frameSkip = -abs(frameSkip);
+        else
+            frameSkip = abs(frameSkip);
+        end
+        
+%         if(currentFrame + abs(frameSkip) <= length(handles.imageFilenames))
+%             if(handles.annotationLayers.pointLayer(currentFrame + abs(frameSkip)).point(handles.cell_id,1) > 0)
+%                 currentFrameCentroid = handles.annotationLayers.pointLayer(currentFrame).point(handles.cell_id,:);
+%                 interpolatedCentroid = handles.annotationLayers.pointLayer(currentFrame + abs(frameSkip)).point(handles.cell_id,:);
+%                 for i=1:(abs(frameSkip) - 1)
+%                     if(~handles.annotationLayers.pointLayer(currentFrame + i).value(handles.cell_id))
+%                         handles.annotationLayers.pointLayer(currentFrame + i).point(handles.cell_id,:) = currentFrameCentroid + round(abs(currentFrameCentroid - interpolatedCentroid) * i / (abs(frameSkip)-1));
+%                     end
+%                 end
+%             end
+%         end
         if(currentFrame - abs(frameSkip) > 0)
             if(handles.annotationLayers.pointLayer(currentFrame - abs(frameSkip)).point(handles.cell_id,1) > 0)
                 currentFrameCentroid = handles.annotationLayers.pointLayer(currentFrame).point(handles.cell_id,:);
                 interpolatedCentroid = handles.annotationLayers.pointLayer(currentFrame - abs(frameSkip)).point(handles.cell_id,:);
                 for i=1:(abs(frameSkip) - 1)
                     if(~handles.annotationLayers.pointLayer(currentFrame - i).value(handles.cell_id))
-                        handles.annotationLayers.pointLayer(currentFrame - i).point(handles.cell_id,:) = currentFrameCentroid - round(abs(currentFrameCentroid - interpolatedCentroid) * (frameSkip - i) / abs(frameSkip));
+                        handles.annotationLayers.pointLayer(currentFrame - i).point(handles.cell_id,:) = currentFrameCentroid + round(abs(currentFrameCentroid - interpolatedCentroid) * i / (abs(frameSkip)-1));
                     end
                 end
             end
@@ -1101,6 +1122,7 @@ function highlightedCellPopupMenu_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns highlightedCellPopupMenu contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from highlightedCellPopupMenu
 handles.highlightedCell = str2double(getCurrentPopupString(handles.highlightedCellPopupMenu));
+setappdata(handles.figure1, 'trackingStartPoint', 0);
 guidata(hObject, handles);
 imageCanvas_refreshImage(handles);
 
