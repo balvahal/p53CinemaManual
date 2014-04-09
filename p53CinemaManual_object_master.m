@@ -28,7 +28,7 @@ classdef p53CinemaManual_object_master < handle
             set(0,'units','characters');
             Char_SS = get(0,'screensize');
             obj.ppChar = Pix_SS./Char_SS;
-            obj.ppChar = obj.ppChar(3,4);
+            obj.ppChar = obj.ppChar(3:4);
             set(0,'units',myunits);
             
             %% Start all guis
