@@ -10,8 +10,7 @@ classdef p53CinemaManual_object_imageViewer < handle
     properties
         gui_imageViewer;
         pixelxy;
-    end
-    properties (SetAccess = private)
+        master;
         isMyButtonDown = false;
     end
     events
@@ -19,6 +18,7 @@ classdef p53CinemaManual_object_imageViewer < handle
     end
     methods
         function obj = p53CinemaManual_object_imageViewer(master)
+            obj.master = master;
             obj.gui_imageViewer = p53CinemaManual_gui_imageViewer(master);
         end
         
@@ -27,11 +27,13 @@ classdef p53CinemaManual_object_imageViewer < handle
             handles = guidata(obj.gui_imageViewer);
             axesOrigin = get(handles.axesSourceImage,'Position');
             myRelativePoint = myCurrentPoint - axesOrigin(1:2);
-            if any(myRelativePoint<0)
+            if any(myRelativePoint<0) || ...
+                    myRelativePoint(1) > obj.master.image_widthChar || ...
+                    myRelativePoint(2) > obj.master.image_heightChar
                 obj.pixelxy = [];
             else
-                x = round(myRelativePoint(1)*handles.ppChar(3));
-                y = round(myRelativePoint(2)*handles.ppChar(4));
+                x = round(myRelativePoint(1)*obj.master.ppChar(1));
+                y = round(myRelativePoint(2)*obj.master.ppChar(2));
                 obj.pixelxy = [x,y];
             end
             out = obj.pixelxy;

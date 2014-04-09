@@ -3,12 +3,14 @@
 function [f] = p53CinemaManual_gui_imageViewer(master)
 %%
 % The width and height of the figure.
-IM_width = 1008;
-IM_height = 768;
+            master.image_width = 1008;
+            master.image_height = 768;
+master.image_width = 1008;
+master.image_height = 768;
 %% Create the figure
 %
-fwidth = 1.1*IM_width/master.ppChar(1);
-fheight = (1.1*IM_height + 100)/master.ppChar(2);
+fwidth = 1.1*master.image_width/master.ppChar(1);
+fheight = (1.1*master.image_height + 100)/master.ppChar(2);
 fx = 10;
 fy = 10;
 f = figure('Visible','off','Units','characters','MenuBar','none',...
@@ -20,14 +22,14 @@ f = figure('Visible','off','Units','characters','MenuBar','none',...
     'WindowButtonMotionFcn',{@fHover});
 %% Create the axes that will show the image
 % source image
-hwidth = IM_width/master.ppChar(1);
-hheight = IM_height/master.ppChar(2);
+hwidth = master.image_width/master.ppChar(1);
+hheight = master.image_height/master.ppChar(2);
 hx = (fwidth-hwidth)/2;
-hy = (fheight-hheight-100)/2+100;
+hy = (fheight-hheight-100/master.ppChar(2))/2+100/master.ppChar(2);
 haxesSourceImage = axes('Units','characters','DrawMode','fast','Visible','off',...
     'Position',[hx hy hwidth hheight]...
     );
-
+plot(haxesSourceImage,rand(1,10));
 %% Create an axes
 % highlighted cell with hover
 haxesHighlight = axes('Units','characters','DrawMode','fast','Visible','off',...
@@ -47,7 +49,7 @@ haxesAnnotations = axes('Units','characters','DrawMode','fast','Visible','off',.
     );
 %% Create controls
 % Slider bar and two buttons
-hwidth = IM_width/master.ppChar(1);
+hwidth = master.image_width/master.ppChar(1);
 hheight = 20/master.ppChar(2);
 hx = (fwidth-hwidth)/2;
 hy = 70/master.ppChar(2);
@@ -56,21 +58,20 @@ hsliderExploreStack = uicontrol('Style','slider','Units','characters',...
     'Value',1,'SliderStep',[1 1],'Position',[hx hy hwidth hheight],...
     'Callback',{@sliderExploreStack_Callback});
 
-hwidth = 100/ppChar(3);
-hheight = 70/ppChar(4);
-hx = 20/ppChar(3);
-hygap = (fheight - 3*hheight)/4;
-hy = fheight - (hygap + hheight);
+hwidth = 100/master.ppChar(1);
+hheight = 30/master.ppChar(2);
+hx = 20/master.ppChar(1);
+hy = 20/master.ppChar(2);
 hpushbuttonFirstImage = uicontrol('Style','pushbutton','Units','characters',...
     'FontSize',14,'FontName','Verdana','BackgroundColor',[255 215 0]/255,...
     'String','First Image','Position',[hx hy hwidth hheight],...
-    'Callback',{@pushbuttonPause_Callback});
+    'Callback',{@pushbuttonFirstImage_Callback});
 
-hy = hy - (hygap + hheight);
+hx = fwidth - hwidth - 20/master.ppChar(1);
 hpushbuttonLastImage = uicontrol('Style','pushbutton','Units','characters',...
     'FontSize',14,'FontName','Verdana','BackgroundColor',[60 179 113]/255,...
     'String','Last Image','Position',[hx hy hwidth hheight],...
-    'Callback',{@pushbuttonResume_Callback});
+    'Callback',{@pushbuttonLastImage_Callback});
 %%
 % store the uicontrol handles in the figure handles via guidata()
 handles.axesSourceImage = haxesSourceImage;
@@ -93,8 +94,13 @@ set(f,'Visible','on');
     end
 %%
 %
-    function fKeyPressFcn(a,b)
-        disp('hello');
+    function fKeyPressFcn(~,keyInfo)
+        switch keyInfo.Key
+            case 'period'
+                disp('next image')
+            case 'comma'
+                disp('previous image')
+        end
     end
 %%
 %
@@ -103,7 +109,6 @@ set(f,'Visible','on');
         % This if statement prevents multiple button firings from a single
         % click event
         if master.obj_imageViewer.isMyButtonDown
-            disp('hello');
             return
         end
         %%
@@ -111,11 +116,11 @@ set(f,'Visible','on');
         master.obj_imageViewer.isMyButtonDown = true;
         myCurrentPoint = master.obj_imageViewer.pixelxy;
         if ~isempty(myCurrentPoint)
+            %% add to data set
             mystr = sprintf('x = %d\ny = %d',myCurrentPoint(1),myCurrentPoint(2));
             disp(mystr);
+            drawnow;
         end
-        
-        drawnow;
         master.obj_imageViewer.isMyButtonDown = false;
     end
 %%
@@ -126,6 +131,16 @@ set(f,'Visible','on');
 %%
 %
     function sliderExploreStack_Callback(~,~)
+        
+    end
+%%
+%
+    function pushbuttonFirstImage_Callback(~,~)
+        
+    end
+%%
+%
+    function pushbuttonLastImage_Callback(~,~)
         
     end
 end

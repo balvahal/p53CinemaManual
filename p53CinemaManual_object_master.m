@@ -11,6 +11,10 @@ classdef p53CinemaManual_object_master < handle
         data;
         obj_imageViewer;
         obj_fileManager;
+        image_width;
+        image_height;
+        image_widthChar;
+        image_heightChar;
     end
     properties (SetAccess = private)
         ppChar; % the guis are all in character units, but the images are defined by pixels.
@@ -31,6 +35,12 @@ classdef p53CinemaManual_object_master < handle
             obj.ppChar = obj.ppChar([3,4]);
             set(0,'units',myunits);
             
+            %% Load settings
+            %
+            obj.image_width = 1008;
+            obj.image_height = 768;
+            obj.image_widthChar = obj.image_width/obj.ppChar(1);
+            obj.image_heightChar = obj.image_height/obj.ppChar(2);
             %% Start all guis
             %
             
