@@ -114,10 +114,16 @@ set(f,'Visible','on');
 
 %% Callbacks
 %
-%%
+%% Browse database file
 %
     function pushbuttonDatabasePath_Callback(source,eventdata)
-        uigetfile(pwd);
+        [databaseFile, sourcePath] = uigetfile('./*.txt');
+        database = readtable(fullfile(sourcePath, databaseFile), 'Delimiter', '\t');
+        master.obj_fileManager.setDatabase(database);
+        set(heditDatabasePath, 'String', fullfile(sourcePath, databaseFile));
+        set(heditRawDataPath, 'String', fullfile(sourcePath, 'RAW_DATA'));
+        set(heditSegmentDataPath, 'String', fullfile(sourcePath, 'SEGMENT_DATA'));
+        
     end
 %%
 %
@@ -129,4 +135,5 @@ set(f,'Visible','on');
     function pushbuttonStop_Callback(source,eventdata)
         disp('stop');
     end
+
 end
