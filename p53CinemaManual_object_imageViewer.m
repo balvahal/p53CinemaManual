@@ -18,14 +18,14 @@ classdef p53CinemaManual_object_imageViewer < handle
         
     end
     methods
-        function obj = p53CinemaManual_object_imageViewer()
-            obj.gui_imageViewer = p53CinemaManual_gui_imageViewer(obj);
+        function obj = p53CinemaManual_object_imageViewer(master)
+            obj.gui_imageViewer = p53CinemaManual_gui_imageViewer(master);
         end
         
         function out = getPixelxy(obj)
             myCurrentPoint = get(obj.gui_imageViewer,'CurrentPoint');
             handles = guidata(obj.gui_imageViewer);
-            axesOrigin = get(handles.SourceImage,'Position');
+            axesOrigin = get(handles.axesSourceImage,'Position');
             myRelativePoint = myCurrentPoint - axesOrigin(1:2);
             if any(myRelativePoint<0)
                 obj.pixelxy = [];
@@ -35,6 +35,9 @@ classdef p53CinemaManual_object_imageViewer < handle
                 obj.pixelxy = [x,y];
             end
             out = obj.pixelxy;
+        end
+        function delete(obj)
+            delete(obj.gui_imageViewer);
         end
     end
 end

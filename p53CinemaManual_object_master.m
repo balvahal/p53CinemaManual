@@ -9,7 +9,7 @@
 classdef p53CinemaManual_object_master < handle
     properties
         data;
-        gui_imageViewer;
+        obj_imageViewer;
     end
     properties (SetObservable)
         
@@ -20,7 +20,11 @@ classdef p53CinemaManual_object_master < handle
     methods
         function obj = p53CinemaManual_object_master(mydata)
             obj.data = mydata;
-            obj.gui_imageViewer = p53CinemaManual_gui_imageViewer(obj);
+            obj.obj_imageViewer = p53CinemaManual_object_imageViewer(obj);
+        end
+        function delete(obj)
+            
+           delete(obj.obj_imageViewer); 
         end
     end
 end
