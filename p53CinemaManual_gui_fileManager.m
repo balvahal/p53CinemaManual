@@ -117,7 +117,7 @@ set(f,'Visible','on');
 %%
 %
     function pushbuttonDatabasePath_Callback(source,eventdata)
-        disp('pause');
+        uigetfile(pwd);
     end
 %%
 %

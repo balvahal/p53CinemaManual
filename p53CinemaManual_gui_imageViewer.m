@@ -56,9 +56,9 @@ hsliderExploreStack = uicontrol('Style','slider','Units','characters',...
     'Value',1,'SliderStep',[1 1],'Position',[hx hy hwidth hheight],...
     'Callback',{@sliderExploreStack_Callback});
 
-hwidth = 100/ppChar(3);
-hheight = 70/ppChar(4);
-hx = 20/ppChar(3);
+hwidth = 100/master.ppChar(1);
+hheight = 70/master.ppChar(2);
+hx = 20/master.ppChar(1);
 hygap = (fheight - 3*hheight)/4;
 hy = fheight - (hygap + hheight);
 hpushbuttonFirstImage = uicontrol('Style','pushbutton','Units','characters',...
