@@ -2,22 +2,15 @@
 % a simple gui to pause, stop, and resume a running MDA
 function [f] = p53CinemaManual_gui_imageViewer(master)
 %%
-% The width and height of the images collected.
+% The width and height of the figure.
 IM_width = 1008;
 IM_height = 768;
 %% Create the figure
 %
-myunits = get(0,'units');
-set(0,'units','pixels');
-Pix_SS = get(0,'screensize');
-set(0,'units','characters');
-Char_SS = get(0,'screensize');
-ppChar = Pix_SS./Char_SS;
-set(0,'units',myunits);
-fwidth = 1.1*IM_width/ppChar(3);
-fheight = (1.1*IM_height + 100)/ppChar(4);
-fx = Char_SS(3) - (Char_SS(3)*.1 + fwidth);
-fy = Char_SS(4) - (Char_SS(4)*.1 + fheight);
+fwidth = 1.1*IM_width/master.ppChar(1);
+fheight = (1.1*IM_height + 100)/master.ppChar(2);
+fx = 10;
+fy = 10;
 f = figure('Visible','off','Units','characters','MenuBar','none',...
     'Renderer','OpenGL','Position',[fx fy fwidth fheight],...
     'CloseRequestFcn',{@fCloseRequestFcn},...
@@ -25,8 +18,8 @@ f = figure('Visible','off','Units','characters','MenuBar','none',...
     'WindowButtonMotionFcn',{@fHover});
 %% Create the axes that will show the image
 % source image
-hwidth = IM_width/ppChar(3);
-hheight = IM_height/ppChar(4);
+hwidth = IM_width/master.ppChar(1);
+hheight = IM_height/master.ppChar(2);
 hx = (fwidth-hwidth)/2;
 hy = (fheight-hheight-100)/2+100;
 haxesSourceImage = axes('Units','characters','DrawMode','fast','Visible','off',...
@@ -52,10 +45,10 @@ haxesAnnotations = axes('Units','characters','DrawMode','fast','Visible','off',.
     );
 %% Create controls
 % Slider bar and two buttons
-hwidth = IM_width/ppChar(3);
-hheight = 20/ppChar(4);
+hwidth = IM_width/master.ppChar(1);
+hheight = 20/master.ppChar(2);
 hx = (fwidth-hwidth)/2;
-hy = 70/ppChar(4);
+hy = 70/master.ppChar(2);
 hsliderExploreStack = uicontrol('Style','slider','Units','characters',...
     'Min',1,'Max',2,'BackgroundColor',[255 215 0]/255,...
     'Value',1,'SliderStep',[1 1],'Position',[hx hy hwidth hheight],...
@@ -67,7 +60,6 @@ handles.axesHighlight = haxesHighlight;
 handles.axesSelectedCell = haxesSelectedCell;
 handles.axesAnnotations = haxesAnnotations;
 handles.sliderExploreStack = hsliderExploreStack;
-handles.ppChar = ppChar;
 guidata(f,handles);
 %%
 % make the gui visible

@@ -36,6 +36,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             end
             out = obj.pixelxy;
         end
+        
         function delete(obj)
             delete(obj.gui_imageViewer);
         end

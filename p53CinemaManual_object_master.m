@@ -10,21 +10,36 @@ classdef p53CinemaManual_object_master < handle
     properties
         data;
         obj_imageViewer;
+        obj_fileManager;
     end
-    properties (SetObservable)
-        
+    properties (SetAccess = private)
+        ppChar; % the guis are all in character units, but the images are defined by pixels.
     end
     events
         
     end
     methods
-        function obj = p53CinemaManual_object_master(mydata)
-            obj.data = mydata;
+        function obj = p53CinemaManual_object_master()
+            %%
+            % get pixels to character info
+            myunits = get(0,'units');
+            set(0,'units','pixels');
+            Pix_SS = get(0,'screensize');
+            set(0,'units','characters');
+            Char_SS = get(0,'screensize');
+            obj.ppChar = Pix_SS./Char_SS;
+            obj.ppChar = obj.ppChar(3,4);
+            set(0,'units',myunits);
+            
+            %% Start all guis
+            %
+            
+            obj.obj_fileManager = p53CinemaManual_object_fileManager(obj);
             obj.obj_imageViewer = p53CinemaManual_object_imageViewer(obj);
         end
         function delete(obj)
             
-           delete(obj.obj_imageViewer); 
+            delete(obj.obj_imageViewer);
         end
     end
 end
