@@ -17,7 +17,7 @@ hwidth = 120/master.ppChar(1);
 hheight = 20/master.ppChar(2);
 hmargin = 25/master.ppChar(2);
 hmargin_short = 7/master.ppChar(2);
-hx = 20/ppChar(3);
+hx = 20/master.ppChar(1);
 hygap = (fheight - 3*hheight)/4;
 hy = fheight - (hmargin + hheight);
 
