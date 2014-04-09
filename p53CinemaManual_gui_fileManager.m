@@ -12,13 +12,11 @@ fy = Char_SS(4) - (Char_SS(4)*.1 + fheight);
 f = figure('Visible','off','Units','characters','MenuBar','none',...
     'Renderer','OpenGL','Position',[fx fy fwidth fheight]);
 %% Construct the components
-% The pause, stop, and resume buttons
 hwidth = 120/master.ppChar(1);
 hheight = 20/master.ppChar(2);
 hmargin = 25/master.ppChar(2);
 hmargin_short = 7/master.ppChar(2);
 hx = 20/master.ppChar(1);
-hygap = (fheight - 3*hheight)/4;
 hy = fheight - (hmargin + hheight);
 
 %% Layout: file path information
@@ -98,8 +96,12 @@ heditImageResize = uicontrol('Style','edit','Units','characters',...
     'parent',f);
 hcheckboxPreprocess = uicontrol('Style','checkbox','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
-    'String','Preprocess','Position',[hx + hmargin + 1.75*hwidth, hy, hwidth * 0.75, hheight],...
-    'parent',f);
+    'String','Preprocess','Position',[hx + hmargin + 1.75*hwidth, hy, hwidth, hheight],...
+    'Value',1,'parent',f);
+hcheckboxIntoMemory = uicontrol('Style','checkbox','Units','characters',...
+    'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
+    'String','Into memory','Position',[hx + hmargin + 1.75*hwidth, hy - hheight, hwidth, hheight],...
+    'Value',1,'parent',f);
 
 %% Layout: Load button
 hy = hy - hheight - hmargin;
@@ -143,9 +145,22 @@ set(f,'Visible','on');
     end
 
     function pushbuttonLoadData_Callback(source, eventdata)
+        % Define the selected group, position and channel in the file
+        % manager object
         master.object_fileManager.setSelectedGroup(getCurrentPopupString(hpopupGroupLabel));
         master.object_fileManager.setSelectedPosition(getCurrentPopupString(hpopupStagePosition));
         master.object_fileManager.setSelectedChannel(getCurrentPopupString(hpopupPimaryChannel));
+        
+        % Generate a sequence of images representing the current data to
+        % visualize, save the timepoints each image corresponds to and sort
+        % the filenames by timepoint.
+        
+        % If hcheckboxIntoMemory is checked, load all images into an array
+        
+        % If preprocess is checked, find relevant centroids with image
+        % processing function for each image and record in a data variable
+        
+        % Communicate with the viewer to set up the 
     end
 
 %% Populate position and channel
