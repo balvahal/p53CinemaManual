@@ -12,9 +12,11 @@ fheight = (1.1*IM_height + 100)/master.ppChar(2);
 fx = 10;
 fy = 10;
 f = figure('Visible','off','Units','characters','MenuBar','none',...
+    'Resize','off',...
     'Renderer','OpenGL','Position',[fx fy fwidth fheight],...
     'CloseRequestFcn',{@fCloseRequestFcn},...
-    'ButtonDownFcn',{@fButtonDownFcn},...
+    'KeyPressFcn',{@fKeyPressFcn},...
+    'WindowButtonDownFcn',{@fWindowButtonDownFcn},...
     'WindowButtonMotionFcn',{@fHover});
 %% Create the axes that will show the image
 % source image
@@ -53,6 +55,22 @@ hsliderExploreStack = uicontrol('Style','slider','Units','characters',...
     'Min',1,'Max',2,'BackgroundColor',[255 215 0]/255,...
     'Value',1,'SliderStep',[1 1],'Position',[hx hy hwidth hheight],...
     'Callback',{@sliderExploreStack_Callback});
+
+hwidth = 100/ppChar(3);
+hheight = 70/ppChar(4);
+hx = 20/ppChar(3);
+hygap = (fheight - 3*hheight)/4;
+hy = fheight - (hygap + hheight);
+hpushbuttonFirstImage = uicontrol('Style','pushbutton','Units','characters',...
+    'FontSize',14,'FontName','Verdana','BackgroundColor',[255 215 0]/255,...
+    'String','First Image','Position',[hx hy hwidth hheight],...
+    'Callback',{@pushbuttonPause_Callback});
+
+hy = hy - (hygap + hheight);
+hpushbuttonLastImage = uicontrol('Style','pushbutton','Units','characters',...
+    'FontSize',14,'FontName','Verdana','BackgroundColor',[60 179 113]/255,...
+    'String','Last Image','Position',[hx hy hwidth hheight],...
+    'Callback',{@pushbuttonResume_Callback});
 %%
 % store the uicontrol handles in the figure handles via guidata()
 handles.axesSourceImage = haxesSourceImage;
@@ -75,12 +93,30 @@ set(f,'Visible','on');
     end
 %%
 %
-    function fButtonDownFcn(~,~)
+    function fKeyPressFcn(a,b)
+        disp('hello');
+    end
+%%
+%
+    function fWindowButtonDownFcn(~,~)
+        %%
+        % This if statement prevents multiple button firings from a single
+        % click event
+        if master.obj_imageViewer.isMyButtonDown
+            disp('hello');
+            return
+        end
+        %%
+        %
+        master.obj_imageViewer.isMyButtonDown = true;
         myCurrentPoint = master.obj_imageViewer.pixelxy;
         if ~isempty(myCurrentPoint)
             mystr = sprintf('x = %d\ny = %d',myCurrentPoint(1),myCurrentPoint(2));
             disp(mystr);
         end
+        
+        drawnow;
+        master.obj_imageViewer.isMyButtonDown = false;
     end
 %%
 % Translate the mouse position into the pixel location in the source image

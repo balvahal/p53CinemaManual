@@ -11,8 +11,8 @@ classdef p53CinemaManual_object_imageViewer < handle
         gui_imageViewer;
         pixelxy;
     end
-    properties (SetObservable)
-        
+    properties (SetAccess = private)
+        isMyButtonDown = false;
     end
     events
         

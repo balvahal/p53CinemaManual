@@ -11,9 +11,6 @@ classdef p53CinemaManual_object_data < handle
         manualTrackingData = containers.Map;
         motherLineage = containers.Map;
     end
-    properties (SetObservable)
-        
-    end
     events
         
     end
