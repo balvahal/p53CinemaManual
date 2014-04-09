@@ -28,7 +28,7 @@ htextDatabasePath = uicontrol('Style','text','Units','characters',...
     'Enable', 'inactive','parent',f);
 heditDatabasePath = uicontrol('Style','edit','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
-    'String','Database file','Position',[hx + hmargin + hwidth, hy, hwidth * 1.5, hheight],...
+    'String','','Position',[hx + hmargin + hwidth, hy, hwidth * 1.5, hheight],...
     'parent',f);
 hbuttonDatabasePath = uicontrol('Style','pushbutton','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
@@ -42,7 +42,7 @@ htextRawDataPath = uicontrol('Style','text','Units','characters',...
     'parent',f);
 heditRawDataPath = uicontrol('Style','edit','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
-    'String','Database file','Position',[hx + hmargin + hwidth, hy, hwidth * 1.5, hheight],...
+    'String','','Position',[hx + hmargin + hwidth, hy, hwidth * 1.5, hheight],...
     'Enable', 'off', 'parent',f);
 
 hy = hy - hheight - hmargin_short;
@@ -52,7 +52,7 @@ htextSegmentDataPath = uicontrol('Style','text','Units','characters',...
     'parent',f);
 heditSegmentDataPath = uicontrol('Style','edit','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
-    'String','Database file','Position',[hx + hmargin + hwidth, hy, hwidth * 1.5, hheight],...
+    'String','','Position',[hx + hmargin + hwidth, hy, hwidth * 1.5, hheight],...
     'Enable', 'off', 'parent',f);
 
 %% Layout: image sequence information (group, position and channel)
@@ -63,8 +63,8 @@ htextGroupLabel = uicontrol('Style','text','Units','characters',...
     'parent',f);
 hpopupGroupLabel = uicontrol('Style','popupmenu','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
-    'String','Database file','Position',[hx + hmargin + hwidth, hy, hwidth * 1.5, hheight],...
-    'Enable', 'off', 'parent',f);
+    'String','Select group','Position',[hx + hmargin + hwidth, hy, hwidth * 1.5, hheight],...
+    'Callback',{@popupGroupLabel_Callback},'Enable', 'off', 'parent',f);
 
 hy = hy - hheight - hmargin_short;
 htextStagePosition = uicontrol('Style','text','Units','characters',...
@@ -73,8 +73,8 @@ htextStagePosition = uicontrol('Style','text','Units','characters',...
     'parent',f);
 hpopupStagePosition = uicontrol('Style','popupmenu','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
-    'String','Database file','Position',[hx + hmargin + hwidth, hy, hwidth * 1.5, hheight],...
-    'Enable', 'off', 'parent',f);
+    'String','Select position','Position',[hx + hmargin + hwidth, hy, hwidth * 1.5, hheight],...
+    'Callback',{@popupStagePosition_Callback},'Enable', 'off', 'parent',f);
 
 hy = hy - hheight - hmargin_short;
 htextPimaryChannel = uicontrol('Style','text','Units','characters',...
@@ -83,7 +83,7 @@ htextPimaryChannel = uicontrol('Style','text','Units','characters',...
     'parent',f);
 hpopupPimaryChannel = uicontrol('Style','popupmenu','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
-    'String','Database file','Position',[hx + hmargin + hwidth, hy, hwidth * 1.5, hheight],...
+    'String','Select channel','Position',[hx + hmargin + hwidth, hy, hwidth * 1.5, hheight],...
     'Enable', 'off', 'parent',f);
 
 %% Layout: Data loading options
@@ -106,7 +106,7 @@ hy = hy - hheight - hmargin;
 heditImageResize = uicontrol('Style','pushbutton','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','Load','Position',[hx + hmargin + hwidth, hy, hwidth * 0.75, hheight],...
-    'parent',f);
+    'Callback',{@pushbuttonLoadData_Callback},'parent',f);
 
 %%
 % make the gui visible
@@ -119,21 +119,74 @@ set(f,'Visible','on');
     function pushbuttonDatabasePath_Callback(source,eventdata)
         [databaseFile, sourcePath] = uigetfile('./*.txt');
         database = readtable(fullfile(sourcePath, databaseFile), 'Delimiter', '\t');
-        master.obj_fileManager.setDatabase(database);
+        
         set(heditDatabasePath, 'String', fullfile(sourcePath, databaseFile));
         set(heditRawDataPath, 'String', fullfile(sourcePath, 'RAW_DATA'));
         set(heditSegmentDataPath, 'String', fullfile(sourcePath, 'SEGMENT_DATA'));
+        master.obj_fileManager.setDatabase(database);
+        
+        availableGroups = unique(database.group_label);
+        set(hpopupGroupLabel, 'String', availableGroups);
+        set(hpopupGroupLabel, 'Enable', 'on');
+        master.obj_fileManager.setSelectedGroup(getCurrentPopupString(hpopupGroupLabel));
+        
+        populatePositionChannel
         
     end
-%%
-%
-    function pushbuttonResume_Callback(source,eventdata)
-        disp('resume');
-    end
-%%
-%
-    function pushbuttonStop_Callback(source,eventdata)
-        disp('stop');
+
+    function popupGroupLabel_Callback(source, eventdata)
+        populatePositionChannel;
     end
 
+    function popupStagePosition_Callback(source, eventdata)
+        populateChannel;
+    end
+
+    function pushbuttonLoadData_Callback(source, eventdata)
+        master.object_fileManager.setSelectedGroup(getCurrentPopupString(hpopupGroupLabel));
+        master.object_fileManager.setSelectedPosition(getCurrentPopupString(hpopupStagePosition));
+        master.object_fileManager.setSelectedChannel(getCurrentPopupString(hpopupPimaryChannel));
+    end
+
+%% Populate position and channel
+%
+    function populatePositionChannel
+        database = master.obj_fileManager.database;
+        availablePositions = unique(database.position_number(strcmp(database.group_label, getCurrentPopupString(hpopupGroupLabel))));
+        set(hpopupStagePosition, 'Value', 1);
+        set(hpopupStagePosition, 'String', num2str(availablePositions));
+        set(hpopupStagePosition, 'Enable', 'on');
+        
+        populateChannel;
+    end
+
+    function populateChannel
+        database = master.obj_fileManager.database;
+        
+        availableChannels = unique( ...
+            database.channel_name(strcmp(database.group_label, getCurrentPopupString(hpopupGroupLabel)) & ...
+            database.position_number == str2double(getCurrentPopupString(hpopupStagePosition))));
+        set(hpopupPimaryChannel, 'Value', 1);
+        set(hpopupPimaryChannel, 'String', availableChannels);
+        set(hpopupPimaryChannel, 'Enable', 'on');
+    end
+
+%% Auxiliary functions
+    function str = getCurrentPopupString(hh)
+        %# getCurrentPopupString returns the currently selected string in the popupmenu with handle hh
+        
+        %# could test input here
+        if ~ishandle(hh) || strcmp(get(hh,'Type'),'popupmenu')
+            error('getCurrentPopupString needs a handle to a popupmenu as input')
+        end
+        
+        %# get the string - do it the readable way
+        list = get(hh,'String');
+        val = get(hh,'Value');
+        if iscell(list)
+            str = list{val};
+        else
+            str = list(val,:);
+        end
+    end
 end
