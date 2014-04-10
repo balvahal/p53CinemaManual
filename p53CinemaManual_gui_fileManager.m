@@ -94,13 +94,13 @@ heditImageResize = uicontrol('Style','edit','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','1.0','Position',[hx + hmargin + hwidth, hy, hwidth * 0.5, hheight],...
     'parent',f);
-hcheckboxPreprocess = uicontrol('Style','checkbox','Units','characters',...
-    'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
-    'String','Preprocess','Position',[hx + hmargin + 1.75*hwidth, hy, hwidth, hheight],...
-    'Value',1,'parent',f);
 hcheckboxIntoMemory = uicontrol('Style','checkbox','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
-    'String','Into memory','Position',[hx + hmargin + 1.75*hwidth, hy - hheight, hwidth, hheight],...
+    'String','Into memory','Position',[hx + hmargin + 1.75*hwidth, hy, hwidth, hheight],...
+    'Value',1,'parent',f);
+hcheckboxPreprocess = uicontrol('Style','checkbox','Units','characters',...
+    'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
+    'String','Preprocess','Position',[hx + hmargin + 1.75*hwidth, hy - hheight, hwidth, hheight],...
     'Value',1,'parent',f);
 
 %% Layout: Load button
@@ -181,8 +181,13 @@ set(f,'Visible','on');
         availableChannels = unique( ...
             database.channel_name(strcmp(database.group_label, getCurrentPopupString(hpopupGroupLabel)) & ...
             database.position_number == str2double(getCurrentPopupString(hpopupStagePosition))));
+        % When the position is changed, if the previously selected channel
+        % is available, it will remain selected. Otherwise, it will default
+        % to the first available option.
+        previousValue = getCurrentPopupString(hpopupPimaryChannel);
         set(hpopupPimaryChannel, 'Value', 1);
         set(hpopupPimaryChannel, 'String', availableChannels);
+        set(hpopupPimaryChannel, 'Value', getPopupIndex(hpopupPimaryChannel, previousValue));
         set(hpopupPimaryChannel, 'Enable', 'on');
     end
 
@@ -202,6 +207,22 @@ set(f,'Visible','on');
             str = list{val};
         else
             str = list(val,:);
+        end
+    end
+
+    function index = getPopupIndex(hh, str)
+        %# getCurrentPopupString returns the currently selected string in the popupmenu with handle hh
+        
+        %# could test input here
+        if ~ishandle(hh) || strcmp(get(hh,'Type'),'popupmenu')
+            error('getCurrentPopupString needs a handle to a popupmenu as input')
+        end
+        
+        %# get the string - do it the readable way
+        list = get(hh,'String');
+        index = find(strcmp(list, str));
+        if(isempty(index))
+            index = 1;
         end
     end
 end
