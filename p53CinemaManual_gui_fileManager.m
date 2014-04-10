@@ -158,7 +158,7 @@ set(f,'Visible','on');
         master.obj_fileManager.setPreprocessMode(get(hcheckboxPreprocess,'Value'));
         master.obj_fileManager.setPreallocateMode(get(hcheckboxPreallocate,'Value'));
         % Trigger image set-up in the viewer object
-        
+        master.initializeImageViewer;
     end
 
 %% Populate position and channel

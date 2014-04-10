@@ -45,6 +45,11 @@ classdef p53CinemaManual_object_master < handle
             %
             
             obj.obj_fileManager = p53CinemaManual_object_fileManager(obj);
+        end
+        function initializeImageViewer(obj)
+            if(~isempty(obj.obj_imageViewer))
+                obj.obj_imageViewer.delete;
+            end
             obj.obj_imageViewer = p53CinemaManual_object_imageViewer(obj);
         end
         function delete(obj)
