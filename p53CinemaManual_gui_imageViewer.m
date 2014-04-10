@@ -3,8 +3,6 @@
 function [f] = p53CinemaManual_gui_imageViewer(master)
 %%
 % The width and height of the figure.
-            master.image_width = 1008;
-            master.image_height = 768;
 master.image_width = 1008;
 master.image_height = 768;
 %% Create the figure
@@ -26,27 +24,30 @@ hwidth = master.image_width/master.ppChar(1);
 hheight = master.image_height/master.ppChar(2);
 hx = (fwidth-hwidth)/2;
 hy = (fheight-hheight-100/master.ppChar(2))/2+100/master.ppChar(2);
-haxesSourceImage = axes('Units','characters','DrawMode','fast','Visible','off',...
-    'Position',[hx hy hwidth hheight]...
-    );
+haxesSourceImage = axes('Units','characters','DrawMode','fast',...
+    'Position',[hx hy hwidth hheight],...
+    'XLim',[1,master.image_width],'YLim',[1,master.image_height]);
 plot(haxesSourceImage,rand(1,10));
 %% Create an axes
 % highlighted cell with hover
-haxesHighlight = axes('Units','characters','DrawMode','fast','Visible','off',...
-    'Position',[hx hy hwidth hheight]...
-    );
-
+haxesHighlight = axes('Units','characters','DrawMode','fast','color','none',...
+    'Position',[hx hy hwidth hheight],...
+    'XLim',[1,master.image_width],'YLim',[1,master.image_height]);
+cmapHighlight = colormap(haxesHighlight,jet(16)); %63 matches the number of elements in ang
+   highlightPatch = patch('XData',ones(1,16),'YData',ones(1,16),...
+        'LineWidth',4,'EdgeColor','flat','FaceColor','none',...
+        'FaceVertexCData',cmapHighlight,'Parent',haxesHighlight);
 %% Create an axes
 % selected cell with click
-haxesSelectedCell = axes('Units','characters','DrawMode','fast','Visible','off',...
-    'Position',[hx hy hwidth hheight]...
-    );
+haxesSelectedCell = axes('Units','characters','DrawMode','fast','color','none',...
+    'Position',[hx hy hwidth hheight],...
+    'XLim',[1,master.image_width],'YLim',[1,master.image_height]);
 
 %% Create an axes
 % previously annotated cells
-haxesAnnotations = axes('Units','characters','DrawMode','fast','Visible','off',...
-    'Position',[hx hy hwidth hheight]...
-    );
+haxesAnnotations = axes('Units','characters','DrawMode','fast','color','none',...
+    'Position',[hx hy hwidth hheight],...
+    'XLim',[1,master.image_width],'YLim',[1,master.image_height]);
 %% Create controls
 % Slider bar and two buttons
 hwidth = master.image_width/master.ppChar(1);
@@ -79,6 +80,8 @@ handles.axesHighlight = haxesHighlight;
 handles.axesSelectedCell = haxesSelectedCell;
 handles.axesAnnotations = haxesAnnotations;
 handles.sliderExploreStack = hsliderExploreStack;
+handles.cmapHighlight = cmapHighlight;
+handles.patch = highlightPatch;
 guidata(f,handles);
 %%
 % make the gui visible
@@ -114,33 +117,29 @@ set(f,'Visible','on');
         %%
         %
         master.obj_imageViewer.isMyButtonDown = true;
-        myCurrentPoint = master.obj_imageViewer.pixelxy;
-        if ~isempty(myCurrentPoint)
-            %% add to data set
-            mystr = sprintf('x = %d\ny = %d',myCurrentPoint(1),myCurrentPoint(2));
-            disp(mystr);
-            drawnow;
-        end
+        p53CinemaManual_function_imageViewer_updateSelectedCell(master);
+        p53CinemaManual_function_imageViewer_updateAnnotations(master);
         master.obj_imageViewer.isMyButtonDown = false;
     end
 %%
 % Translate the mouse position into the pixel location in the source image
     function fHover(~,~)
         master.obj_imageViewer.getPixelxy;
+        p53CinemaManual_function_imageViewer_updateHighlight(master);
     end
 %%
 %
     function sliderExploreStack_Callback(~,~)
-        
+        p53CinemaManual_function_imageViewer_updateSourceAxes(master);
     end
 %%
 %
     function pushbuttonFirstImage_Callback(~,~)
-        
+        p53CinemaManual_function_imageViewer_updateSourceAxes(master);
     end
 %%
 %
     function pushbuttonLastImage_Callback(~,~)
-        
+        p53CinemaManual_function_imageViewer_updateSourceAxes(master);
     end
 end
