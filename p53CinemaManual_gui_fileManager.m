@@ -118,7 +118,7 @@ set(f,'Visible','on');
 %
 %% Browse database file
 %
-    function pushbuttonDatabasePath_Callback(source,eventdata)
+    function pushbuttonDatabasePath_Callback(~,~)
         [databaseFile, sourcePath] = uigetfile('./*.txt');
         database = readtable(fullfile(sourcePath, databaseFile), 'Delimiter', '\t');
         
@@ -137,15 +137,15 @@ set(f,'Visible','on');
         
     end
 
-    function popupGroupLabel_Callback(source, eventdata)
+    function popupGroupLabel_Callback(~,~)
         populatePositionChannel;
     end
 
-    function popupStagePosition_Callback(source, eventdata)
+    function popupStagePosition_Callback(~,~)
         populateChannel;
     end
 
-    function pushbuttonLoadData_Callback(source, eventdata)
+    function pushbuttonLoadData_Callback(~,~)
         % Define the selected group, position and channel in the file
         % manager object
         master.obj_fileManager.setSelectedGroup(getCurrentPopupString(hpopupGroupLabel));
