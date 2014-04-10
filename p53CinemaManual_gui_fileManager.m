@@ -94,9 +94,9 @@ heditImageResize = uicontrol('Style','edit','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','1.0','Position',[hx + hmargin + hwidth, hy, hwidth * 0.5, hheight],...
     'parent',f);
-hcheckboxIntoMemory = uicontrol('Style','checkbox','Units','characters',...
+hcheckboxPreallocate = uicontrol('Style','checkbox','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
-    'String','Into memory','Position',[hx + hmargin + 1.75*hwidth, hy, hwidth, hheight],...
+    'String','Preallocate','Position',[hx + hmargin + 1.75*hwidth, hy, hwidth, hheight],...
     'Value',1,'parent',f);
 hcheckboxPreprocess = uicontrol('Style','checkbox','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
@@ -148,18 +148,16 @@ set(f,'Visible','on');
         % Define the selected group, position and channel in the file
         % manager object
         master.obj_fileManager.setSelectedGroup(getCurrentPopupString(hpopupGroupLabel));
-        master.obj_fileManager.setSelectedPosition(getCurrentPopupString(hpopupStagePosition));
+        master.obj_fileManager.setSelectedPosition(str2double(getCurrentPopupString(hpopupStagePosition)));
         master.obj_fileManager.setSelectedChannel(getCurrentPopupString(hpopupPimaryChannel));
         % Generate a sequence of images representing the current data to
         % visualize, save the timepoints each image corresponds to and sort
         % the filenames by timepoint.
+        master.obj_fileManager.generateImageSequence;
+        master.obj_fileManager.setPreprocessMode(get(hcheckboxPreprocess,'Value'));
+        master.obj_fileManager.setPreallocateMode(get(hcheckboxPreallocate,'Value'));
+        % Trigger image set-up in the viewer object
         
-        % If hcheckboxIntoMemory is checked, load all images into an array
-        
-        % If preprocess is checked, find relevant centroids with image
-        % processing function for each image and record in a data variable
-        
-        % Communicate with the viewer to set up the 
     end
 
 %% Populate position and channel
