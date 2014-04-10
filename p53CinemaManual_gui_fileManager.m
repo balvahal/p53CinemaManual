@@ -150,7 +150,6 @@ set(f,'Visible','on');
         master.obj_fileManager.setSelectedGroup(getCurrentPopupString(hpopupGroupLabel));
         master.obj_fileManager.setSelectedPosition(getCurrentPopupString(hpopupStagePosition));
         master.obj_fileManager.setSelectedChannel(getCurrentPopupString(hpopupPimaryChannel));
-        a;
         % Generate a sequence of images representing the current data to
         % visualize, save the timepoints each image corresponds to and sort
         % the filenames by timepoint.
