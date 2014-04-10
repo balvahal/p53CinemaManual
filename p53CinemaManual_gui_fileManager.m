@@ -147,10 +147,10 @@ set(f,'Visible','on');
     function pushbuttonLoadData_Callback(source, eventdata)
         % Define the selected group, position and channel in the file
         % manager object
-        master.object_fileManager.setSelectedGroup(getCurrentPopupString(hpopupGroupLabel));
-        master.object_fileManager.setSelectedPosition(getCurrentPopupString(hpopupStagePosition));
-        master.object_fileManager.setSelectedChannel(getCurrentPopupString(hpopupPimaryChannel));
-        
+        master.obj_fileManager.setSelectedGroup(getCurrentPopupString(hpopupGroupLabel));
+        master.obj_fileManager.setSelectedPosition(getCurrentPopupString(hpopupStagePosition));
+        master.obj_fileManager.setSelectedChannel(getCurrentPopupString(hpopupPimaryChannel));
+        a;
         % Generate a sequence of images representing the current data to
         % visualize, save the timepoints each image corresponds to and sort
         % the filenames by timepoint.

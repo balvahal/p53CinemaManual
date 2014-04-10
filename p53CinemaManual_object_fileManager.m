@@ -15,6 +15,7 @@ classdef p53CinemaManual_object_fileManager < handle
     methods
         function obj = p53CinemaManual_object_fileManager(master)
             obj.gui_fileManager = p53CinemaManual_gui_fileManager(master);
+            obj.master = master;
         end
         
         function setDatabase(obj, database)
@@ -24,10 +25,10 @@ classdef p53CinemaManual_object_fileManager < handle
             obj.selectedGroup = selectedGroup;
         end
         function setSelectedPosition(obj, selectedPosition)
-            obj.selectedGroup = selectedPosition;
+            obj.selectedPosition = selectedPosition;
         end
         function setSelectedChannel(obj, selectedChannel)
-            obj.selectedGroup = selectedChannel;
+            obj.selecteChannel = selectedChannel;
         end
                 
         function delete(obj)
