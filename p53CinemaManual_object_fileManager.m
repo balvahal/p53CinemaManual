@@ -4,10 +4,14 @@ classdef p53CinemaManual_object_fileManager < handle
     properties
         gui_fileManager;
         master;
+        
         database;
+        rawdatapath;
+        
         selectedGroup;
         selectedPosition;
         selectedChannel;
+        
         currentImageFilenames;
         currentImageTimepoints;
         maxTimepoint;
@@ -28,6 +32,9 @@ classdef p53CinemaManual_object_fileManager < handle
         %% Set variables
         function setDatabase(obj, database)
             obj.database = database;
+        end
+        function setRawDataPath(obj, rawdatapath)
+            obj.rawdatapath = rawdatapath;
         end
         function setSelectedGroup(obj, selectedGroup)
             obj.selectedGroup = selectedGroup;

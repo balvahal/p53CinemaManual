@@ -12,8 +12,6 @@ classdef p53CinemaManual_object_imageViewer < handle
         pixelxy;
         master;
         isMyButtonDown = false;
-        imageSize;
-        numberOfImages;
         imageList;
         imageBuffer;
         imageOrigin;
@@ -23,10 +21,8 @@ classdef p53CinemaManual_object_imageViewer < handle
         
     end
     methods
-        function obj = p53CinemaManual_object_imageViewer(master,myimageSize,mynumberOfImages,myimageList)
+        function obj = p53CinemaManual_object_imageViewer(master)
             obj.master = master;
-            obj.imageSize = myimageSize;
-            obj.numberOfImages = mynumberOfImages;
             %% Preload images
             %
             %% Launch the gui

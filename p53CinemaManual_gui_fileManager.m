@@ -126,6 +126,7 @@ set(f,'Visible','on');
         set(heditRawDataPath, 'String', fullfile(sourcePath, 'RAW_DATA'));
         set(heditSegmentDataPath, 'String', fullfile(sourcePath, 'SEGMENT_DATA'));
         master.obj_fileManager.setDatabase(database);
+        master.obj_fileManager.setRawDataPath(get(heditRawDataPath, 'String'));
         
         availableGroups = unique(database.group_label);
         set(hpopupGroupLabel, 'String', availableGroups);
