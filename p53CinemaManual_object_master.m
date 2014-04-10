@@ -11,10 +11,6 @@ classdef p53CinemaManual_object_master < handle
         data;
         obj_imageViewer;
         obj_fileManager;
-        image_width;
-        image_height;
-        image_widthChar;
-        image_heightChar;
     end
     properties (SetAccess = private)
         ppChar; % the guis are all in character units, but the images are defined by pixels.
@@ -37,23 +33,18 @@ classdef p53CinemaManual_object_master < handle
             
             %% Load settings
             %
-            obj.image_width = 1008;
-            obj.image_height = 768;
-            obj.image_widthChar = obj.image_width/obj.ppChar(1);
-            obj.image_heightChar = obj.image_height/obj.ppChar(2);
+
             %% Start all guis
             %
             
             obj.obj_fileManager = p53CinemaManual_object_fileManager(obj);
-<<<<<<< HEAD
-=======
         end
         function initializeImageViewer(obj)
             if(~isempty(obj.obj_imageViewer))
                 obj.obj_imageViewer.delete;
             end
             obj.obj_imageViewer = p53CinemaManual_object_imageViewer(obj);
->>>>>>> d61069ddbd853d0e04cb9c815cee66cb505f18d7
+            obj.obj_imageViewer.launchImageViewer;
         end
         function delete(obj)
             delete(obj.obj_fileManager);

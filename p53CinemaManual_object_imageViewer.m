@@ -16,6 +16,11 @@ classdef p53CinemaManual_object_imageViewer < handle
         imageBuffer;
         imageOrigin;
         displaySize;
+        image_width;
+        image_height;
+        image_widthChar;
+        image_heightChar;
+        currentFrame = 1;
     end
     events
         
@@ -23,11 +28,15 @@ classdef p53CinemaManual_object_imageViewer < handle
     methods
         function obj = p53CinemaManual_object_imageViewer(master)
             obj.master = master;
+            %% get image info from first image
+               %
+            myinfo = imfinfo(fullfile(master.obj_fileManager.rawdatapath,master.obj_fileManager.currentImageFilenames{1}));
+            obj.image_width = myinfo.Width;
+            obj.image_height = myinfo.Height;
+            obj.image_widthChar = obj.image_width/master.ppChar(1);
+            obj.image_heightChar = obj.image_height/master.ppChar(2);
             %% Preload images
             %
-            %% Launch the gui
-            %
-            obj.gui_imageViewer = p53CinemaManual_gui_imageViewer(master);
         end
         
         function out = getPixelxy(obj)
@@ -36,8 +45,8 @@ classdef p53CinemaManual_object_imageViewer < handle
             axesOrigin = get(handles.axesSourceImage,'Position');
             myRelativePoint = myCurrentPoint - axesOrigin(1:2);
             if any(myRelativePoint<0) || ...
-                    myRelativePoint(1) > obj.master.image_widthChar || ...
-                    myRelativePoint(2) > obj.master.image_heightChar
+                    myRelativePoint(1) > obj.image_widthChar || ...
+                    myRelativePoint(2) > obj.image_heightChar
                 obj.pixelxy = [];
             else
                 x = round(myRelativePoint(1)*obj.master.ppChar(1));
@@ -46,7 +55,11 @@ classdef p53CinemaManual_object_imageViewer < handle
             end
             out = obj.pixelxy;
         end
-        
+        function obj = launchImageViewer(obj)
+            %% Launch the gui
+            %
+            obj.gui_imageViewer = p53CinemaManual_gui_imageViewer(obj.master);
+        end
         function delete(obj)
             delete(obj.gui_imageViewer);
         end
