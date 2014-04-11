@@ -65,15 +65,10 @@ hheight = 20/master.ppChar(2);
 hx = (fwidth-hwidth)/2;
 hy = 70/master.ppChar(2);
 
-sliderMin = 1;
-sliderMax = length(master.obj_fileManager.currentImageTimepoints);
-if sliderMax<=sliderMin
-    sliderMax = 2; % this prevents error when sliderMax is less than or eq...
-end
-
+sliderStep = 1/(master.obj_fileManager.numImages - 1);
 hsliderExploreStack = uicontrol('Style','slider','Units','characters',...
 'Min',0,'Max',1,'BackgroundColor',[255 215 0]/255,...
-'Value',1,'SliderStep',[1 1],'Position',[hx hy hwidth hheight],...
+'Value',0,'SliderStep',[sliderStep sliderStep],'Position',[hx hy hwidth hheight],...
 'Callback',{@sliderExploreStack_Callback});
 
 
