@@ -85,11 +85,23 @@ classdef p53CinemaManual_object_imageViewer < handle
         function obj = findImageHistogram(obj)
             obj.contrastHistogram = hist(reshape(obj.currentImage,1,[]),-0.5:1:255.5);
         end
+        %% newColormapFromContrastHistogram
+        % Assumes image is uint8 0-255.
+        function obj = newColormapFromContrastHistogram(obj)
+            handles = guidata(obj.gui_contrast);
+            sstep = get(handles.sliderMin,'SliderStep');
+            mymin = ceil(get(handles.sliderMin,'Value')/sstep(1));
+            mymax = ceil(get(handles.sliderMax,'Value')/sstep(1));
+            cmap = colormap(gray(mymax-mymin+1));
+            cmap = vertcat(zeros(mymin,3),cmap,ones(255-mymax));
+            handles2 = guidata(obj.gui_imageViewer);
+            colormap(handles2.axesImageViewer,cmap);
+        end
         %% findImageHistogram
         % Assumes image is uint8 0-255.
         function obj = updateContrastHistogram(obj)
             obj.findImageHistogram;
-            handles = guidata(obj.gui_imageViewer);
+            handles = guidata(obj.gui_contrast);
             plot(handles.axesContrast,obj.contrastHistogram);
         end
         %% launchImageViewer

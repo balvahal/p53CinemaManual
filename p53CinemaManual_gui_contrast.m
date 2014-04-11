@@ -32,7 +32,7 @@ hy = 70/master.ppChar(2);
 sliderStep = 1/(256 - 1);
 hsliderMax = uicontrol('Style','slider','Units','characters',...
     'Min',0,'Max',1,'BackgroundColor',[255 215 0]/255,...
-    'Value',0,'SliderStep',[sliderStep sliderStep],'Position',[hx hy hwidth hheight],...
+    'Value',1,'SliderStep',[sliderStep sliderStep],'Position',[hx hy hwidth hheight],...
     'Callback',{@sliderMax_Callback});
 
 hx = (fwidth-hwidth)/2;
@@ -65,11 +65,29 @@ set(f,'Visible','on');
 %%
 %
     function sliderMax_Callback(~,~)
-        p53CinemaManual_function_imageViewer_updateSourceAxes(master);
+        sstep = get(hsliderMax,'SliderStep');
+        mymax = get(hsliderMax,'Value');
+        mymin = get(hsliderMin,'Value');
+        if mymax == 0
+            set(hsliderMax,'Value',sstep(1));
+            set(hsliderMin,'Value',0);
+        elseif mymax <= mymin
+            set(hsliderMin,'Value',mymax-sstep(1));
+        end 
+        master.obj_imageViewer.newColormapFromContrastHistogram;
     end
 %%
 %
     function sliderMin_Callback(~,~)
-        p53CinemaManual_function_imageViewer_updateSourceAxes(master);
+        sstep = get(hsliderMax,'SliderStep');
+        mymax = get(hsliderMax,'Value');
+        mymin = get(hsliderMin,'Value');
+        if mymin == 1
+            set(hsliderMax,'Value',1);
+            set(hsliderMin,'Value',1-sstep(1));
+        elseif mymin >= mymax
+            set(hsliderMax,'Value',mymin+sstep(1));
+        end 
+        master.obj_imageViewer.newColormapFromContrastHistogram;
     end
 end
