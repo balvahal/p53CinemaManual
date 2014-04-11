@@ -93,7 +93,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             mymin = ceil(get(handles.sliderMin,'Value')/sstep(1));
             mymax = ceil(get(handles.sliderMax,'Value')/sstep(1));
             cmap = colormap(gray(mymax-mymin+1));
-            cmap = vertcat(zeros(mymin,3),cmap,ones(255-mymax));
+            cmap = vertcat(zeros(mymin,3),cmap,ones(255-mymax,3));
             handles2 = guidata(obj.gui_imageViewer);
             colormap(handles2.axesImageViewer,cmap);
         end
@@ -143,6 +143,7 @@ classdef p53CinemaManual_object_imageViewer < handle
         
         %% Delete function
         function delete(obj)
+            delete(obj.gui_contrast);
             delete(obj.gui_imageViewer);
         end
     end

@@ -21,7 +21,7 @@ haxesContrast = axes('Units','characters','DrawMode','fast',...
     'Position',[hx hy hwidth hheight]);
 
 master.obj_imageViewer.findImageHistogram;
-plot(haxesContrast,master.obj_imageViewer.constrastHistogram);
+plot(haxesContrast,master.obj_imageViewer.contrastHistogram);
 %% Create controls
 %  two slider bars
 hwidth = 256/master.ppChar(1);
@@ -34,6 +34,8 @@ hsliderMax = uicontrol('Style','slider','Units','characters',...
     'Min',0,'Max',1,'BackgroundColor',[255 215 0]/255,...
     'Value',1,'SliderStep',[sliderStep sliderStep],'Position',[hx hy hwidth hheight],...
     'Callback',{@sliderMax_Callback});
+hListener = handle.listener(hsliderMax,'ActionEvent',@sliderMax_Callback);
+setappdata(hsliderMax,'sliderListener',hListener);
 
 hx = (fwidth-hwidth)/2;
 hy = 30/master.ppChar(2);
@@ -43,6 +45,8 @@ hsliderMin= uicontrol('Style','slider','Units','characters',...
     'Min',0,'Max',1,'BackgroundColor',[40 215 100]/255,...
     'Value',0,'SliderStep',[sliderStep sliderStep],'Position',[hx hy hwidth hheight],...
     'Callback',{@sliderMin_Callback});
+hListener = handle.listener(hsliderMin,'ActionEvent',@sliderMin_Callback);
+setappdata(hsliderMin,'sliderListener',hListener);
 
 %%
 % store the uicontrol handles in the figure handles via guidata()
