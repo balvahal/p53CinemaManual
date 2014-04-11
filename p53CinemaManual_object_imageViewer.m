@@ -23,6 +23,7 @@ classdef p53CinemaManual_object_imageViewer < handle
         image_heightChar;
         currentImage;
         currentFrame = 1;
+        contrastHistogram;
     end
     events
         
@@ -78,6 +79,18 @@ classdef p53CinemaManual_object_imageViewer < handle
         function obj = resetContrast(obj)
             handles = guidata(obj.gui_imageViewer);
             colormap(handles.axesImageViewer,gray(255));
+        end
+        %% findImageHistogram
+        % Assumes image is uint8 0-255.
+        function obj = findImageHistogram(obj)
+            obj.contrastHistogram = hist(reshape(obj.currentImage,1,[]),-0.5:1:255.5);
+        end
+        %% findImageHistogram
+        % Assumes image is uint8 0-255.
+        function obj = updateContrastHistogram(obj)
+            obj.findImageHistogram;
+            handles = guidata(obj.gui_imageViewer);
+            plot(handles.axesContrast,obj.contrastHistogram);
         end
         %% launchImageViewer
         % A indiosyncrasy of using an object wrapper for guis is that the

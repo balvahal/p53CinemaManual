@@ -90,8 +90,8 @@ hpushbuttonLastImage = uicontrol('Style','pushbutton','Units','characters',...
 %%
 % store the uicontrol handles in the figure handles via guidata()
 handles.axesImageViewer = haxesImageViewer;
-% handles.axesHighlight = haxesHighlight; handles.axesSelectedCell =
-% haxesSelectedCell; handles.axesAnnotations = haxesAnnotations;
+handles.pushbuttonFirstImage = hpushbuttonFirstImage;
+handles.pushbuttonLastImage = hpushbuttonLastImage;
 handles.sliderExploreStack = hsliderExploreStack;
 handles.cmapHighlight = cmapHighlight;
 handles.patch = highlightPatch;
@@ -148,7 +148,7 @@ set(f,'Visible','on');
         master.obj_imageViewer.isMyButtonDown = false;
     end
 
-    function fWindowScrollWheelFcn(source,event)
+    function fWindowScrollWheelFcn(~,event)
         newFrame = master.obj_imageViewer.currentFrame + event.VerticalScrollCount;
         master.obj_imageViewer.setFrame(newFrame);
         setImage;

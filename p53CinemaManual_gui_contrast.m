@@ -11,87 +11,44 @@ f = figure('Visible','off','Units','characters','MenuBar','none',...
     'Resize','off',...
     'Renderer','OpenGL','Position',[fx fy fwidth fheight],...
     'CloseRequestFcn',{@fCloseRequestFcn});
-%% Create the axes that will show the image
-% source image
+%% Create the axes that will show the contrast histogram
+% 
 hwidth = 256/master.ppChar(1);
 hheight = 256/master.ppChar(2);
 hx = (fwidth-hwidth)/2;
 hy = (fheight-hheight-128/master.ppChar(2))/2+128/master.ppChar(2);
 haxesContrast = axes('Units','characters','DrawMode','fast',...
     'Position',[hx hy hwidth hheight]);
-%plot(haxesImageViewer,rand(1,10));
-%% Create an axes
-% highlighted cell with hover haxesHighlight =
-% axes('Units','characters','DrawMode','fast','color','none',...
-%     'Position',[hx hy hwidth hheight],...
-%     'XLim',[1,master.image_width],'YLim',[1,master.image_height]);
-cmapHighlight = colormap(haxesImageViewer,jet(16)); %63 matches the number of elements in ang
-%% object order
-% # image
-% # annotation layer
-% # highlight
-% # selected cell
-colormap(haxesImageViewer,gray(255));
-sourceImage = image('Parent',haxesImageViewer,'CData',master.obj_imageViewer.currentImage);
-scatterPatch = patch('XData',rand(1,16)*master.obj_imageViewer.image_width,'YData',rand(1,16)*master.obj_imageViewer.image_height,...
-    'EdgeColor','none','FaceColor','none','MarkerSize',15,...
-    'Marker','o','MarkerEdgeColor','none','MarkerFaceColor','flat',...
-    'FaceVertexCData',cmapHighlight,'Parent',haxesImageViewer);
-highlightPatch = patch('XData',ones(1,16),'YData',ones(1,16),...
-    'LineWidth',4,'EdgeColor','flat','FaceColor','none',...
-    'FaceVertexCData',cmapHighlight,'Parent',haxesImageViewer);
 
-
-
-%% Create an axes
-% selected cell with click haxesSelectedCell =
-% axes('Units','characters','DrawMode','fast','color','none',...
-%     'Position',[hx hy hwidth hheight],...
-%     'XLim',[1,master.image_width],'YLim',[1,master.image_height]);
-
-%% Create an axes
-% previously annotated cells haxesAnnotations =
-% axes('Units','characters','DrawMode','fast','color','none',...
-%     'Position',[hx hy hwidth hheight],...
-%     'XLim',[1,master.image_width],'YLim',[1,master.image_height]);
+master.obj_imageViewer.findImageHistogram;
+plot(haxesContrast,master.obj_imageViewer.constrastHistogram);
 %% Create controls
-% Slider bar and two buttons
-hwidth = master.obj_imageViewer.image_width/master.ppChar(1);
+%  two slider bars
+hwidth = 256/master.ppChar(1);
 hheight = 20/master.ppChar(2);
 hx = (fwidth-hwidth)/2;
 hy = 70/master.ppChar(2);
 
-sliderStep = 1/(master.obj_fileManager.numImages - 1);
-hsliderExploreStack = uicontrol('Style','slider','Units','characters',...
+sliderStep = 1/(256 - 1);
+hsliderMax = uicontrol('Style','slider','Units','characters',...
     'Min',0,'Max',1,'BackgroundColor',[255 215 0]/255,...
     'Value',0,'SliderStep',[sliderStep sliderStep],'Position',[hx hy hwidth hheight],...
-    'Callback',{@sliderExploreStack_Callback});
+    'Callback',{@sliderMax_Callback});
 
+hx = (fwidth-hwidth)/2;
+hy = 30/master.ppChar(2);
 
-hwidth = 100/master.ppChar(1);
-hheight = 30/master.ppChar(2);
-hx = 20/master.ppChar(1);
-hy = 20/master.ppChar(2);
-hpushbuttonFirstImage = uicontrol('Style','pushbutton','Units','characters',...
-    'FontSize',14,'FontName','Verdana','BackgroundColor',[255 215 0]/255,...
-    'String','First Image','Position',[hx hy hwidth hheight],...
-    'Callback',{@pushbuttonFirstImage_Callback});
+sliderStep = 1/(256 - 1);
+hsliderMin= uicontrol('Style','slider','Units','characters',...
+    'Min',0,'Max',1,'BackgroundColor',[40 215 100]/255,...
+    'Value',0,'SliderStep',[sliderStep sliderStep],'Position',[hx hy hwidth hheight],...
+    'Callback',{@sliderMin_Callback});
 
-hx = fwidth - hwidth - 20/master.ppChar(1);
-hpushbuttonLastImage = uicontrol('Style','pushbutton','Units','characters',...
-    'FontSize',14,'FontName','Verdana','BackgroundColor',[60 179 113]/255,...
-    'String','Last Image','Position',[hx hy hwidth hheight],...
-    'Callback',{@pushbuttonLastImage_Callback});
 %%
 % store the uicontrol handles in the figure handles via guidata()
 handles.axesContrast = haxesContrast;
-% handles.axesHighlight = haxesHighlight; handles.axesSelectedCell =
-% haxesSelectedCell; handles.axesAnnotations = haxesAnnotations;
-handles.sliderExploreStack = hsliderExploreStack;
-handles.cmapHighlight = cmapHighlight;
-handles.patch = highlightPatch;
-handles.scatterPatch = scatterPatch;
-handles.sourceImage = sourceImage;
+handles.sliderMax = hsliderMax;
+handles.sliderMin = hsliderMin;
 guidata(f,handles);
 %%
 % make the gui visible
@@ -107,7 +64,12 @@ set(f,'Visible','on');
     end
 %%
 %
-    function sliderExploreStack_Callback(~,~)
+    function sliderMax_Callback(~,~)
+        p53CinemaManual_function_imageViewer_updateSourceAxes(master);
+    end
+%%
+%
+    function sliderMin_Callback(~,~)
         p53CinemaManual_function_imageViewer_updateSourceAxes(master);
     end
 end
