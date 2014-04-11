@@ -27,10 +27,12 @@ classdef p53CinemaManual_object_imageViewer < handle
         
     end
     methods
+        %% object constructor
+        % 
         function obj = p53CinemaManual_object_imageViewer(master)
             obj.master = master;
             %% get image info from first image
-               %
+            %
             myinfo = imfinfo(fullfile(master.obj_fileManager.rawdatapath,master.obj_fileManager.currentImageFilenames{1}));
             obj.image_width = myinfo.Width;
             obj.image_height = myinfo.Height;
@@ -49,7 +51,11 @@ classdef p53CinemaManual_object_imageViewer < handle
             %% Preprocess images
             %
         end
-        
+        %% getPixelxy
+        % Find the location of mouse relative to the image in the viewer.
+        % This function takes into account that the axes YDir is reversed
+        % and that the point on the disply may not be 1:1 with the pixels
+        % of the image.
         function out = getPixelxy(obj)
             myCurrentPoint = get(obj.gui_imageViewer,'CurrentPoint');
             handles = guidata(obj.gui_imageViewer);
@@ -61,7 +67,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                 obj.pixelxy = [];
             else
                 x = round(myRelativePoint(1)*obj.master.ppChar(1));
-                y = round(myRelativePoint(2)*obj.master.ppChar(2));
+                y = round((axesOrign(4)-myRelativePoint(2))*obj.master.ppChar(2));
                 obj.pixelxy = [x,y];
             end
             out = obj.pixelxy;
@@ -91,7 +97,7 @@ classdef p53CinemaManual_object_imageViewer < handle
         function previousFrame(obj)
             obj.setFrame(obj.currentFrame - 1);
         end
-                
+        
         function delete(obj)
             delete(obj.gui_imageViewer);
         end
