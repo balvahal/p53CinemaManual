@@ -35,13 +35,8 @@ cmapHighlight = colormap(haxesImageViewer,jet(16)); %63 matches the number of el
 % # annotation layer
 % # highlight
 % # selected cell
-inputImage = imread(fullfile(master.obj_fileManager.rawdatapath,master.obj_fileManager.currentImageFilenames{master.obj_imageViewer.currentFrame}));
-inputImage = double(inputImage);
-inputImage = (inputImage-min(min(inputImage)));
-inputImage = inputImage/max(max(inputImage))*255;
-inputImage = uint8(inputImage);
 colormap(haxesImageViewer,gray(255));
-sourceImage = image('Parent',haxesImageViewer,'CData',inputImage);
+sourceImage = image('Parent',haxesImageViewer,'CData',master.obj_imageViewer.currentImage);
 scatterPatch = patch('XData',rand(1,16)*master.obj_imageViewer.image_width,'YData',rand(1,16)*master.obj_imageViewer.image_height,...
 'EdgeColor','none','FaceColor','none','MarkerSize',15,...
 'Marker','o','MarkerEdgeColor','none','MarkerFaceColor','flat',...
@@ -77,7 +72,7 @@ if sliderMax<=sliderMin
 end
 
 hsliderExploreStack = uicontrol('Style','slider','Units','characters',...
-'Min',sliderMin,'Max',sliderMax,'BackgroundColor',[255 215 0]/255,...
+'Min',0,'Max',1,'BackgroundColor',[255 215 0]/255,...
 'Value',1,'SliderStep',[1 1],'Position',[hx hy hwidth hheight],...
 'Callback',{@sliderExploreStack_Callback});
 
@@ -125,23 +120,11 @@ function fKeyPressFcn(~,keyInfo)
     switch keyInfo.Key
         case 'period'
             master.obj_imageViewer.nextFrame;
-%             master.obj_imageViewer.currentFrame = master.obj_imageViewer.currentFrame + 1;
-%             inputImage = imread(fullfile(master.obj_fileManager.rawdatapath,master.obj_fileManager.currentImageFilenames{master.obj_imageViewer.currentFrame}));
-%             inputImage = double(inputImage);
-%             inputImage = (inputImage-min(min(inputImage)));
-%             inputImage = inputImage/max(max(inputImage))*255;
-%             inputImage = uint8(inputImage);
             %colormap(haxesImageViewer,gray(255));
             set(sourceImage,'CData',master.obj_imageViewer.currentImage);
             disp('next image')
         case 'comma'
             master.obj_imageViewer.previousFrame;
-%             master.obj_imageViewer.currentFrame = master.obj_imageViewer.currentFrame + 1;
-%             inputImage = imread(fullfile(master.obj_fileManager.rawdatapath,master.obj_fileManager.currentImageFilenames{master.obj_imageViewer.currentFrame}));
-%             inputImage = double(inputImage);
-%             inputImage = (inputImage-min(min(inputImage)));
-%             inputImage = inputImage/max(max(inputImage))*255;
-%             inputImage = uint8(inputImage);
             %colormap(haxesImageViewer,gray(255));
             set(sourceImage,'CData',master.obj_imageViewer.currentImage);
             disp('previous image')

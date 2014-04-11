@@ -43,7 +43,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             if master.obj_fileManager.preallocateMode
                 obj.imageBuffer = uint8(zeros(obj.image_height, obj.image_width, master.obj_fileManager.numImages));
                 for i=1:master.obj_fileManager.numImages
-                    obj.imageBuffer(:,:,i) = im2uint8(imread(fullfile(master.obj_fileManager.rawdatapath,master.obj_fileManager.currentImageFilenames{i})));
+                    obj.imageBuffer(:,:,i) = obj.readImage(i);
                 end
             end
             obj.setFrame(1);
@@ -78,14 +78,14 @@ classdef p53CinemaManual_object_imageViewer < handle
             obj.gui_imageViewer = p53CinemaManual_gui_imageViewer(obj.master);
         end
         
-        %% Switch to frame
+        %% Frame switching functions
         function setFrame(obj, frame)
             if(frame > 0 && frame <= obj.master.obj_fileManager.numImages)
                 obj.currentFrame = frame;
                 if(obj.master.obj_fileManager.preallocateMode)
                     obj.currentImage = obj.imageBuffer(:,:,frame);
                 else
-                    obj.currentImage = im2uint8(imread(fullfile(obj.master.obj_fileManager.rawdatapath,obj.master.obj_fileManager.currentImageFilenames{frame})));
+                    obj.currentImage = obj.readImage(frame);
                 end
             end
         end
@@ -98,6 +98,16 @@ classdef p53CinemaManual_object_imageViewer < handle
             obj.setFrame(obj.currentFrame - 1);
         end
         
+<<<<<<< HEAD
+=======
+        %% Image manipulation
+        function IM = readImage(obj, index)
+            IM = imread(fullfile(obj.master.obj_fileManager.rawdatapath,obj.master.obj_fileManager.currentImageFilenames{index}));
+            IM = uint8(bitshift(IM, -4));
+        end
+        
+        %% Delete function
+>>>>>>> 532c2392f78d334416d6a6fc687c9ffeda044690
         function delete(obj)
             delete(obj.gui_imageViewer);
         end
