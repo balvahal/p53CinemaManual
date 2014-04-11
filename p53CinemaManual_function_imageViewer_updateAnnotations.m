@@ -13,4 +13,4 @@ handles = guidata(master.obj_imageViewer.gui_imageViewer);
 %%
 %
 
-set(handles.scatterPatch,'XData',rand(1,16)*master.image_width,'YData',rand(1,16)*master.image_height);
+set(handles.scatterPatch,'XData',rand(1,16)*master.obj_imageViewer.image_width,'YData',rand(1,16)*master.obj_imageViewer.image_height);
