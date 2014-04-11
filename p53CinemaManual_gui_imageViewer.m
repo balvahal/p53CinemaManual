@@ -124,17 +124,26 @@ end
 function fKeyPressFcn(~,keyInfo)
     switch keyInfo.Key
         case 'period'
-            master.obj_imageViewer.currentFrame = master.obj_imageViewer.currentFrame + 1;
-            inputImage = imread(fullfile(master.obj_fileManager.rawdatapath,master.obj_fileManager.currentImageFilenames{master.obj_imageViewer.currentFrame}));
-            inputImage = double(inputImage);
-            inputImage = (inputImage-min(min(inputImage)));
-            inputImage = inputImage/max(max(inputImage))*255;
-            inputImage = uint8(inputImage);
-            colormap(haxesImageViewer,gray(255));
-            set(sourceImage,'CData',inputImage);
-            drawnow;
+            master.obj_imageViewer.nextFrame;
+%             master.obj_imageViewer.currentFrame = master.obj_imageViewer.currentFrame + 1;
+%             inputImage = imread(fullfile(master.obj_fileManager.rawdatapath,master.obj_fileManager.currentImageFilenames{master.obj_imageViewer.currentFrame}));
+%             inputImage = double(inputImage);
+%             inputImage = (inputImage-min(min(inputImage)));
+%             inputImage = inputImage/max(max(inputImage))*255;
+%             inputImage = uint8(inputImage);
+            %colormap(haxesImageViewer,gray(255));
+            set(sourceImage,'CData',master.obj_imageViewer.currentImage);
             disp('next image')
         case 'comma'
+            master.obj_imageViewer.previousFrame;
+%             master.obj_imageViewer.currentFrame = master.obj_imageViewer.currentFrame + 1;
+%             inputImage = imread(fullfile(master.obj_fileManager.rawdatapath,master.obj_fileManager.currentImageFilenames{master.obj_imageViewer.currentFrame}));
+%             inputImage = double(inputImage);
+%             inputImage = (inputImage-min(min(inputImage)));
+%             inputImage = inputImage/max(max(inputImage))*255;
+%             inputImage = uint8(inputImage);
+            %colormap(haxesImageViewer,gray(255));
+            set(sourceImage,'CData',master.obj_imageViewer.currentImage);
             disp('previous image')
     end
 end
