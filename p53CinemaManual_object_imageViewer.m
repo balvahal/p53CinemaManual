@@ -37,6 +37,15 @@ classdef p53CinemaManual_object_imageViewer < handle
             obj.image_heightChar = obj.image_height/master.ppChar(2);
             %% Preload images
             %
+            if master.obj_fileManager.preallocateMode
+                obj.imageBuffer = uint8(zeros(obj.image_height, obj.image_width, master.obj_fileManager.numImages));
+                for i=1:master.obj_fileManager.numImages
+                    obj.imageBuffer(:,:,i) = im2uint8(imread(fullfile(master.obj_fileManager.rawdatapath,master.obj_fileManager.currentImageFilenames{i})));
+                end
+            end
+            
+            %% Preprocess images
+            %
         end
         
         function out = getPixelxy(obj)

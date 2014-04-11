@@ -14,6 +14,7 @@ classdef p53CinemaManual_object_fileManager < handle
         
         currentImageFilenames;
         currentImageTimepoints;
+        numImages;
         maxTimepoint;
         
         preallocateMode;
@@ -60,6 +61,7 @@ classdef p53CinemaManual_object_fileManager < handle
             [obj.currentImageTimepoints, orderIndex] = sort(obj.currentImageTimepoints);
             obj.currentImageFilenames = obj.currentImageFilenames(orderIndex);
             obj.maxTimepoint = max(obj.database.timepoint(strcmp(obj.database.group_label, obj.selectedGroup) & obj.database.position_number == obj.selectedPosition));
+            obj.numImages = length(obj.currentImageFilenames);
         end
         
         %% Delete function
