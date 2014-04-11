@@ -98,8 +98,6 @@ classdef p53CinemaManual_object_imageViewer < handle
             obj.setFrame(obj.currentFrame - 1);
         end
         
-<<<<<<< HEAD
-=======
         %% Image manipulation
         function IM = readImage(obj, index)
             IM = imread(fullfile(obj.master.obj_fileManager.rawdatapath,obj.master.obj_fileManager.currentImageFilenames{index}));
@@ -107,7 +105,6 @@ classdef p53CinemaManual_object_imageViewer < handle
         end
         
         %% Delete function
->>>>>>> 532c2392f78d334416d6a6fc687c9ffeda044690
         function delete(obj)
             delete(obj.gui_imageViewer);
         end
