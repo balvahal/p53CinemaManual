@@ -13,7 +13,8 @@ f = figure('Visible','off','Units','characters','MenuBar','none',...
 'CloseRequestFcn',{@fCloseRequestFcn},...
 'KeyPressFcn',{@fKeyPressFcn},...
 'WindowButtonDownFcn',{@fWindowButtonDownFcn},...
-'WindowButtonMotionFcn',{@fHover});
+'WindowButtonMotionFcn',{@fHover},...
+'WindowScrollWheelFcn',{@fWindowScrollWheelFcn});
 %% Create the axes that will show the image
 % source image
 hwidth = master.obj_imageViewer.image_width/master.ppChar(1);
@@ -105,61 +106,76 @@ set(f,'Visible','on');
 %
 %%
 %
-function fCloseRequestFcn(~,~)
-    %do nothing. This means only the master object can close this
-    %window.
-end
+    function fCloseRequestFcn(~,~)
+        %do nothing. This means only the master object can close this
+        %window.
+    end
 %%
 %
-function fKeyPressFcn(~,keyInfo)
-    switch keyInfo.Key
-        case 'period'
-            master.obj_imageViewer.nextFrame;
-            %colormap(haxesImageViewer,gray(255));
-            set(sourceImage,'CData',master.obj_imageViewer.currentImage);
-            disp('next image')
-        case 'comma'
-            master.obj_imageViewer.previousFrame;
-            %colormap(haxesImageViewer,gray(255));
-            set(sourceImage,'CData',master.obj_imageViewer.currentImage);
-            disp('previous image')
+    function fKeyPressFcn(~,keyInfo)
+        switch keyInfo.Key
+            case 'period'
+                master.obj_imageViewer.nextFrame;
+                setImage;
+            case 'comma'
+                master.obj_imageViewer.previousFrame;
+                setImage;
+        end
     end
-end
+    
+    % A function used multiple times to modify the values of image and
+    % slider once these have been set in the imageViewer object through
+    % functions such as nextFrame, previousFrame and setFrame;
+    function setImage
+        set(sourceImage,'CData',master.obj_imageViewer.currentImage);
+        sliderStep = get(hsliderExploreStack,'SliderStep');
+        set(hsliderExploreStack,'Value',sliderStep(1)*(master.obj_imageViewer.currentFrame-1));
+    end
 %%
 %
-function fWindowButtonDownFcn(~,~)
-    %%
-    % This if statement prevents multiple button firings from a single
-    % click event
-    if master.obj_imageViewer.isMyButtonDown
-        return
+    function fWindowButtonDownFcn(~,~)
+        %%
+        % This if statement prevents multiple button firings from a single
+        % click event
+        if master.obj_imageViewer.isMyButtonDown
+            return
+        end
+        %%
+        %
+        master.obj_imageViewer.isMyButtonDown = true;
+        p53CinemaManual_function_imageViewer_updateSelectedCell(master);
+        p53CinemaManual_function_imageViewer_updateAnnotations(master);
+        master.obj_imageViewer.isMyButtonDown = false;
     end
-    %%
-    %
-    master.obj_imageViewer.isMyButtonDown = true;
-    p53CinemaManual_function_imageViewer_updateSelectedCell(master);
-    p53CinemaManual_function_imageViewer_updateAnnotations(master);
-    master.obj_imageViewer.isMyButtonDown = false;
-end
+
+    function fWindowScrollWheelFcn(source,event)
+        newFrame = master.obj_imageViewer.currentFrame + event.VerticalScrollCount;
+        master.obj_imageViewer.setFrame(newFrame);
+        setImage;
+    end
 %%
 % Translate the mouse position into the pixel location in the source image
-function fHover(~,~)
-    master.obj_imageViewer.getPixelxy;
-    p53CinemaManual_function_imageViewer_updateHighlight(master);
-end
+    function fHover(~,~)
+        master.obj_imageViewer.getPixelxy;
+        p53CinemaManual_function_imageViewer_updateHighlight(master);
+    end
 %%
 %
-function sliderExploreStack_Callback(~,~)
-    p53CinemaManual_function_imageViewer_updateSourceAxes(master);
-end
+    function sliderExploreStack_Callback(~,~)
+        frame = get(hsliderExploreStack,'Value');
+        sliderStep = get(hsliderExploreStack,'SliderStep');
+        targetFrame = round((frame / sliderStep(1)) + 1);
+        master.obj_imageViewer.setFrame(targetFrame);
+        setImage;
+    end
 %%
 %
-function pushbuttonFirstImage_Callback(~,~)
-    p53CinemaManual_function_imageViewer_updateSourceAxes(master);
-end
+    function pushbuttonFirstImage_Callback(~,~)
+        p53CinemaManual_function_imageViewer_updateSourceAxes(master);
+    end
 %%
 %
-function pushbuttonLastImage_Callback(~,~)
-    p53CinemaManual_function_imageViewer_updateSourceAxes(master);
-end
+    function pushbuttonLastImage_Callback(~,~)
+        p53CinemaManual_function_imageViewer_updateSourceAxes(master);
+    end
 end

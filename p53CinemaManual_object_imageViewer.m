@@ -80,13 +80,12 @@ classdef p53CinemaManual_object_imageViewer < handle
         
         %% Frame switching functions
         function setFrame(obj, frame)
-            if(frame > 0 && frame <= obj.master.obj_fileManager.numImages)
-                obj.currentFrame = frame;
-                if(obj.master.obj_fileManager.preallocateMode)
-                    obj.currentImage = obj.imageBuffer(:,:,frame);
-                else
-                    obj.currentImage = obj.readImage(frame);
-                end
+            frame = min(max(frame,1), obj.master.obj_fileManager.numImages);
+            obj.currentFrame = frame;
+            if(obj.master.obj_fileManager.preallocateMode)
+                obj.currentImage = obj.imageBuffer(:,:,frame);
+            else
+                obj.currentImage = obj.readImage(frame);
             end
         end
         
