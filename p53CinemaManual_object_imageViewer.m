@@ -20,6 +20,7 @@ classdef p53CinemaManual_object_imageViewer < handle
         image_height;
         image_widthChar;
         image_heightChar;
+        currentImage;
         currentFrame = 1;
     end
     events
@@ -43,6 +44,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                     obj.imageBuffer(:,:,i) = im2uint8(imread(fullfile(master.obj_fileManager.rawdatapath,master.obj_fileManager.currentImageFilenames{i})));
                 end
             end
+            obj.setFrame(1);
             
             %% Preprocess images
             %
@@ -69,6 +71,27 @@ classdef p53CinemaManual_object_imageViewer < handle
             %
             obj.gui_imageViewer = p53CinemaManual_gui_imageViewer(obj.master);
         end
+        
+        %% Switch to frame
+        function setFrame(obj, frame)
+            if(frame > 0 && frame <= obj.master.obj_fileManager.numImages)
+                obj.currentFrame = frame;
+                if(obj.master.obj_fileManager.preallocateMode)
+                    obj.currentImage = obj.imageBuffer(:,:,frame);
+                else
+                    obj.currentImage = im2uint8(imread(fullfile(obj.master.obj_fileManager.rawdatapath,obj.master.obj_fileManager.currentImageFilenames{frame})));
+                end
+            end
+        end
+        
+        function nextFrame(obj)
+            obj.setFrame(obj.currentFrame + 1);
+        end
+        
+        function previousFrame(obj)
+            obj.setFrame(obj.currentFrame - 1);
+        end
+                
         function delete(obj)
             delete(obj.gui_imageViewer);
         end
