@@ -67,7 +67,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                 obj.pixelxy = [];
             else
                 x = round(myRelativePoint(1)*obj.master.ppChar(1));
-                y = round((axesOrign(4)-myRelativePoint(2))*obj.master.ppChar(2));
+                y = round((axesOrigin(4)-myRelativePoint(2))*obj.master.ppChar(2));
                 obj.pixelxy = [x,y];
             end
             out = obj.pixelxy;
