@@ -95,7 +95,7 @@ classdef p53CinemaManual_object_imageViewer < handle
         %% Image manipulation
         function IM = readImage(obj, index)
             IM = imread(fullfile(obj.master.obj_fileManager.rawdatapath,obj.master.obj_fileManager.currentImageFilenames{index}));
-            IM = uint8(imnormalize(IM) * 255);
+            IM = uint8(bitshift(IM, -4));
         end
         
         %% Delete function
