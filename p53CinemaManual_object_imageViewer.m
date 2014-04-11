@@ -9,6 +9,7 @@
 classdef p53CinemaManual_object_imageViewer < handle
     properties
         gui_imageViewer;
+        gui_contrast;
         pixelxy;
         master;
         isMyButtonDown = false;
@@ -59,7 +60,7 @@ classdef p53CinemaManual_object_imageViewer < handle
         function out = getPixelxy(obj)
             myCurrentPoint = get(obj.gui_imageViewer,'CurrentPoint');
             handles = guidata(obj.gui_imageViewer);
-            axesOrigin = get(handles.axesSourceImage,'Position');
+            axesOrigin = get(handles.axesImageViewer,'Position');
             myRelativePoint = myCurrentPoint - axesOrigin(1:2);
             if any(myRelativePoint<0) || ...
                     myRelativePoint(1) > obj.image_widthChar || ...
@@ -72,10 +73,22 @@ classdef p53CinemaManual_object_imageViewer < handle
             end
             out = obj.pixelxy;
         end
+        %% resetContrast
+        % Set the contrast to reflect the full uint8 range, i.e. 0-255.
+        function obj = resetContrast(obj)
+            handles = guidata(obj.gui_imageViewer);
+            colormap(handles.axesImageViewer,gray(255));
+        end
+        %% launchImageViewer
+        % A indiosyncrasy of using an object wrapper for guis is that the
+        % object must be constructed before the guis can have access to its
+        % properties. Therefore this method should be called immediately
+        % following the construction of the object.
         function obj = launchImageViewer(obj)
             %% Launch the gui
             %
             obj.gui_imageViewer = p53CinemaManual_gui_imageViewer(obj.master);
+            obj.gui_contrast = p53CinemaManual_gui_contrast(obj.master);
         end
         
         %% Frame switching functions

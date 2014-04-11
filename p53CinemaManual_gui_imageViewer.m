@@ -89,7 +89,7 @@ hpushbuttonLastImage = uicontrol('Style','pushbutton','Units','characters',...
 'Callback',{@pushbuttonLastImage_Callback});
 %%
 % store the uicontrol handles in the figure handles via guidata()
-handles.axesSourceImage = haxesImageViewer;
+handles.axesImageViewer = haxesImageViewer;
 % handles.axesHighlight = haxesHighlight; handles.axesSelectedCell =
 % haxesSelectedCell; handles.axesAnnotations = haxesAnnotations;
 handles.sliderExploreStack = hsliderExploreStack;
