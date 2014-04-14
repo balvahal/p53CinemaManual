@@ -24,6 +24,8 @@ classdef p53CinemaManual_object_imageViewer < handle
         currentImage;
         currentFrame = 1;
         contrastHistogram;
+        
+        obj_cellTracker;
     end
     events
         
@@ -52,6 +54,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             
             %% Preprocess images
             %
+            obj.obj_cellTracker = p53CinemaManual_object_cellTracker(master);
         end
         %% getPixelxy
         % Find the location of mouse relative to the image in the viewer.
@@ -114,6 +117,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             %
             obj.gui_imageViewer = p53CinemaManual_gui_imageViewer(obj.master);
             obj.gui_contrast = p53CinemaManual_gui_contrast(obj.master);
+            
         end
         
         %% Frame switching functions
@@ -143,6 +147,7 @@ classdef p53CinemaManual_object_imageViewer < handle
         
         %% Delete function
         function delete(obj)
+            obj.obj_cellTracker.delete;
             delete(obj.gui_contrast);
             delete(obj.gui_imageViewer);
         end
