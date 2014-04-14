@@ -38,38 +38,22 @@ cmapHighlight = colormap(haxesImageViewer,jet(16)); %63 matches the number of el
 % # selected cell
 colormap(haxesImageViewer,gray(255));
 sourceImage = image('Parent',haxesImageViewer,'CData',master.obj_imageViewer.currentImage);
-% scatterPatch = patch('XData',rand(1,16)*master.obj_imageViewer.image_width,'YData',rand(1,16)*master.obj_imageViewer.image_height,...
-% 'EdgeColor','none','FaceColor','none','MarkerSize',15,...
-% 'Marker','o','MarkerEdgeColor','blue','MarkerFaceColor','blue','FaceAlpha',0.25,...
-% 'FaceVertexCData',cmapHighlight,'Parent',haxesImageViewer,'LineSmoothing', 'on');
 
-trackedCellsPatch = patch('XData',1,'YData',1,...
+trackedCellsPatch = patch('XData',[],'YData',[],...
 'EdgeColor','none','FaceColor','none','MarkerSize',10,...
 'Marker','o','MarkerEdgeColor',[0,0.75,1],'MarkerFaceColor',[0,0.25,1],...
 'Parent',haxesImageViewer,'LineSmoothing', 'on');
 
-scatterPatch = patch('XData',rand(1,16)*master.obj_imageViewer.image_width,'YData',rand(1,16)*master.obj_imageViewer.image_height,...
+cellsInRangePatch = patch('XData',[],'YData',[],...
 'EdgeColor','none','FaceColor','none','MarkerSize',5,...
 'Marker','o','MarkerEdgeColor',[1,0.75,0],'MarkerFaceColor',[1,0,0],...
 'Parent',haxesImageViewer,'LineSmoothing', 'on');
 
-% highlightPatch = patch('XData',ones(1,16),'YData',ones(1,16),...
-% 'LineWidth',4,'EdgeColor','flat','FaceColor','none',...
-% 'FaceVertexCData',cmapHighlight,'Parent',haxesImageViewer,'LineSmoothing', 'on');
+closestCellPatch = patch('XData',[],'YData',[],...
+'EdgeColor','none','FaceColor','none','MarkerSize',5,...
+'Marker','o','MarkerEdgeColor',[0,0.75,0.24],'MarkerFaceColor',[0,1,0],...
+'Parent',haxesImageViewer,'LineSmoothing', 'on');
 
-
-
-%% Create an axes
-% selected cell with click haxesSelectedCell =
-% axes('Units','characters','DrawMode','fast','color','none',...
-%     'Position',[hx hy hwidth hheight],...
-%     'XLim',[1,master.image_width],'YLim',[1,master.image_height]);
-
-%% Create an axes
-% previously annotated cells haxesAnnotations =
-% axes('Units','characters','DrawMode','fast','color','none',...
-%     'Position',[hx hy hwidth hheight],...
-%     'XLim',[1,master.image_width],'YLim',[1,master.image_height]);
 %% Create controls
 % Slider bar and two buttons
 hwidth = master.obj_imageViewer.image_width/master.ppChar(1);
@@ -107,7 +91,8 @@ handles.pushbuttonLastImage = hpushbuttonLastImage;
 handles.sliderExploreStack = hsliderExploreStack;
 handles.cmapHighlight = cmapHighlight;
 handles.trackedCellsPatch = trackedCellsPatch;
-handles.scatterPatch = scatterPatch;
+handles.cellsInRangePatch = cellsInRangePatch;
+handles.closestCellPatch = closestCellPatch;
 handles.sourceImage = sourceImage;
 guidata(f,handles);
 %%
@@ -150,7 +135,10 @@ set(f,'Visible','on');
         currentPoint = master.obj_imageViewer.pixelxy;
         if(~isempty(currentPoint))
             highlightedCentroids = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getCentroidsInRange(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
-            set(scatterPatch, 'XData', highlightedCentroids(:,2), 'YData', highlightedCentroids(:,1));
+            set(cellsInRangePatch, 'XData', highlightedCentroids(:,2), 'YData', highlightedCentroids(:,1));
+            
+            closestCentroid = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
+            set(closestCellPatch, 'XData', closestCentroid(:,2), 'YData', closestCentroid(:,1));
         end
     end
 %%
@@ -176,22 +164,16 @@ set(f,'Visible','on');
         lookupRadius = 30;
         localCentroid = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
         % If this is the first time the user clicks after starting a new track, define the selected cell
-        
-        if(~isempty(localCentroid))
-            lookupRadius = 5;
-            [~, cell_id1] = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getClosestCentroid(master.obj_imageViewer.currentTimepoint, localCentroid, lookupRadius);
-            [~, cell_id2] = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getClosestCentroid(master.obj_imageViewer.currentTimepoint, currentPoint, lookupRadius);
-            if(~isempty(cell_id2))
-                master.obj_imageViewer.setSelectedCell(cell_id2);
-            elseif(~isempty(cell_id1))
-                master.obj_imageViewer.setSelectedCell(cell_id2);
-            else
-                master.obj_imageViewer.setSelectedCell(master.obj_imageViewer.obj_cellTracker.centroidsTracks.getAvailableCellId);
-                master.obj_imageViewer.obj_cellTracker.centroidsTracks.setCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, localCentroid, 1);
-            end
+        lookupRadius = 5;
+        [~, cell_id1] = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getClosestCentroid(master.obj_imageViewer.currentTimepoint, localCentroid, lookupRadius);
+        [~, cell_id2] = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getClosestCentroid(master.obj_imageViewer.currentTimepoint, currentPoint, lookupRadius);
+        if(~isempty(cell_id2))
+            master.obj_imageViewer.setSelectedCell(cell_id2);
+        elseif(~isempty(cell_id1))
+            master.obj_imageViewer.setSelectedCell(cell_id2);
         else
             master.obj_imageViewer.setSelectedCell(master.obj_imageViewer.obj_cellTracker.centroidsTracks.getAvailableCellId);
-            master.obj_imageViewer.obj_cellTracker.centroidsTracks.setCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, currentPoint, 1);
+            master.obj_imageViewer.obj_cellTracker.centroidsTracks.setCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, localCentroid, 1);
         end
         
         setImage;
@@ -218,7 +200,9 @@ set(f,'Visible','on');
         
         lookupRadius = 30;
         highlightedCentroids = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getCentroidsInRange(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
-        set(scatterPatch, 'XData', highlightedCentroids(:,2), 'YData', highlightedCentroids(:,1));
+        set(cellsInRangePatch, 'XData', highlightedCentroids(:,2), 'YData', highlightedCentroids(:,1));
+        closestCentroid = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
+        set(closestCellPatch, 'XData', closestCentroid(:,2), 'YData', closestCentroid(:,1));
     end
 %%
 %
