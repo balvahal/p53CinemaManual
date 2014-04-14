@@ -21,7 +21,8 @@ haxesContrast = axes('Units','characters','DrawMode','fast',...
     'Position',[hx hy hwidth hheight]);
 
 master.obj_imageViewer.findImageHistogram;
-plot(haxesContrast,master.obj_imageViewer.contrastHistogram);
+plot(haxesContrast,master.obj_imageViewer.contrastHistogram,'LineSmoothing','on');
+xlabel('Intensity');
 %% Create controls
 %  two slider bars
 hwidth = 256/master.ppChar(1);
