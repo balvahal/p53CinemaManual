@@ -97,11 +97,11 @@ heditImageResize = uicontrol('Style','edit','Units','characters',...
 hcheckboxPreallocate = uicontrol('Style','checkbox','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','Preallocate','Position',[hx + hmargin + 1.75*hwidth, hy, hwidth, hheight],...
-    'Value',1,'parent',f);
+    'Callback',{@checkboxPreallocate_Callback},'Value',0,'parent',f);
 hcheckboxPreprocess = uicontrol('Style','checkbox','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','Preprocess','Position',[hx + hmargin + 1.75*hwidth, hy - hheight, hwidth, hheight],...
-    'Value',1,'parent',f);
+    'Callback',{@checkboxPreprocess_Callback},'Value',0,'parent',f);
 
 %% Layout: Load button
 hy = hy - hheight - hmargin;
@@ -161,6 +161,17 @@ set(f,'Visible','on');
         master.initializeImageViewer;
     end
 
+    function checkboxPreallocate_Callback(~,~)
+        if(~get(hcheckboxPreallocate, 'Value'))
+            set(hcheckboxPreprocess, 'Value', 0);
+        end
+    end
+
+    function checkboxPreprocess_Callback(~,~)
+        if(get(hcheckboxPreprocess, 'Value'))
+            set(hcheckboxPreallocate, 'Value', 1);
+        end
+    end
 %% Populate position and channel
 %
     function populatePositionChannel

@@ -49,12 +49,18 @@ classdef p53CinemaManual_object_imageViewer < handle
                 for i=1:master.obj_fileManager.numImages
                     obj.imageBuffer(:,:,i) = obj.readImage(i);
                 end
+                %% Preprocess images
+                %
+                obj.obj_cellTracker = p53CinemaManual_object_cellTracker(master);
+                for i=1:master.obj_fileManager.maxTimepoint
+                    timepoint = master.obj_fileManager.currentImageTimepoints(i);
+                    localMaxima = getImageMaxima(obj.imageBuffer(:,:,i));
+                    obj.obj_cellTracker.centroidsLocalMaxima.insertCentroids(timepoint, localMaxima);
+                end
             end
             obj.setFrame(1);
             
-            %% Preprocess images
-            %
-            obj.obj_cellTracker = p53CinemaManual_object_cellTracker(master);
+            
         end
         %% getPixelxy
         % Find the location of mouse relative to the image in the viewer.

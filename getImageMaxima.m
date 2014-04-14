@@ -1,6 +1,6 @@
 function LocalMaxima = getImageMaxima(IM)
 IM = double(IM);
-BlurredImage = imfilter(IM, fspecial('gaussian', 15, 4), 'replicate');
+BlurredImage = imfilter(IM, fspecial('gaussian', 30, 4), 'replicate');
 LocalMaxima = imregionalmax(BlurredImage);
 LocalMaxima = bwmorph(LocalMaxima, 'shrink');
 

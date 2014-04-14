@@ -19,6 +19,12 @@ classdef CentroidTimeseries < handle
             obj.singleCells(time).value(cell_id) = value;
         end
         
+        % A function for inserting centroids from the initial index,
+        % onwards
+        function insertCentroids(obj, time, centroids)
+            obj.singleCells(time).point(1:(size(centroids,1)),:) = centroids;
+        end
+        
         function centroid = getCentroid(obj, time, cell_id)
             centroid = obj.singleCells(time).point(cell_id,:);
         end
