@@ -10,23 +10,28 @@ classdef p53CinemaManual_object_imageViewer < handle
     properties
         gui_imageViewer;
         gui_contrast;
-        pixelxy;
+        obj_cellTracker;
         master;
+        
         isMyButtonDown = false;
-        imageList;
-        imageBuffer;
+        
         imageOrigin;
         displaySize;
+        
         image_width;
         image_height;
         image_widthChar;
         image_heightChar;
+        
+        imageBuffer;
         currentImage;
         currentTimepoint;
         currentFrame = 1;
-        contrastHistogram;
+        pixelxy;
         
-        obj_cellTracker;
+        selectedCell;
+        
+        contrastHistogram;
     end
     events
         
@@ -59,6 +64,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                     obj.obj_cellTracker.centroidsLocalMaxima.insertCentroids(timepoint, localMaxima);
                 end
             end
+            obj.selectedCell = 0;
             obj.setFrame(1);
             
             
@@ -145,6 +151,10 @@ classdef p53CinemaManual_object_imageViewer < handle
         
         function previousFrame(obj)
             obj.setFrame(obj.currentFrame - 1);
+        end
+        
+        function setSelectedCell(obj, selectedCell)
+            obj.selectedCell = selectedCell;
         end
         
         %% Image manipulation

@@ -71,6 +71,7 @@ classdef CentroidTimeseries < handle
             cell_id = [];
             if(~isempty(closeCentroids))
                 [~, minLoc] = min(distance);
+                minLoc = minLoc(1);
                 centroid = closeCentroids(minLoc,:);
                 cell_id = closeCells(minLoc);
             end
@@ -81,6 +82,7 @@ classdef CentroidTimeseries < handle
             [referenceCentroids, validCells] = obj.getCentroids(time);
             centroids = [];
             cell_ids = [];
+            
             distance = [];
             if(~isempty(referenceCentroids))
                 queryMatrix = repmat(queryCentroid, size(referenceCentroids,1), 1);
