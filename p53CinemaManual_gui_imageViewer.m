@@ -45,8 +45,8 @@ sourceImage = image('Parent',haxesImageViewer,'CData',master.obj_imageViewer.cur
 % 'FaceVertexCData',cmapHighlight,'Parent',haxesImageViewer,'LineSmoothing', 'on');
 
 scatterPatch = patch('XData',rand(1,16)*master.obj_imageViewer.image_width,'YData',rand(1,16)*master.obj_imageViewer.image_height,...
-'EdgeColor','none','FaceColor','none','MarkerSize',15,...
-'Marker','o','MarkerEdgeColor','blue','MarkerFaceColor','blue',...
+'EdgeColor','none','FaceColor','none','MarkerSize',5,...
+'Marker','o','MarkerEdgeColor',[1,0.75,0],'MarkerFaceColor',[1,0,0],...
 'Parent',haxesImageViewer,'LineSmoothing', 'on');
 
 highlightPatch = patch('XData',ones(1,16),'YData',ones(1,16),...
@@ -164,8 +164,11 @@ set(f,'Visible','on');
 %%
 % Translate the mouse position into the pixel location in the source image
     function fHover(~,~)
-        master.obj_imageViewer.getPixelxy;
-        p53CinemaManual_function_imageViewer_updateHighlight(master);
+        currentPoint = master.obj_imageViewer.getPixelxy;
+        if(~isempty(currentPoint))
+            highlightedCentroids = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getCentroidsInRange(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), 30);
+            set(scatterPatch, 'XData', highlightedCentroids(:,2), 'YData', highlightedCentroids(:,1));
+        end
     end
 %%
 %

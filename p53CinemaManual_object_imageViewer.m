@@ -22,6 +22,7 @@ classdef p53CinemaManual_object_imageViewer < handle
         image_widthChar;
         image_heightChar;
         currentImage;
+        currentTimepoint;
         currentFrame = 1;
         contrastHistogram;
         
@@ -52,7 +53,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                 %% Preprocess images
                 %
                 obj.obj_cellTracker = p53CinemaManual_object_cellTracker(master);
-                for i=1:master.obj_fileManager.maxTimepoint
+                for i=1:master.obj_fileManager.numImages
                     timepoint = master.obj_fileManager.currentImageTimepoints(i);
                     localMaxima = getImageMaxima(obj.imageBuffer(:,:,i));
                     obj.obj_cellTracker.centroidsLocalMaxima.insertCentroids(timepoint, localMaxima);
@@ -135,6 +136,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             else
                 obj.currentImage = obj.readImage(frame);
             end
+            obj.currentTimepoint = obj.master.obj_fileManager.currentImageTimepoints(frame);
         end
         
         function nextFrame(obj)
