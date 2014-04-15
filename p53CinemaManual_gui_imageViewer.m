@@ -44,6 +44,11 @@ trackedCellsPatch = patch('XData',[],'YData',[],...
 'Marker','o','MarkerEdgeColor',[0,0.75,1],'MarkerFaceColor',[0,0.25,1],...
 'Parent',haxesImageViewer,'LineSmoothing', 'on');
 
+selectedCellPatch = patch('XData',[],'YData',[],...
+'EdgeColor','none','FaceColor','none','MarkerSize',10,...
+'Marker','o','MarkerEdgeColor',[0,1,0.75],'MarkerFaceColor',[0,1,0.25],...
+'Parent',haxesImageViewer,'LineSmoothing', 'on');
+
 cellsInRangePatch = patch('XData',[],'YData',[],...
 'EdgeColor','none','FaceColor','none','MarkerSize',5,...
 'Marker','o','MarkerEdgeColor',[1,0.75,0],'MarkerFaceColor',[1,0,0],...
@@ -91,6 +96,7 @@ handles.pushbuttonLastImage = hpushbuttonLastImage;
 handles.sliderExploreStack = hsliderExploreStack;
 handles.cmapHighlight = cmapHighlight;
 handles.trackedCellsPatch = trackedCellsPatch;
+handles.trackedCellsPatch = selectedCellPatch;
 handles.cellsInRangePatch = cellsInRangePatch;
 handles.closestCellPatch = closestCellPatch;
 handles.sourceImage = sourceImage;
@@ -130,6 +136,11 @@ set(f,'Visible','on');
         
         trackedCentroids = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroids(master.obj_imageViewer.currentTimepoint);
         set(trackedCellsPatch, 'XData', trackedCentroids(:,2), 'YData', trackedCentroids(:,1));
+        
+        if(master.obj_imageViewer.selectedCell)
+            selectedCentroid = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell);
+            set(selectedCellPatch, 'XData', selectedCentroid(:,2), 'YData', selectedCentroid(:,1));
+        end
         
         lookupRadius = 30;
         currentPoint = master.obj_imageViewer.pixelxy;
