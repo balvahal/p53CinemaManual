@@ -102,7 +102,17 @@ classdef CentroidTimeseries < handle
             end
         end
         
+        function deleteTrack(obj, cell_id)
+            if(cell_id > 0)
+                for i=1:length(obj.singleCells)
+                    obj.singleCells(i).point(cell_id,:) = [0,0];
+                end
+            end
+        end
+        
     end
+    
+    
     
 end
 

@@ -39,16 +39,27 @@ classdef p53CinemaManual_object_cellTracker < handle
         function setAvailableCells(obj)
             availableCells = obj.centroidsTracks.getTrackedCellIds;
             selectedCell = obj.master.obj_imageViewer.selectedCell;
-            
             handles = guidata(obj.gui_cellTracker);
-            set(handles.hpopupSelectedCell, 'String', availableCells);
-            selectedIndex = find(availableCells == selectedCell);
-            if(~isempty(selectedIndex))
-                set(handles.hpopupSelectedCell, 'Value', selectedIndex);
+            
+            if(~isempty(availableCells))
+                set(handles.hpopupSelectedCell, 'String', availableCells);
+                selectedIndex = find(availableCells == selectedCell);
+                if(~isempty(selectedIndex))
+                    set(handles.hpopupSelectedCell, 'Value', selectedIndex);
+                else
+                    set(handles.hpopupSelectedCell, 'Value', 1);
+                end
+                set(handles.hpopupSelectedCell, 'Enable', 'on');
             else
-                set(handles.hpopupSelectedCell, 'Value', 1);
+                set(handles.hpopupSelectedCell, 'String', '-- Select cell --');
+                set(handles.hpopupSelectedCell, 'Enable', 'off');
             end
-            set(handles.hpopupSelectedCell, 'Enable', 'on');
+        end
+        
+        function stopTracking(obj)
+            handles = guidata(obj.gui_cellTracker);
+            set(handles.htogglebuttonTrackingMode, 'Value', 0);
+            obj.isTracking = 0;
         end
         
         function radius = getDistanceRadius(obj)

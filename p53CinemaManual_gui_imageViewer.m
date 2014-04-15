@@ -123,6 +123,9 @@ set(f,'Visible','on');
             case 'comma'
                 master.obj_imageViewer.previousFrame;
                 setImage;
+            case 'backspace'
+                master.obj_imageViewer.deleteSelectedCellTrack;
+                master.obj_imageViewer.obj_cellTracker.stopTracking;
         end
     end
     
@@ -140,6 +143,8 @@ set(f,'Visible','on');
         if(master.obj_imageViewer.selectedCell)
             selectedCentroid = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell);
             set(selectedCellPatch, 'XData', selectedCentroid(:,2), 'YData', selectedCentroid(:,1));
+        else
+            set(selectedCellPatch, 'XData', [], 'YData', []);            
         end
         
         if(~master.obj_fileManager.preprocessMode)
@@ -250,11 +255,13 @@ set(f,'Visible','on');
 %%
 %
     function pushbuttonFirstImage_Callback(~,~)
-        p53CinemaManual_function_imageViewer_updateSourceAxes(master);
+        master.obj_imageViewer.setFrame(1);
+        setImage;
     end
 %%
 %
     function pushbuttonLastImage_Callback(~,~)
-        p53CinemaManual_function_imageViewer_updateSourceAxes(master);
+        master.obj_imageViewer.setFrame(length(master.obj_fileManager.currentImageFilenames));
+        setImage;
     end
 end

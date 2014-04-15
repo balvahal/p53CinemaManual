@@ -158,6 +158,12 @@ classdef p53CinemaManual_object_imageViewer < handle
             obj.selectedCell = selectedCell;
         end
         
+        function deleteSelectedCellTrack(obj)
+            obj.obj_cellTracker.centroidsTracks.deleteTrack(obj.selectedCell);
+            obj.setSelectedCell(0);
+            obj.obj_cellTracker.setAvailableCells;
+        end
+        
         %% Image manipulation
         function IM = readImage(obj, index)
             IM = imread(fullfile(obj.master.obj_fileManager.rawdatapath,obj.master.obj_fileManager.currentImageFilenames{index}));
