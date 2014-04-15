@@ -50,6 +50,16 @@ classdef p53CinemaManual_object_cellTracker < handle
             end
             set(handles.hpopupSelectedCell, 'Enable', 'on');
         end
+        
+        function radius = getDistanceRadius(obj)
+            handles = guidata(obj.gui_cellTracker);
+            radius = str2double(get(handles.heditDistanceRadius, 'String'));
+        end
+        
+        function radius = getFrameSkip(obj)
+            handles = guidata(obj.gui_cellTracker);
+            radius = str2double(get(handles.heditFrameSkip, 'String'));
+        end
                 
         %% Delete function
         function delete(obj)
