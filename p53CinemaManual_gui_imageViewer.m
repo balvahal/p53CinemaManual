@@ -142,6 +142,10 @@ set(f,'Visible','on');
             set(selectedCellPatch, 'XData', selectedCentroid(:,2), 'YData', selectedCentroid(:,1));
         end
         
+        if(~master.obj_fileManager.preprocessMode)
+            return;
+        end
+        
         lookupRadius = 30;
         currentPoint = master.obj_imageViewer.pixelxy;
         if(~isempty(currentPoint))
@@ -217,9 +221,14 @@ set(f,'Visible','on');
 %%
 % Translate the mouse position into the pixel location in the source image
     function fHover(~,~)
+        set(0, 'currentfigure', f);
         % This function is redundant with the setImage function
         currentPoint = master.obj_imageViewer.getPixelxy;
         if(isempty(currentPoint))
+            return;
+        end
+        
+        if(~master.obj_fileManager.preprocessMode)
             return;
         end
         

@@ -93,6 +93,7 @@ set(f,'Visible','on');
     function popupSelectedCell_Callback(~,~)
         selectedCell = str2double(getCurrentPopupString(hpopupSelectedCell));
         master.obj_imageViewer.setSelectedCell(selectedCell);
+        set(0, 'currentfigure', master.obj_imageViewer.gui_imageViewer);
     end
 %% Auxiliary functions
     function str = getCurrentPopupString(hh)
