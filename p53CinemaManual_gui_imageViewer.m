@@ -198,7 +198,8 @@ set(f,'Visible','on');
         end
         
         master.obj_imageViewer.obj_cellTracker.centroidsTracks.setCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, queryCentroid, 1);
-        
+        master.obj_imageViewer.obj_cellTracker.setAvailableCells;
+
         setImage;
         frameSkip = 1;
         master.obj_imageViewer.nextFrame;

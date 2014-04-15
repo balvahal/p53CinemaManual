@@ -11,9 +11,7 @@ classdef p53CinemaManual_object_cellTracker < handle
         isTracking;
         isPaused;
         firstClick;
-        
-        selectedCell;
-        
+                
         centroidsLocalMaxima;
         centroidsTracks;
         centroidsDivisions;
@@ -36,9 +34,23 @@ classdef p53CinemaManual_object_cellTracker < handle
             obj.isTracking = 0;
             obj.isPaused = 0;
             obj.firstClick = 1;
-            
         end
-        
+
+        function setAvailableCells(obj)
+            availableCells = obj.centroidsTracks.getTrackedCellIds;
+            selectedCell = obj.master.obj_imageViewer.selectedCell;
+            
+            handles = guidata(obj.gui_cellTracker);
+            set(handles.hpopupSelectedCell, 'String', availableCells);
+            selectedIndex = find(availableCells == selectedCell);
+            if(~isempty(selectedIndex))
+                set(handles.hpopupSelectedCell, 'Value', selectedIndex);
+            else
+                set(handles.hpopupSelectedCell, 'Value', 1);
+            end
+            set(handles.hpopupSelectedCell, 'Enable', 'on');
+        end
+                
         %% Delete function
         function delete(obj)
             % Ask if the user wants to save the annotation

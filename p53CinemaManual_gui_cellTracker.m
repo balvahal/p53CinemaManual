@@ -45,7 +45,7 @@ hy = hy - hheight - hmargin_short;
 hpopupSelectedCell = uicontrol('Style','popupmenu','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','-- Select cell --','Position',[hx, hy, hwidth, hheight],...
-    'parent',f);
+    'Enable','off','Callback',{@popupSelectedCell_Callback}, 'parent',f);
 
 %% Layout: Interaction options
 hy = hy - hheight - hmargin;
@@ -67,6 +67,17 @@ heditDistanceRadius = uicontrol('Style','edit','Units','characters',...
     'String','30','Position',[hx + hmargin + hwidth, hy, hwidth, hheight],...
     'Enable', 'on', 'parent',f);
 
+handles.htogglebuttonTrackingMode = htogglebuttonTrackingMode;
+handles.hpushbuttonPause = hpushbuttonPause;
+handles.hpusbuttonLoadAnnotations = hpusbuttonLoadAnnotations;
+handles.hpusbuttonSaveAnnotations = hpusbuttonSaveAnnotations;
+handles.hpopupSelectedCell = hpopupSelectedCell;
+handles.htextFrameSkip = htextFrameSkip;
+handles.heditFrameSkip = heditFrameSkip;
+handles.htextDistanceRadius = htextDistanceRadius;
+handles.heditDistanceRadius = heditDistanceRadius;
+guidata(f, handles);
+
 %%
 % make the gui visible
 set(f,'Visible','on');
@@ -77,6 +88,11 @@ set(f,'Visible','on');
         trackingStatus = get(htogglebuttonTrackingMode, 'Value');
         master.obj_imageViewer.obj_cellTracker.isTracking = trackingStatus;
         master.obj_imageViewer.obj_cellTracker.firstClick = 1;
+    end
+
+    function popupSelectedCell_Callback(~,~)
+        selectedCell = str2double(getCurrentPopupString(hpopupSelectedCell));
+        master.obj_imageViewer.setSelectedCell(selectedCell);
     end
 %% Auxiliary functions
     function str = getCurrentPopupString(hh)
