@@ -50,6 +50,8 @@ classdef p53CinemaManual_object_imageViewer < handle
             obj.image_heightChar = obj.image_height/master.ppChar(2);
             %% Preload images
             %
+            
+            obj.obj_cellTracker = p53CinemaManual_object_cellTracker(master);
             if master.obj_fileManager.preallocateMode
                 obj.imageBuffer = uint8(zeros(obj.image_height, obj.image_width, master.obj_fileManager.numImages));
                 for i=1:master.obj_fileManager.numImages
@@ -57,7 +59,6 @@ classdef p53CinemaManual_object_imageViewer < handle
                 end
                 %% Preprocess images
                 %
-                obj.obj_cellTracker = p53CinemaManual_object_cellTracker(master);
                 for i=1:master.obj_fileManager.numImages
                     timepoint = master.obj_fileManager.currentImageTimepoints(i);
                     localMaxima = getImageMaxima(obj.imageBuffer(:,:,i));
