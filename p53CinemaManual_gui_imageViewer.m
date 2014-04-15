@@ -147,12 +147,15 @@ set(f,'Visible','on');
         %%
         % This if statement prevents multiple button firings from a single
         % click event
-        if master.obj_imageViewer.isMyButtonDown
-            return
+%         if master.obj_imageViewer.isMyButtonDown
+%             return
+%         end
+        
+        if(~master.obj_imageViewer.obj_cellTracker.isTracking)
+            return;
         end
-        %%
-        %
-        master.obj_imageViewer.isMyButtonDown = true;
+        
+%         master.obj_imageViewer.isMyButtonDown = true;
         
         currentPoint = master.obj_imageViewer.getPixelxy;
         if(isempty(currentPoint))
@@ -160,28 +163,37 @@ set(f,'Visible','on');
         end
         % If the dataset has been preprocessed, perform tracking under
         % "magnet mode"
-        % Define selected cell: find closest local maxima
-        lookupRadius = 30;
-        localCentroid = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
-        % If this is the first time the user clicks after starting a new track, define the selected cell
-        lookupRadius = 5;
-        [~, cell_id1] = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getClosestCentroid(master.obj_imageViewer.currentTimepoint, localCentroid, lookupRadius);
-        [~, cell_id2] = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getClosestCentroid(master.obj_imageViewer.currentTimepoint, currentPoint, lookupRadius);
-        if(~isempty(cell_id2))
-            master.obj_imageViewer.setSelectedCell(cell_id2);
-        elseif(~isempty(cell_id1))
-            master.obj_imageViewer.setSelectedCell(cell_id2);
+        if(master.obj_fileManager.preprocessMode)
+            lookupRadius = 30;
+            queryCentroid = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
         else
-            master.obj_imageViewer.setSelectedCell(master.obj_imageViewer.obj_cellTracker.centroidsTracks.getAvailableCellId);
-            master.obj_imageViewer.obj_cellTracker.centroidsTracks.setCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, localCentroid, 1);
+            queryCentroid = fliplr(currentPoint);
         end
+        % If this is the first time the user clicks after starting a new track, define the selected cell
+        if(master.obj_imageViewer.obj_cellTracker.firstClick)
+            lookupRadius = 5;
+            [cellCentroid1, cell_id1] = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getClosestCentroid(master.obj_imageViewer.currentTimepoint, queryCentroid, lookupRadius);
+            [cellCentroid2, cell_id2] = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getClosestCentroid(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
+            if(~isempty(cell_id2))
+                master.obj_imageViewer.setSelectedCell(cell_id2);
+                queryCentroid = cellCentroid2;
+            elseif(~isempty(cell_id1))
+                master.obj_imageViewer.setSelectedCell(cell_id1);
+                queryCentroid = cellCentroid1;
+            else
+                master.obj_imageViewer.setSelectedCell(master.obj_imageViewer.obj_cellTracker.centroidsTracks.getAvailableCellId);
+            end
+            master.obj_imageViewer.obj_cellTracker.firstClick = 0;
+        end
+        
+        master.obj_imageViewer.obj_cellTracker.centroidsTracks.setCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, queryCentroid, 1);
         
         setImage;
         frameSkip = 1;
         master.obj_imageViewer.nextFrame;
         setImage;
         
-        master.obj_imageViewer.isMyButtonDown = false;
+%         master.obj_imageViewer.isMyButtonDown = false;
     end
 
     function fWindowScrollWheelFcn(~,event)

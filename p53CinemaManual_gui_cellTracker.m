@@ -23,7 +23,7 @@ hy = fheight - (hmargin + hheight);
 htogglebuttonTrackingMode = uicontrol('Style','togglebutton','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','Tracking mode','Position',[hx, hy, hwidth, hheight],...
-    'Enable', 'on','parent',f);
+    'Callback',{@togglebuttonTrackingMode_Callback},'Enable', 'on','parent',f);
 hpushbuttonPause = uicontrol('Style','pushbutton','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','Pause','Enable','off','Position',[hx + hmargin + hwidth, hy, hwidth, hheight],...
@@ -73,6 +73,11 @@ set(f,'Visible','on');
 
 %% Callbacks
 %
+    function togglebuttonTrackingMode_Callback(~,~)
+        trackingStatus = get(htogglebuttonTrackingMode, 'Value');
+        master.obj_imageViewer.obj_cellTracker.isTracking = trackingStatus;
+        master.obj_imageViewer.obj_cellTracker.firstClick = 1;
+    end
 %% Auxiliary functions
     function str = getCurrentPopupString(hh)
         %# getCurrentPopupString returns the currently selected string in the popupmenu with handle hh

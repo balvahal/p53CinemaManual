@@ -10,6 +10,7 @@ classdef p53CinemaManual_object_cellTracker < handle
         
         isTracking;
         isPaused;
+        firstClick;
         
         selectedCell;
         
@@ -31,6 +32,11 @@ classdef p53CinemaManual_object_cellTracker < handle
             obj.centroidsDivisions = CentroidTimeseries(master.obj_fileManager.maxTimepoint, 10000);
             obj.centroidsDeath = CentroidTimeseries(master.obj_fileManager.maxTimepoint, 10000);
             obj.master = master;
+            
+            obj.isTracking = 0;
+            obj.isPaused = 0;
+            obj.firstClick = 1;
+            
         end
         
         %% Delete function

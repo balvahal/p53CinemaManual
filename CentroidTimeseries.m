@@ -64,6 +64,14 @@ classdef CentroidTimeseries < handle
             end
         end
         
+        function cell_ids = getTrackedCellIds(obj)
+            cummulativeValue = zeros(size(obj.singleCells(1).point,1),1);
+            for i=1:length(obj.singleCells)
+                cummulativeValue = cummulativeValue + obj.singleCells(i).point(:,1);
+            end
+            cell_ids = find(cummulativeValue > 0);
+        end
+        
         % Get closest centroid
         function [centroid, cell_id] = getClosestCentroid(obj, time, queryCentroid, distanceRadius)
             [closeCentroids, closeCells, distance] = obj.getCentroidsInRange(time, queryCentroid, distanceRadius);
