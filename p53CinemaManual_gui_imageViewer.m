@@ -3,27 +3,33 @@
 function [f] = p53CinemaManual_gui_imageViewer(master)
 %% Create the figure
 %
-fwidth = 1.1*master.obj_imageViewer.image_width/master.ppChar(1);
-fheight = (1.1*master.obj_imageViewer.image_height + 100)/master.ppChar(2);
+fwidth = (1.1*1344+200)/master.ppChar(1);
+fheight = (1.1*1024)/master.ppChar(2);
+%fwidth = 1.1*master.obj_imageViewer.image_width/master.ppChar(1);
+%fheight = (1.1*master.obj_imageViewer.image_height + 100)/master.ppChar(2);
 fx = 10;
 fy = 10;
 f = figure('Visible','off','Units','characters','MenuBar','none',...
-'Resize','off',...
-'Renderer','OpenGL','Position',[fx fy fwidth fheight],...
-'CloseRequestFcn',{@fCloseRequestFcn},...
-'KeyPressFcn',{@fKeyPressFcn},...
-'WindowButtonDownFcn',{@fWindowButtonDownFcn},...
-'WindowButtonMotionFcn',{@fHover},...
-'WindowScrollWheelFcn',{@fWindowScrollWheelFcn});
+    'Resize','off',...
+    'Renderer','OpenGL','Position',[fx fy fwidth fheight],...
+    'CloseRequestFcn',{@fCloseRequestFcn},...
+    'KeyPressFcn',{@fKeyPressFcn},...
+    'WindowButtonDownFcn',{@fWindowButtonDownFcn},...
+    'WindowButtonMotionFcn',{@fHover},...
+    'WindowScrollWheelFcn',{@fWindowScrollWheelFcn});
 %% Create the axes that will show the image
 % source image
-hwidth = master.obj_imageViewer.image_width/master.ppChar(1);
-hheight = master.obj_imageViewer.image_height/master.ppChar(2);
-hx = (fwidth-hwidth)/2;
-hy = (fheight-hheight-100/master.ppChar(2))/2+100/master.ppChar(2);
+hwidth = 1344/master.ppChar(1);
+hheight = 1024/master.ppChar(2);
+hx = (fwidth-hwidth-200/master.ppChar(1))/2;
+hy = (fheight-hheight)/2;
+%hwidth = master.obj_imageViewer.image_width/master.ppChar(1);
+%hheight = master.obj_imageViewer.image_height/master.ppChar(2);
+%hx = (fwidth-hwidth)/2;
+%hy = (fheight-hheight-100/master.ppChar(2))/2+100/master.ppChar(2);
 haxesImageViewer = axes('Units','characters','DrawMode','fast',...
-'Position',[hx hy hwidth hheight],'YDir','reverse','HandleVisibility','off',...
-'XLim',[1,master.obj_imageViewer.image_width],'YLim',[1,master.obj_imageViewer.image_height]);
+    'Position',[hx hy hwidth hheight],'YDir','reverse','Visible','off',...
+    'XLim',[1,master.obj_imageViewer.image_width],'YLim',[1,master.obj_imageViewer.image_height]);
 %plot(haxesImageViewer,rand(1,10));
 %% Create an axes
 % highlighted cell with hover haxesHighlight =
@@ -40,37 +46,42 @@ colormap(haxesImageViewer,gray(255));
 sourceImage = image('Parent',haxesImageViewer,'CData',master.obj_imageViewer.currentImage);
 
 trackedCellsPatch = patch('XData',[],'YData',[],...
-'EdgeColor','none','FaceColor','none','MarkerSize',10,...
-'Marker','o','MarkerEdgeColor',[0,0.75,1],'MarkerFaceColor',[0,0.25,1],...
-'Parent',haxesImageViewer,'LineSmoothing', 'off');
+    'EdgeColor','none','FaceColor','none','MarkerSize',10,...
+    'Marker','o','MarkerEdgeColor',[0,0.75,1],'MarkerFaceColor',[0,0.25,1],...
+    'Parent',haxesImageViewer,'LineSmoothing', 'off');
 
 selectedCellPatch = patch('XData',[],'YData',[],...
-'EdgeColor','none','FaceColor','none','MarkerSize',10,...
-'Marker','o','MarkerEdgeColor',[1,0.75,0],'MarkerFaceColor',[1,0,0],...
-'Parent',haxesImageViewer,'LineSmoothing', 'off');
+    'EdgeColor','none','FaceColor','none','MarkerSize',10,...
+    'Marker','o','MarkerEdgeColor',[1,0.75,0],'MarkerFaceColor',[1,0,0],...
+    'Parent',haxesImageViewer,'LineSmoothing', 'off');
 
 cellsInRangePatch = patch('XData',[],'YData',[],...
-'EdgeColor','none','FaceColor','none','MarkerSize',1,...
-'Marker','o','MarkerEdgeColor',[1,0.75,0],'MarkerFaceColor',[1,0,0],...
-'Parent',haxesImageViewer,'LineSmoothing', 'off');
+    'EdgeColor','none','FaceColor','none','MarkerSize',1,...
+    'Marker','o','MarkerEdgeColor',[1,0.75,0],'MarkerFaceColor',[1,0,0],...
+    'Parent',haxesImageViewer,'LineSmoothing', 'off');
 
 closestCellPatch = patch('XData',[],'YData',[],...
-'EdgeColor','none','FaceColor','none','MarkerSize',5,...
-'Marker','o','MarkerEdgeColor',[0,0.75,0.24],'MarkerFaceColor',[0,1,0],...
-'Parent',haxesImageViewer,'LineSmoothing', 'off');
+    'EdgeColor','none','FaceColor','none','MarkerSize',5,...
+    'Marker','o','MarkerEdgeColor',[0,0.75,0.24],'MarkerFaceColor',[0,1,0],...
+    'Parent',haxesImageViewer,'LineSmoothing', 'off');
 
 %% Create controls
 % Slider bar and two buttons
-hwidth = master.obj_imageViewer.image_width/master.ppChar(1);
-hheight = 20/master.ppChar(2);
-hx = (fwidth-hwidth)/2;
-hy = 70/master.ppChar(2);
+hwidth = 20/master.ppChar(1);
+hheight = 1024/master.ppChar(2);
+hx = fwidth-180/master.ppChar(1);
+hy = (fheight-hheight)/2;
+
+% hwidth = master.obj_imageViewer.image_width/master.ppChar(1);
+% hheight = 20/master.ppChar(2);
+% hx = (fwidth-hwidth)/2;
+% hy = 70/master.ppChar(2);
 
 sliderStep = 1/(master.obj_fileManager.numImages - 1);
 hsliderExploreStack = uicontrol('Style','slider','Units','characters',...
-'Min',0,'Max',1,'BackgroundColor',[255 215 0]/255,...
-'Value',0,'SliderStep',[sliderStep sliderStep],'Position',[hx hy hwidth hheight],...
-'Callback',{@sliderExploreStack_Callback});
+    'Min',0,'Max',1,'BackgroundColor',[255 215 0]/255,...
+    'Value',0,'SliderStep',[sliderStep sliderStep],'Position',[hx hy hwidth hheight],...
+    'Callback',{@sliderExploreStack_Callback});
 hListener = handle.listener(hsliderExploreStack,'ActionEvent',@sliderExploreStack_Callback);
 setappdata(hsliderExploreStack,'sliderListener',hListener);
 
@@ -79,15 +90,15 @@ hheight = 30/master.ppChar(2);
 hx = 20/master.ppChar(1);
 hy = 20/master.ppChar(2);
 hpushbuttonFirstImage = uicontrol('Style','pushbutton','Units','characters',...
-'FontSize',10,'FontName','Arial','BackgroundColor',[255 215 0]/255,...
-'String','First Image','Position',[hx hy hwidth hheight],...
-'Callback',{@pushbuttonFirstImage_Callback});
+    'FontSize',10,'FontName','Arial','BackgroundColor',[255 215 0]/255,...
+    'String','First Image','Position',[hx hy hwidth hheight],...
+    'Callback',{@pushbuttonFirstImage_Callback});
 
 hx = fwidth - hwidth - 20/master.ppChar(1);
 hpushbuttonLastImage = uicontrol('Style','pushbutton','Units','characters',...
-'FontSize',10,'FontName','Arial','BackgroundColor',[60 179 113]/255,...
-'String','Last Image','Position',[hx hy hwidth hheight],...
-'Callback',{@pushbuttonLastImage_Callback});
+    'FontSize',10,'FontName','Arial','BackgroundColor',[60 179 113]/255,...
+    'String','Last Image','Position',[hx hy hwidth hheight],...
+    'Callback',{@pushbuttonLastImage_Callback});
 %%
 % store the uicontrol handles in the figure handles via guidata()
 handles.axesImageViewer = haxesImageViewer;
@@ -127,10 +138,10 @@ set(f,'Visible','on');
                 master.obj_imageViewer.obj_cellTracker.centroidsTracks.deleteTrack(master.obj_imageViewer.selectedCell);
         end
     end
-    
-    % A function used multiple times to modify the values of image and
-    % slider once these have been set in the imageViewer object through
-    % functions such as nextFrame, previousFrame and setFrame;
+
+% A function used multiple times to modify the values of image and slider
+% once these have been set in the imageViewer object through functions such
+% as nextFrame, previousFrame and setFrame;
     function setImage
         set(sourceImage,'CData',master.obj_imageViewer.currentImage);
         sliderStep = get(hsliderExploreStack,'SliderStep');
@@ -143,7 +154,7 @@ set(f,'Visible','on');
             selectedCentroid = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell);
             set(selectedCellPatch, 'XData', selectedCentroid(:,2), 'YData', selectedCentroid(:,1));
         else
-            set(selectedCellPatch, 'XData', [], 'YData', []);            
+            set(selectedCellPatch, 'XData', [], 'YData', []);
         end
         
         if(~master.obj_fileManager.preprocessMode)
@@ -166,15 +177,24 @@ set(f,'Visible','on');
         %%
         % This if statement prevents multiple button firings from a single
         % click event
-%         if master.obj_imageViewer.isMyButtonDown
-%             return
-%         end
-        
+        %         if master.obj_imageViewer.isMyButtonDown
+        %             return
+        %         end
+        if master.debugmode
+            currentPoint = master.obj_imageViewer.getPixelxy;
+            if ~isempty(currentPoint)
+                mystr = sprintf('x = %d\ty = %d',currentPoint(1),currentPoint(2));
+                disp(mystr);
+            else
+                mystr = sprintf('OUTSIDE AXES!!!');
+                disp(mystr);
+            end
+        end
         if(~master.obj_imageViewer.obj_cellTracker.isTracking)
             return;
         end
         
-%         master.obj_imageViewer.isMyButtonDown = true;
+        %         master.obj_imageViewer.isMyButtonDown = true;
         
         currentPoint = master.obj_imageViewer.getPixelxy;
         if(isempty(currentPoint))
@@ -188,7 +208,8 @@ set(f,'Visible','on');
         else
             queryCentroid = fliplr(currentPoint);
         end
-        % If this is the first time the user clicks after starting a new track, define the selected cell
+        % If this is the first time the user clicks after starting a new
+        % track, define the selected cell
         if(master.obj_imageViewer.obj_cellTracker.firstClick)
             lookupRadius = master.obj_imageViewer.obj_cellTracker.getDistanceRadius / 6;
             [cellCentroid1, cell_id1] = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getClosestCentroid(master.obj_imageViewer.currentTimepoint, queryCentroid, lookupRadius);
@@ -207,14 +228,16 @@ set(f,'Visible','on');
         
         master.obj_imageViewer.obj_cellTracker.centroidsTracks.setCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, queryCentroid, 1);
         master.obj_imageViewer.obj_cellTracker.setAvailableCells;
-
+        
         setImage;
         drawnow;
         frameSkip = master.obj_imageViewer.obj_cellTracker.getFrameSkip;
         master.obj_imageViewer.nextFrame;
         setImage;
         
-%         master.obj_imageViewer.isMyButtonDown = false;
+        
+        
+        %         master.obj_imageViewer.isMyButtonDown = false;
     end
 
     function fWindowScrollWheelFcn(~,event)

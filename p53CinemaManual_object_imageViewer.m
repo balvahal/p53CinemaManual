@@ -10,6 +10,7 @@ classdef p53CinemaManual_object_imageViewer < handle
     properties
         gui_imageViewer;
         gui_contrast;
+        gui_zoomMap
         obj_cellTracker;
         master;
         
@@ -137,7 +138,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             %
             obj.gui_imageViewer = p53CinemaManual_gui_imageViewer(obj.master);
             obj.gui_contrast = p53CinemaManual_gui_contrast(obj.master);
-            
+            obj.gui_zoomMap = p53CinemaManual_gui_zoomMap(obj.master);       
         end
         
         %% Frame switching functions

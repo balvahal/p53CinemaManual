@@ -257,28 +257,30 @@ set(f,'Visible','on');
 %% Key press functionality
 %
     function fKeyPressFcn(~,keyInfo)
-        switch keyInfo.Key
-            case 'period'
-                                [mfilepath,~,~] = fileparts(mfilename('fullpath')); %finds the path to this script
-                sourcePath = fullfile(mfilepath,'.debugfiles');
-                databaseFile = 'debug_database.txt';
-                database = readtable(fullfile(sourcePath, databaseFile), 'Delimiter', '\t');
-                
-                set(heditDatabasePath, 'String', fullfile(sourcePath, databaseFile));
-                set(heditRawDataPath, 'String', fullfile(sourcePath, 'RAW_DATA'));
-                set(heditSegmentDataPath, 'String', fullfile(sourcePath, 'SEGMENT_DATA'));
-                master.obj_fileManager.setDatabase(database);
-                master.obj_fileManager.setRawDataPath(get(heditRawDataPath, 'String'));
-                master.obj_fileManager.mainpath = sourcePath;
-                master.obj_fileManager.databaseFilename = databaseFile;
-                
-                availableGroups = unique(database.group_label);
-                set(hpopupGroupLabel, 'String', availableGroups);
-                set(hpopupGroupLabel, 'Enable', 'on');
-                master.obj_fileManager.setSelectedGroup(getCurrentPopupString(hpopupGroupLabel));
-                
-                populatePositionChannel
-                pushbuttonLoadData_Callback
+        if master.debugmode
+            switch keyInfo.Key
+                case 'period'
+                    [mfilepath,~,~] = fileparts(mfilename('fullpath')); %finds the path to this script
+                    sourcePath = fullfile(mfilepath,'.debugfiles');
+                    databaseFile = 'debug_database.txt';
+                    database = readtable(fullfile(sourcePath, databaseFile), 'Delimiter', '\t');
+                    
+                    set(heditDatabasePath, 'String', fullfile(sourcePath, databaseFile));
+                    set(heditRawDataPath, 'String', fullfile(sourcePath, 'RAW_DATA'));
+                    set(heditSegmentDataPath, 'String', fullfile(sourcePath, 'SEGMENT_DATA'));
+                    master.obj_fileManager.setDatabase(database);
+                    master.obj_fileManager.setRawDataPath(get(heditRawDataPath, 'String'));
+                    master.obj_fileManager.mainpath = sourcePath;
+                    master.obj_fileManager.databaseFilename = databaseFile;
+                    
+                    availableGroups = unique(database.group_label);
+                    set(hpopupGroupLabel, 'String', availableGroups);
+                    set(hpopupGroupLabel, 'Enable', 'on');
+                    master.obj_fileManager.setSelectedGroup(getCurrentPopupString(hpopupGroupLabel));
+                    
+                    populatePositionChannel
+                    pushbuttonLoadData_Callback
+            end
         end
     end
 end
