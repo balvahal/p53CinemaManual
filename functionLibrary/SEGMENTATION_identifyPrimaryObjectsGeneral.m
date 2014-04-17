@@ -1,8 +1,10 @@
-function [ObjectsLabeled, MaximaImage] = SEGMENTATION_identifyPrimaryObjectsGeneral(OriginalImage, varargin)
-    defaultMinDiameter = 12;
+function ObjectsLabeled = SEGMENTATION_identifyPrimaryObjectsGeneral(OriginalImage, varargin)
+    defaultMinDiameter = 10;
     defaultImageResizeFactor = 0.5;
     defaultMaximaSuppressionSize = 5;
-
+    defaultSolidityThreshold = 0.95;
+    defaultAreaThreshold = 100;
+    
     p = inputParser;
     p.addRequired('OriginalImage', @isnumeric);
     addOptional(p,'SecondaryImage', @isnumeric);
@@ -11,57 +13,64 @@ function [ObjectsLabeled, MaximaImage] = SEGMENTATION_identifyPrimaryObjectsGene
     addOptional(p,'MinDiameter', defaultMinDiameter, @isnumeric)
     addOptional(p,'ImageResizeFactor', defaultImageResizeFactor, @isnumeric)
     addOptional(p,'MaximaSuppressionSize', defaultMaximaSuppressionSize, @isnumeric)
+    addOptional(p,'SolidityThreshold', defaultSolidityThreshold, @isnumeric)
+    addOptional(p,'AreaThreshold', defaultAreaThreshold, @isnumeric)
     p.parse(OriginalImage, varargin{:});
     
     MinDiameter = p.Results.MinDiameter;
     ImageResizeFactor = p.Results.ImageResizeFactor;
-    MaximaSuppressionSize = p.Results.MaximaSuppressionSize;
-    MaximaMask = getnhood(strel('disk', MaximaSuppressionSize));
+    MaximaSuppressionSize = p.Results.MaximaSuppressionSize; 
     
     OriginalImage_normalized = imnormalize(double(OriginalImage));
     SizeOfSmoothingFilter=MinDiameter;
-    BlurredImage = imfilter(OriginalImage_normalized, fspecial('gaussian', round(SizeOfSmoothingFilter), round(SizeOfSmoothingFilter/3.5)), 'replicate');
+    BlurredImage = imfilter(OriginalImage_normalized, fspecial('gaussian', round(SizeOfSmoothingFilter), round(SizeOfSmoothingFilter/3.5)));
     
+    % THRESHOLDING
     edgeImage = imfill(edge(BlurredImage, 'canny'), 'holes');
-    threshold = quantile(BlurredImage(edgeImage), 0.1);
-    Objects = imfill(edgeImage + logical(BlurredImage > threshold), 'holes');
-    %Objects = imfill(edgeImage + im2bw(OriginalImage_normalized, graythresh(OriginalImage_normalized)), 'holes');
-    Objects = imopen(Objects, strel('disk',1));
+    Objects = imfill(edgeImage + im2bw(BlurredImage, graythresh(BlurredImage)), 'holes');
+    Objects = imopen(thresholdedImage, strel('disk',2));
     
+    % FIRST-TIER OBJECT: Keep round objects as they are to avoid
+    % over-segmenting
     ObjectsLabeled = bwlabel(Objects);
     props = regionprops(ObjectsLabeled, 'Solidity');
-    primarySegmentation = ismember(ObjectsLabeled, find([props.Solidity] >= 0.99));
+    primarySegmentation = ismember(ObjectsLabeled, find([props.Solidity] >= p.Results.SolidityThreshold));
+
+    % Optional for certain cell lines: filter out objects that look like
+    % beans and keep them as they are to avoid over-segmentation.
     
-%     if(sum(sum(primarySegmentation)) > 0)
-%         props = bwconncomp(primarySegmentation);
-%         SizeOfSmoothingFilter = round(2 * sqrt(median(cellfun(@length, props.PixelIdxList))) / pi) * 10;
-%         MaximaSuppressionSize = round(0.5 * SizeOfSmoothingFilter);
-%         MaximaMask = getnhood(strel('disk', MaximaSuppressionSize));
-%         BlurredImage = imfilter(OriginalImage_normalized, fspecial('gaussian', round(SizeOfSmoothingFilter), round(SizeOfSmoothingFilter/3.5)), 'replicate');
-%     end
+    %     ObjectsLabeled = bwlabel(Objects);
+    %     beanshapes = zeros(1, length(props));
+    %     props = regionprops(ObjectsLabeled, 'FilledImage');
+    %     for k=1:length(props)
+    %         convexHull = bwconvhull(props(k).FilledImage) & ~props(k).FilledImage;
+    %         convexHull = imopen(convexHull, strel('square', 3));
+    %         components = bwconncomp(convexHull);
+    %         beanshapes(k) = components.NumObjects;
+    %     end
+    %     primarySegmentation = primarySegmentation | ismember(ObjectsLabeled, find(beanshapes < 2));
+
+    % REFINE PARAMETERS: Use information about primary segmentation to inform selection of
+    % smoothing filter and maxima suppression size for watershed
+    % segmentation.
+    props = bwconncomp(primarySegmentation);
+    SizeOfSmoothingFilter = round(2 * sqrt(median(cellfun(@length, props.PixelIdxList))) / pi);
+    MaximaSuppressionSize = round(0.2 * SizeOfSmoothingFilter);
+    MaximaMask = getnhood(strel('disk', MaximaSuppressionSize));
     
     Objects = Objects & ~primarySegmentation;
-    BlurredImage(~Objects) = 0;
-%     ObjectsLabeled = bwlabel(Objects);
-%     beanshapes = zeros(1, length(props));
-%     props = regionprops(ObjectsLabeled, 'FilledImage');
-%     for k=1:length(props)
-%         convexHull = bwconvhull(props(k).FilledImage) & ~props(k).FilledImage;
-%         convexHull = imopen(convexHull, strel('square', 3));
-%         components = bwconncomp(convexHull);
-%         beanshapes(k) = components.NumObjects;
-%     end
-%     primarySegmentation = primarySegmentation | ismember(ObjectsLabeled, find(beanshapes < 2));
-%     Objects = Objects & ~primarySegmentation;
+    BlurredImage(~thresholdedImage) = 0;
     
     % IDENTIFY LOCAL MAXIMA IN THE INTENSITY OF DISTANCE TRANSFORMED IMAGE    
     if strcmp(p.Results.LocalMaximaType, 'Intensity')
+        BlurredImage = imfilter(OriginalImage_normalized, fspecial('gaussian', round(SizeOfSmoothingFilter), round(SizeOfSmoothingFilter/3.5)));
+        BlurredImage(~thresholdedImage) = 0;
+        
         ResizedBlurredImage = imresize(BlurredImage,ImageResizeFactor,'bilinear');
         MaximaImage = ResizedBlurredImage;
         MaximaImage(ResizedBlurredImage < ordfilt2(ResizedBlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
         MaximaImage = imresize(MaximaImage,size(BlurredImage),'bilinear');
         MaximaImage(~Objects) = 0;
-        %imshow(imoverlay(OriginalImage_normalized, bwperim(Objects) + imdilate(MaximaImage, strel('disk', 1)), [0.3 1 0.3]))
         MaximaImage = bwmorph(MaximaImage,'shrink',inf);
     else
         DistanceTransformedImage = bwdist(~Objects, 'euclidean');
@@ -90,4 +99,7 @@ function [ObjectsLabeled, MaximaImage] = SEGMENTATION_identifyPrimaryObjectsGene
     Objects = Objects.*WatershedBoundaries | primarySegmentation;
     ObjectsLabeled = bwlabel(Objects); 
     ObjectsLabeled = imfill(ObjectsLabeled, 'holes');
+    
+    props = regionprops(ObjectsLabeled, 'Area');
+    ObjectsLabeled = ismember(ObjectsLabeled, find([props.Area] >= p.Results.AreaThreshold));
 end

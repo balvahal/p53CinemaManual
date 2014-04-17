@@ -6,7 +6,7 @@ function [f] = p53CinemaManual_gui_fileManager(master)
 set(0,'units','characters');
 Char_SS = get(0,'screensize');
 fwidth = 450/master.ppChar(1);
-fheight = 300/master.ppChar(2);
+fheight = 330/master.ppChar(2);
 fx = Char_SS(3) - (Char_SS(3)*.1 + fwidth);
 fy = Char_SS(4) - (Char_SS(4)*.1 + fheight);
 f = figure('Visible','off','Units','characters','MenuBar','none',...
@@ -83,6 +83,16 @@ hpopupPimaryChannel = uicontrol('Style','popupmenu','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','Select channel','Position',[hx + hmargin + hwidth, hy, hwidth * 1.5, hheight],...
     'Enable', 'off', 'parent',f);
+hy = hy - hheight - hmargin_short;
+htextMaximaChannel = uicontrol('Style','text','Units','characters',...
+    'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
+    'String','Maxima channel','Position',[hx, hy, hwidth, hheight],...
+    'parent',f);
+hpopupMaximaChannel = uicontrol('Style','popupmenu','Units','characters',...
+    'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
+    'String','Select channel','Position',[hx + hmargin + hwidth, hy, hwidth * 1.5, hheight],...
+    'Enable', 'off', 'parent',f);
+
 
 %% Layout: Data loading options
 hy = hy - hheight - hmargin;
@@ -127,6 +137,8 @@ set(f,'Visible','on');
         set(heditSegmentDataPath, 'String', fullfile(sourcePath, 'SEGMENT_DATA'));
         master.obj_fileManager.setDatabase(database);
         master.obj_fileManager.setRawDataPath(get(heditRawDataPath, 'String'));
+        master.obj_fileManager.mainpath = sourcePath;
+        master.obj_fileManager.databaseFilename = databaseFile;
         
         availableGroups = unique(database.group_label);
         set(hpopupGroupLabel, 'String', availableGroups);
@@ -151,6 +163,7 @@ set(f,'Visible','on');
         master.obj_fileManager.setSelectedGroup(getCurrentPopupString(hpopupGroupLabel));
         master.obj_fileManager.setSelectedPosition(str2double(getCurrentPopupString(hpopupStagePosition)));
         master.obj_fileManager.setSelectedChannel(getCurrentPopupString(hpopupPimaryChannel));
+        master.obj_fileManager.setMaximaChannel(getCurrentPopupString(hpopupMaximaChannel));
         % Generate a sequence of images representing the current data to
         % visualize, save the timepoints each image corresponds to and sort
         % the filenames by timepoint.
@@ -198,6 +211,12 @@ set(f,'Visible','on');
         set(hpopupPimaryChannel, 'String', availableChannels);
         set(hpopupPimaryChannel, 'Value', getPopupIndex(hpopupPimaryChannel, previousValue));
         set(hpopupPimaryChannel, 'Enable', 'on');
+        
+        previousValue = getCurrentPopupString(hpopupMaximaChannel);
+        set(hpopupMaximaChannel, 'Value', 1);
+        set(hpopupMaximaChannel, 'String', availableChannels);
+        set(hpopupMaximaChannel, 'Value', getPopupIndex(hpopupPimaryChannel, previousValue));
+        set(hpopupMaximaChannel, 'Enable', 'on');
     end
 
 %% Auxiliary functions

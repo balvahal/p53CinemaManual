@@ -124,8 +124,7 @@ set(f,'Visible','on');
                 master.obj_imageViewer.previousFrame;
                 setImage;
             case 'backspace'
-                master.obj_imageViewer.deleteSelectedCellTrack;
-                master.obj_imageViewer.obj_cellTracker.stopTracking;
+                master.obj_imageViewer.obj_cellTracker.centroidsTracks.deleteTrack(master.obj_imageViewer.selectedCell);
         end
     end
     
@@ -226,6 +225,7 @@ set(f,'Visible','on');
 %%
 % Translate the mouse position into the pixel location in the source image
     function fHover(~,~)
+        set(f, 'HandleVisibility', 'on');
         set(0, 'currentfigure', f);
         % This function is redundant with the setImage function
         currentPoint = master.obj_imageViewer.getPixelxy;

@@ -34,11 +34,11 @@ hy = hy - hheight - hmargin_short;
 hpusbuttonLoadAnnotations = uicontrol('Style','pushbutton','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','Load tracks','Position',[hx, hy, hwidth, hheight],...
-    'parent',f);
+    'Callback', {@pushbuttonLoadAnnotations_Callback}, 'parent',f);
 hpusbuttonSaveAnnotations = uicontrol('Style','pushbutton','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','Save tracks','Position',[hx + hmargin + hwidth, hy, hwidth, hheight],...
-    'Enable', 'on', 'parent',f);
+    'Callback', {@pushbuttonSaveAnnotations_Callback}, 'Enable', 'on', 'parent',f);
 
 %% Layout: Cell selection
 hy = hy - hheight - hmargin_short;
@@ -66,6 +66,8 @@ heditDistanceRadius = uicontrol('Style','edit','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','30','Position',[hx + hmargin + hwidth, hy, hwidth, hheight],...
     'Enable', 'on', 'parent',f);
+
+%% Layout: special events
 
 handles.htogglebuttonTrackingMode = htogglebuttonTrackingMode;
 handles.hpushbuttonPause = hpushbuttonPause;
@@ -95,6 +97,34 @@ set(f,'Visible','on');
         master.obj_imageViewer.setSelectedCell(selectedCell);
         set(0, 'currentfigure', master.obj_imageViewer.gui_imageViewer);
     end
+
+    function pushbuttonSaveAnnotations_Callback(~,~)
+        selectedGroup = master.obj_fileManager.selectedGroup;
+        selectedPosition = master.obj_fileManager.selectedPosition;
+        databaseFile = fullfile(master.obj_fileManager.mainpath, master.obj_fileManager.databaseFilename);
+        mainpath = master.obj_fileManager.mainpath;
+        rawdatapath = master.obj_fileManager.rawdatapath;
+        centroidsTracks = master.obj_imageViewer.obj_cellTracker.centroidsTracks;
+        centroidsDivisions = master.obj_imageViewer.obj_cellTracker.centroidsDivisions;
+        centroidsDeath = master.obj_imageViewer.obj_cellTracker.centroidsDeath;
+        
+        uisave({'selectedGroup','selectedPosition','databaseFile','rawdatapath','centroidsTracks','centroidsDivisions','centroidsDeath'},...
+            fullfile(mainpath, sprintf('tracking_s%d.mat', selectedPosition)));
+    end
+
+    function pushbuttonLoadAnnotations_Callback(~,~)
+        [annotationFile, sourcePath] = uigetfile(fullfile(master.obj_fileManager.mainpath, '*.mat'));
+        if(~isempty(annotationFile))
+            loadStruct = load(fullfile(sourcePath, annotationFile));
+            master.obj_imageViewer.obj_cellTracker.centroidsTracks = loadStruct.centroidsTracks;
+            master.obj_imageViewer.obj_cellTracker.centroidsDivisions = loadStruct.centroidsDivisions;
+            master.obj_imageViewer.obj_cellTracker.centroidsDeath = loadStruct.centroidsDeath;
+            master.obj_imageViewer.selectedCell = 0;
+            master.obj_imageViewer.obj_cellTracker.setAvailableCells;
+        end
+        
+    end
+    
 %% Auxiliary functions
     function str = getCurrentPopupString(hh)
         %# getCurrentPopupString returns the currently selected string in the popupmenu with handle hh

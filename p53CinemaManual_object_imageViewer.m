@@ -61,7 +61,13 @@ classdef p53CinemaManual_object_imageViewer < handle
                 %
                 for i=1:master.obj_fileManager.numImages
                     timepoint = master.obj_fileManager.currentImageTimepoints(i);
-                    localMaxima = getImageMaxima(obj.imageBuffer(:,:,i));
+                    if(strcmp(master.obj_fileManager.maximaChannel, master.obj_fileManager.selectedChannel))
+                        referenceImage = obj.imageBuffer(:,:,i);
+                    else
+                        referenceImageName = master.obj_fileManager.getFilename(master.obj_fileManager.selectedPosition, master.obj_fileManager.maximaChannel, master.obj_fileManager.currentImageTimepoints(i));
+                        referenceImage = imread(fullfile(master.obj_fileManager.rawdatapath, referenceImageName));
+                    end
+                    localMaxima = getImageMaxima(referenceImage);
                     obj.obj_cellTracker.centroidsLocalMaxima.insertCentroids(timepoint, localMaxima);
                 end
             end
@@ -162,6 +168,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             obj.obj_cellTracker.centroidsTracks.deleteTrack(obj.selectedCell);
             obj.setSelectedCell(0);
             obj.obj_cellTracker.setAvailableCells;
+            obj.obj_cellTracker.stopTracking;
         end
         
         %% Image manipulation

@@ -6,11 +6,14 @@ classdef p53CinemaManual_object_fileManager < handle
         master;
         
         database;
+        mainpath;
+        databaseFilename;
         rawdatapath;
         
         selectedGroup;
         selectedPosition;
         selectedChannel;
+        maximaChannel;
         
         currentImageFilenames;
         currentImageTimepoints;
@@ -46,6 +49,9 @@ classdef p53CinemaManual_object_fileManager < handle
         function setSelectedChannel(obj, selectedChannel)
             obj.selectedChannel = selectedChannel;
         end
+        function setMaximaChannel(obj, selectedChannel)
+            obj.maximaChannel = selectedChannel;
+        end
         function setPreprocessMode(obj, value)
             obj.preprocessMode = value;
         end
@@ -68,6 +74,10 @@ classdef p53CinemaManual_object_fileManager < handle
             obj.currentImageFilenames = obj.currentImageFilenames(orderIndex);
             obj.maxTimepoint = max(obj.database.timepoint(strcmp(obj.database.group_label, obj.selectedGroup) & obj.database.position_number == obj.selectedPosition));
             obj.numImages = length(obj.currentImageFilenames);
+        end
+        
+        function filename = getFilename(obj, position, channel, timepoint)
+            filename = getDatabaseFile(obj.database, channel, position, timepoint);
         end
         
         %% Delete function
