@@ -10,7 +10,8 @@ fheight = 330/master.ppChar(2);
 fx = Char_SS(3) - (Char_SS(3)*.1 + fwidth);
 fy = Char_SS(4) - (Char_SS(4)*.1 + fheight);
 f = figure('Visible','off','Units','characters','MenuBar','none',...
-    'Renderer','OpenGL','Position',[fx fy fwidth fheight]);
+    'Renderer','OpenGL','Position',[fx fy fwidth fheight],...
+    'KeyPressFcn',{@fKeyPressFcn});
 %% Construct the components
 hwidth = 120/master.ppChar(1);
 hheight = 20/master.ppChar(2);
@@ -251,6 +252,33 @@ set(f,'Visible','on');
         index = find(strcmp(list, str));
         if(isempty(index))
             index = 1;
+        end
+    end
+%% Key press functionality
+%
+    function fKeyPressFcn(~,keyInfo)
+        switch keyInfo.Key
+            case 'period'
+                                [mfilepath,~,~] = fileparts(mfilename('fullpath')); %finds the path to this script
+                sourcePath = fullfile(mfilepath,'.debugfiles');
+                databaseFile = 'debug_database.txt';
+                database = readtable(fullfile(sourcePath, databaseFile), 'Delimiter', '\t');
+                
+                set(heditDatabasePath, 'String', fullfile(sourcePath, databaseFile));
+                set(heditRawDataPath, 'String', fullfile(sourcePath, 'RAW_DATA'));
+                set(heditSegmentDataPath, 'String', fullfile(sourcePath, 'SEGMENT_DATA'));
+                master.obj_fileManager.setDatabase(database);
+                master.obj_fileManager.setRawDataPath(get(heditRawDataPath, 'String'));
+                master.obj_fileManager.mainpath = sourcePath;
+                master.obj_fileManager.databaseFilename = databaseFile;
+                
+                availableGroups = unique(database.group_label);
+                set(hpopupGroupLabel, 'String', availableGroups);
+                set(hpopupGroupLabel, 'Enable', 'on');
+                master.obj_fileManager.setSelectedGroup(getCurrentPopupString(hpopupGroupLabel));
+                
+                populatePositionChannel
+                pushbuttonLoadData_Callback
         end
     end
 end
