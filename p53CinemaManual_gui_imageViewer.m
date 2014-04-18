@@ -7,8 +7,8 @@ fwidth = (1.1*1344+200)/master.ppChar(1);
 fheight = (1.1*1024)/master.ppChar(2);
 %fwidth = 1.1*master.obj_imageViewer.image_width/master.ppChar(1);
 %fheight = (1.1*master.obj_imageViewer.image_height + 100)/master.ppChar(2);
-fx = 10;
-fy = 10;
+fx = 10/master.ppChar(1);
+fy = 10/master.ppChar(2);
 f = figure('Visible','off','Units','characters','MenuBar','none',...
     'Resize','off',...
     'Renderer','OpenGL','Position',[fx fy fwidth fheight],...
@@ -130,12 +130,11 @@ set(f,'Visible','on');
         switch keyInfo.Key
             case 'period'
                 master.obj_imageViewer.nextFrame;
-                setImage;
             case 'comma'
                 master.obj_imageViewer.previousFrame;
-                setImage;
             case 'backspace'
                 master.obj_imageViewer.obj_cellTracker.centroidsTracks.deleteTrack(master.obj_imageViewer.selectedCell);
+                master.obj_imageViewer.setImage;
         end
     end
 
@@ -190,6 +189,7 @@ set(f,'Visible','on');
                 disp(mystr);
             end
         end
+        currentPoint = master.obj_imageViewer.getPixelxy;
         if(~master.obj_imageViewer.obj_cellTracker.isTracking)
             return;
         end
@@ -229,21 +229,17 @@ set(f,'Visible','on');
         master.obj_imageViewer.obj_cellTracker.centroidsTracks.setCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, queryCentroid, 1);
         master.obj_imageViewer.obj_cellTracker.setAvailableCells;
         
-        setImage;
+        master.obj_imageViewer.setImage;
         drawnow;
         frameSkip = master.obj_imageViewer.obj_cellTracker.getFrameSkip;
         master.obj_imageViewer.nextFrame;
-        setImage;
-        
-        
-        
+              
         %         master.obj_imageViewer.isMyButtonDown = false;
     end
 
     function fWindowScrollWheelFcn(~,event)
-        newFrame = master.obj_imageViewer.currentFrame + event.VerticalScrollCount;
+        newFrame = master.obj_imageViewer.currentFrame - event.VerticalScrollCount;
         master.obj_imageViewer.setFrame(newFrame);
-        setImage;
     end
 %%
 % Translate the mouse position into the pixel location in the source image
@@ -273,18 +269,15 @@ set(f,'Visible','on');
         sliderStep = get(hsliderExploreStack,'SliderStep');
         targetFrame = round((frame / sliderStep(1)) + 1);
         master.obj_imageViewer.setFrame(targetFrame);
-        setImage;
     end
 %%
 %
     function pushbuttonFirstImage_Callback(~,~)
         master.obj_imageViewer.setFrame(1);
-        setImage;
     end
 %%
 %
     function pushbuttonLastImage_Callback(~,~)
         master.obj_imageViewer.setFrame(length(master.obj_fileManager.currentImageFilenames));
-        setImage;
     end
 end

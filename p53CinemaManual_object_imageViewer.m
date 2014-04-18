@@ -151,14 +151,17 @@ classdef p53CinemaManual_object_imageViewer < handle
                 obj.currentImage = obj.readImage(frame);
             end
             obj.currentTimepoint = obj.master.obj_fileManager.currentImageTimepoints(frame);
+            obj.setImage;
         end
         
         function nextFrame(obj)
             obj.setFrame(obj.currentFrame + 1);
+            obj.setImage;
         end
         
         function previousFrame(obj)
             obj.setFrame(obj.currentFrame - 1);
+            obj.setImage;
         end
         
         function setSelectedCell(obj, selectedCell)
@@ -170,6 +173,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             obj.setSelectedCell(0);
             obj.obj_cellTracker.setAvailableCells;
             obj.obj_cellTracker.stopTracking;
+            obj.setImage;
         end
         
         %% Image manipulation
@@ -177,6 +181,38 @@ classdef p53CinemaManual_object_imageViewer < handle
             IM = imread(fullfile(obj.master.obj_fileManager.rawdatapath,obj.master.obj_fileManager.currentImageFilenames{index}));
             IM = uint8(bitshift(IM, -4));
         end
+        
+        function setImage(obj)
+            handles = guidata(obj.gui_imageViewer);
+            set(handles.sourceImage,'CData',obj.master.obj_imageViewer.currentImage);
+            sliderStep = get(handles.hsliderExploreStack,'SliderStep');
+            set(handles.hsliderExploreStack,'Value',sliderStep(1)*(obj.master.obj_imageViewer.currentFrame-1));
+            
+            trackedCentroids = obj.master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroids(obj.master.obj_imageViewer.currentTimepoint);
+            set(handles.trackedCellsPatch, 'XData', trackedCentroids(:,2), 'YData', trackedCentroids(:,1));
+            
+            if(obj.master.obj_imageViewer.selectedCell)
+                selectedCentroid = obj.master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroid(obj.master.obj_imageViewer.currentTimepoint, obj.master.obj_imageViewer.selectedCell);
+                set(handles.selectedCellPatch, 'XData', selectedCentroid(:,2), 'YData', selectedCentroid(:,1));
+            else
+                set(handles.selectedCellPatch, 'XData', [], 'YData', []);
+            end
+            
+            if(~obj.master.obj_fileManager.preprocessMode)
+                return;
+            end
+            
+            lookupRadius = obj.master.obj_imageViewer.obj_cellTracker.getDistanceRadius;
+            currentPoint = obj.master.obj_imageViewer.pixelxy;
+            if(~isempty(currentPoint))
+                highlightedCentroids = obj.master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getCentroidsInRange(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
+                set(handles.cellsInRangePatch, 'XData', highlightedCentroids(:,2), 'YData', highlightedCentroids(:,1));
+                
+                closestCentroid = obj.master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
+                set(handles.closestCellPatch, 'XData', closestCentroid(:,2), 'YData', closestCentroid(:,1));
+            end
+        end
+
         
         %% Delete function
         function delete(obj)

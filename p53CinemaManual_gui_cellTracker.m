@@ -95,7 +95,7 @@ set(f,'Visible','on');
     function popupSelectedCell_Callback(~,~)
         selectedCell = str2double(getCurrentPopupString(hpopupSelectedCell));
         master.obj_imageViewer.setSelectedCell(selectedCell);
-        set(0, 'currentfigure', master.obj_imageViewer.gui_imageViewer);
+        master.obj_imageViewer.setImage;
     end
 
     function pushbuttonSaveAnnotations_Callback(~,~)
@@ -121,6 +121,7 @@ set(f,'Visible','on');
             master.obj_imageViewer.obj_cellTracker.centroidsDeath = loadStruct.centroidsDeath;
             master.obj_imageViewer.selectedCell = 0;
             master.obj_imageViewer.obj_cellTracker.setAvailableCells;
+            master.obj_imageViewer.setImage;
         end
         
     end
