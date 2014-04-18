@@ -2,15 +2,16 @@
 % a simple gui to pause, stop, and resume a running MDA
 function [f] = p53CinemaManual_gui_imageViewer(master)
 %% Create the figure
-%
-fwidth = (1.1*1344+200)/master.ppChar(1);
-fheight = (1.1*1024)/master.ppChar(2);
+% The size of the figure was chosen to fit within a 1920x1200 pixel
+% monitor. 
+fwidth = (40+1344+80)/master.ppChar(1); %40 pixels for a border, 80 pixels for buttons
+fheight = (40+1024+30)/master.ppChar(2); %40 pixels for a border, 30 pixels for the slider
 %fwidth = 1.1*master.obj_imageViewer.image_width/master.ppChar(1);
 %fheight = (1.1*master.obj_imageViewer.image_height + 100)/master.ppChar(2);
 fx = 10/master.ppChar(1);
 fy = 10/master.ppChar(2);
 f = figure('Visible','off','Units','characters','MenuBar','none',...
-    'Resize','off',...
+    'Resize','off','Name','Image Viewer',...
     'Renderer','OpenGL','Position',[fx fy fwidth fheight],...
     'CloseRequestFcn',{@fCloseRequestFcn},...
     'KeyPressFcn',{@fKeyPressFcn},...
@@ -18,17 +19,27 @@ f = figure('Visible','off','Units','characters','MenuBar','none',...
     'WindowButtonMotionFcn',{@fHover},...
     'WindowScrollWheelFcn',{@fWindowScrollWheelFcn});
 %% Create the axes that will show the image
-% source image
-hwidth = 1344/master.ppChar(1);
-hheight = 1024/master.ppChar(2);
-hx = (fwidth-hwidth-200/master.ppChar(1))/2;
-hy = (fheight-hheight)/2;
+% The size of the axes must share the same aspect ratio as source image,
+% while maximizing the space on screen. The largest width to be accomadated
+% is 1344. The largest height 1024. A short section of code will maximize
+% one of these two directions and then scale the other accordingly.
+if master.obj_imageViewer.image_width/master.obj_imageViewer.image_height > 1344/1024
+    % then maximize the width
+    hwidthaxes = 1344/master.ppChar(1);
+    hheightaxes = 1344*master.obj_imageViewer.image_height/master.obj_imageViewer.image_width/master.ppChar(2);
+else
+    % then maximize the height
+    hheightaxes  = 1024/master.ppChar(2);
+    hwidthaxes  = 1024*master.obj_imageViewer.image_width/master.obj_imageViewer.image_height/master.ppChar(1);
+end
+hx = (fwidth-hwidthaxes - 80/master.ppChar(1))/2;
+hy = (fheight-hheightaxes + 30/master.ppChar(2))/2;
 %hwidth = master.obj_imageViewer.image_width/master.ppChar(1);
 %hheight = master.obj_imageViewer.image_height/master.ppChar(2);
 %hx = (fwidth-hwidth)/2;
 %hy = (fheight-hheight-100/master.ppChar(2))/2+100/master.ppChar(2);
 haxesImageViewer = axes('Units','characters','DrawMode','fast',...
-    'Position',[hx hy hwidth hheight],'YDir','reverse','Visible','off',...
+    'Position',[hx hy hwidthaxes  hheightaxes ],'YDir','reverse','Visible','off',...
     'XLim',[1,master.obj_imageViewer.image_width],'YLim',[1,master.obj_imageViewer.image_height]);
 %plot(haxesImageViewer,rand(1,10));
 %% Create an axes
@@ -67,15 +78,10 @@ closestCellPatch = patch('XData',[],'YData',[],...
 
 %% Create controls
 % Slider bar and two buttons
-hwidth = 20/master.ppChar(1);
-hheight = 1024/master.ppChar(2);
-hx = fwidth-180/master.ppChar(1);
-hy = (fheight-hheight)/2;
-
-% hwidth = master.obj_imageViewer.image_width/master.ppChar(1);
-% hheight = 20/master.ppChar(2);
-% hx = (fwidth-hwidth)/2;
-% hy = 70/master.ppChar(2);
+hwidth = hwidthaxes;
+hheight = 20/master.ppChar(2);
+hx = (fwidth-hwidthaxes -80/master.ppChar(1))/2;
+hy = 10/master.ppChar(2);
 
 sliderStep = 1/(master.obj_fileManager.numImages - 1);
 hsliderExploreStack = uicontrol('Style','slider','Units','characters',...
@@ -85,16 +91,16 @@ hsliderExploreStack = uicontrol('Style','slider','Units','characters',...
 hListener = handle.listener(hsliderExploreStack,'ActionEvent',@sliderExploreStack_Callback);
 setappdata(hsliderExploreStack,'sliderListener',hListener);
 
-hwidth = 100/master.ppChar(1);
+hwidth = 60/master.ppChar(1);
 hheight = 30/master.ppChar(2);
-hx = 20/master.ppChar(1);
-hy = 20/master.ppChar(2);
+hx = fwidth-70/master.ppChar(1);
+hy = fheight-50/master.ppChar(2);
 hpushbuttonFirstImage = uicontrol('Style','pushbutton','Units','characters',...
     'FontSize',10,'FontName','Arial','BackgroundColor',[255 215 0]/255,...
     'String','First Image','Position',[hx hy hwidth hheight],...
     'Callback',{@pushbuttonFirstImage_Callback});
 
-hx = fwidth - hwidth - 20/master.ppChar(1);
+hy = fheight-100/master.ppChar(2);
 hpushbuttonLastImage = uicontrol('Style','pushbutton','Units','characters',...
     'FontSize',10,'FontName','Arial','BackgroundColor',[60 179 113]/255,...
     'String','Last Image','Position',[hx hy hwidth hheight],...

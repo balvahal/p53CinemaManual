@@ -10,7 +10,7 @@ classdef p53CinemaManual_object_imageViewer < handle
     properties
         gui_imageViewer;
         gui_contrast;
-        gui_zoomMap
+        gui_zoomMap;
         obj_cellTracker;
         master;
         
@@ -223,6 +223,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             obj.obj_cellTracker.delete;
             delete(obj.gui_contrast);
             delete(obj.gui_imageViewer);
+            delete(obj.gui_zoomMap);
         end
     end
 end
