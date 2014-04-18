@@ -104,10 +104,10 @@ hpushbuttonLastImage = uicontrol('Style','pushbutton','Units','characters',...
 handles.axesImageViewer = haxesImageViewer;
 handles.pushbuttonFirstImage = hpushbuttonFirstImage;
 handles.pushbuttonLastImage = hpushbuttonLastImage;
-handles.sliderExploreStack = hsliderExploreStack;
+handles.hsliderExploreStack = hsliderExploreStack;
 handles.cmapHighlight = cmapHighlight;
 handles.trackedCellsPatch = trackedCellsPatch;
-handles.trackedCellsPatch = selectedCellPatch;
+handles.selectedCellPatch = selectedCellPatch;
 handles.cellsInRangePatch = cellsInRangePatch;
 handles.closestCellPatch = closestCellPatch;
 handles.sourceImage = sourceImage;
@@ -141,35 +141,35 @@ set(f,'Visible','on');
 % A function used multiple times to modify the values of image and slider
 % once these have been set in the imageViewer object through functions such
 % as nextFrame, previousFrame and setFrame;
-    function setImage
-        set(sourceImage,'CData',master.obj_imageViewer.currentImage);
-        sliderStep = get(hsliderExploreStack,'SliderStep');
-        set(hsliderExploreStack,'Value',sliderStep(1)*(master.obj_imageViewer.currentFrame-1));
-        
-        trackedCentroids = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroids(master.obj_imageViewer.currentTimepoint);
-        set(trackedCellsPatch, 'XData', trackedCentroids(:,2), 'YData', trackedCentroids(:,1));
-        
-        if(master.obj_imageViewer.selectedCell)
-            selectedCentroid = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell);
-            set(selectedCellPatch, 'XData', selectedCentroid(:,2), 'YData', selectedCentroid(:,1));
-        else
-            set(selectedCellPatch, 'XData', [], 'YData', []);
-        end
-        
-        if(~master.obj_fileManager.preprocessMode)
-            return;
-        end
-        
-        lookupRadius = master.obj_imageViewer.obj_cellTracker.getDistanceRadius;
-        currentPoint = master.obj_imageViewer.pixelxy;
-        if(~isempty(currentPoint))
-            highlightedCentroids = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getCentroidsInRange(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
-            set(cellsInRangePatch, 'XData', highlightedCentroids(:,2), 'YData', highlightedCentroids(:,1));
-            
-            closestCentroid = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
-            set(closestCellPatch, 'XData', closestCentroid(:,2), 'YData', closestCentroid(:,1));
-        end
-    end
+%     function setImage
+%         set(sourceImage,'CData',master.obj_imageViewer.currentImage);
+%         sliderStep = get(hsliderExploreStack,'SliderStep');
+%         set(hsliderExploreStack,'Value',sliderStep(1)*(master.obj_imageViewer.currentFrame-1));
+%         
+%         trackedCentroids = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroids(master.obj_imageViewer.currentTimepoint);
+%         set(trackedCellsPatch, 'XData', trackedCentroids(:,2), 'YData', trackedCentroids(:,1));
+%         
+%         if(master.obj_imageViewer.selectedCell)
+%             selectedCentroid = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell);
+%             set(selectedCellPatch, 'XData', selectedCentroid(:,2), 'YData', selectedCentroid(:,1));
+%         else
+%             set(selectedCellPatch, 'XData', [], 'YData', []);
+%         end
+%         
+%         if(~master.obj_fileManager.preprocessMode)
+%             return;
+%         end
+%         
+%         lookupRadius = master.obj_imageViewer.obj_cellTracker.getDistanceRadius;
+%         currentPoint = master.obj_imageViewer.pixelxy;
+%         if(~isempty(currentPoint))
+%             highlightedCentroids = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getCentroidsInRange(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
+%             set(cellsInRangePatch, 'XData', highlightedCentroids(:,2), 'YData', highlightedCentroids(:,1));
+%             
+%             closestCentroid = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
+%             set(closestCellPatch, 'XData', closestCentroid(:,2), 'YData', closestCentroid(:,1));
+%         end
+%     end
 %%
 %
     function fWindowButtonDownFcn(~,~)

@@ -183,6 +183,10 @@ classdef p53CinemaManual_object_imageViewer < handle
         end
         
         function setImage(obj)
+            if(isempty(obj.gui_imageViewer))
+                return;
+            end
+            
             handles = guidata(obj.gui_imageViewer);
             set(handles.sourceImage,'CData',obj.master.obj_imageViewer.currentImage);
             sliderStep = get(handles.hsliderExploreStack,'SliderStep');
