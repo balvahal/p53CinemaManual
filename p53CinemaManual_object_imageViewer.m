@@ -95,7 +95,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                 x = myRelativePoint(1)*obj.master.ppChar(1);
                 y = (axesOrigin(4)-myRelativePoint(2))*obj.master.ppChar(2);
                 obj.pixelxy = [x,y];
-                obj.pixelxy = ceil(obj.pixelxy ./ ([obj.image_width, obj.image_height] ./ axesOrigin(3:4)));
+                obj.pixelxy = ceil(obj.pixelxy .* ([obj.image_widthChar, obj.image_heightChar]) ./ axesOrigin(3:4));
             end
             out = obj.pixelxy;
             
