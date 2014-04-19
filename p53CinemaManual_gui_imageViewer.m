@@ -245,7 +245,7 @@ set(f,'Visible','on');
     end
 
     function fWindowScrollWheelFcn(~,event)
-        newFrame = master.obj_imageViewer.currentFrame - event.VerticalScrollCount;
+        newFrame = master.obj_imageViewer.currentFrame + event.VerticalScrollCount;
         master.obj_imageViewer.setFrame(newFrame);
     end
 %%
@@ -263,12 +263,6 @@ set(f,'Visible','on');
             return;
         end
         master.obj_imageViewer.setImage;
-%         
-%         lookupRadius = master.obj_imageViewer.obj_cellTracker.getDistanceRadius;
-%         highlightedCentroids = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getCentroidsInRange(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
-%         set(cellsInRangePatch, 'XData', highlightedCentroids(:,2), 'YData', highlightedCentroids(:,1));
-%         closestCentroid = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
-%         set(closestCellPatch, 'XData', closestCentroid(:,2), 'YData', closestCentroid(:,1));
     end
 %%
 %

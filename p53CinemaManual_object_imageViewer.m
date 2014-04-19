@@ -153,6 +153,29 @@ classdef p53CinemaManual_object_imageViewer < handle
                 obj.currentImage = obj.readImage(frame);
             end
             obj.currentTimepoint = obj.master.obj_fileManager.currentImageTimepoints(frame);
+            
+            % Predictive tracking
+            if(obj.master.obj_fileManager.preprocessMode && obj.obj_cellTracker.isTracking && ~obj.obj_cellTracker.centroidsTracks.getValue(obj.currentTimepoint, obj.selectedCell))
+                d1 = Inf; d2 = Inf;
+                if(obj.currentFrame > 1)
+                    referenceTimepoint = obj.master.obj_fileManager.currentImageTimepoints(frame-1);
+                    referenceCentroid = obj.obj_cellTracker.centroidsTracks.getCentroid(referenceTimepoint, obj.selectedCell);
+                    [prediction1, ~, d1] = obj.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(obj.currentTimepoint, referenceCentroid, obj.obj_cellTracker.getDistanceRadius);
+                end
+                if(obj.currentFrame < length(obj.master.obj_fileManager.currentImageTimepoints))
+                    referenceTimepoint = obj.master.obj_fileManager.currentImageTimepoints(frame+1);
+                    referenceCentroid = obj.obj_cellTracker.centroidsTracks.getCentroid(referenceTimepoint, obj.selectedCell);
+                    [prediction2, ~, d2] = obj.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(obj.currentTimepoint, referenceCentroid, obj.obj_cellTracker.getDistanceRadius);
+                end
+                if(~isinf(d1) || ~isinf(d2))
+                    if(d1 < d2)
+                        obj.obj_cellTracker.centroidsTracks.setCentroid(obj.currentTimepoint, obj.selectedCell, prediction1, 0);
+                    else
+                        obj.obj_cellTracker.centroidsTracks.setCentroid(obj.currentTimepoint, obj.selectedCell, prediction2, 0);
+                    end
+                end
+            end
+            
             obj.setImage;
         end
         

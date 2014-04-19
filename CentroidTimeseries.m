@@ -73,15 +73,17 @@ classdef CentroidTimeseries < handle
         end
         
         % Get closest centroid
-        function [centroid, cell_id] = getClosestCentroid(obj, time, queryCentroid, distanceRadius)
-            [closeCentroids, closeCells, distance] = obj.getCentroidsInRange(time, queryCentroid, distanceRadius);
+        function [centroid, cell_id, distance] = getClosestCentroid(obj, time, queryCentroid, distanceRadius)
+            [closeCentroids, closeCells, cellDistance] = obj.getCentroidsInRange(time, queryCentroid, distanceRadius);
             centroid = queryCentroid;
             cell_id = [];
+            distance = Inf;
             if(~isempty(closeCentroids))
                 [~, minLoc] = min(distance);
                 minLoc = minLoc(1);
                 centroid = closeCentroids(minLoc,:);
                 cell_id = closeCells(minLoc);
+                distance = cellDistance(minLoc);
             end
         end
         
