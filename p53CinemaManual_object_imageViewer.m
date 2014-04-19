@@ -86,15 +86,16 @@ classdef p53CinemaManual_object_imageViewer < handle
             myCurrentPoint = get(obj.gui_imageViewer,'CurrentPoint');
             handles = guidata(obj.gui_imageViewer);
             axesOrigin = get(handles.axesImageViewer,'Position');
-            myRelativePoint = myCurrentPoint - axesOrigin(1:2);
+            myRelativePoint = myCurrentPoint - axesOrigin([2,1]);
             if any(myRelativePoint<0) || ...
-                    myRelativePoint(1) > obj.image_widthChar || ...
-                    myRelativePoint(2) > obj.image_heightChar
+                    myRelativePoint(1) > axesOrigin(3) || ...
+                    myRelativePoint(2) > axesOrigin(4)
                 obj.pixelxy = [];
             else
-                x = ceil(myRelativePoint(1)*obj.master.ppChar(1));
-                y = ceil((axesOrigin(4)-myRelativePoint(2))*obj.master.ppChar(2));
+                x = myRelativePoint(1)*obj.master.ppChar(1);
+                y = (axesOrigin(4)-myRelativePoint(2))*obj.master.ppChar(2);
                 obj.pixelxy = [x,y];
+                obj.pixelxy = ceil(obj.pixelxy ./ [obj.image_width, obj.image_height] .* axesOrigin(3:4));
             end
             out = obj.pixelxy;
         end
@@ -209,10 +210,10 @@ classdef p53CinemaManual_object_imageViewer < handle
             lookupRadius = obj.master.obj_imageViewer.obj_cellTracker.getDistanceRadius;
             currentPoint = obj.master.obj_imageViewer.pixelxy;
             if(~isempty(currentPoint))
-                highlightedCentroids = obj.master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getCentroidsInRange(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
+                highlightedCentroids = obj.master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getCentroidsInRange(obj.master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
                 set(handles.cellsInRangePatch, 'XData', highlightedCentroids(:,2), 'YData', highlightedCentroids(:,1));
                 
-                closestCentroid = obj.master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
+                closestCentroid = obj.master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(obj.master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
                 set(handles.closestCellPatch, 'XData', closestCentroid(:,2), 'YData', closestCentroid(:,1));
             end
         end

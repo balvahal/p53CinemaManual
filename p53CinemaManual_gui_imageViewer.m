@@ -261,12 +261,13 @@ set(f,'Visible','on');
         if(~master.obj_fileManager.preprocessMode)
             return;
         end
-        
-        lookupRadius = master.obj_imageViewer.obj_cellTracker.getDistanceRadius;
-        highlightedCentroids = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getCentroidsInRange(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
-        set(cellsInRangePatch, 'XData', highlightedCentroids(:,2), 'YData', highlightedCentroids(:,1));
-        closestCentroid = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
-        set(closestCellPatch, 'XData', closestCentroid(:,2), 'YData', closestCentroid(:,1));
+        setImage;
+%         
+%         lookupRadius = master.obj_imageViewer.obj_cellTracker.getDistanceRadius;
+%         highlightedCentroids = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getCentroidsInRange(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
+%         set(cellsInRangePatch, 'XData', highlightedCentroids(:,2), 'YData', highlightedCentroids(:,1));
+%         closestCentroid = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
+%         set(closestCellPatch, 'XData', closestCentroid(:,2), 'YData', closestCentroid(:,1));
     end
 %%
 %
