@@ -79,17 +79,22 @@ classdef CentroidTimeseries < handle
             cell_id = [];
             distance = Inf;
             if(~isempty(closeCentroids))
-                [~, minLoc] = min(distance);
+                [~, minLoc] = min(cellDistance);
                 minLoc = minLoc(1);
                 centroid = closeCentroids(minLoc,:);
                 cell_id = closeCells(minLoc);
                 distance = cellDistance(minLoc);
             end
+            %centroid = queryCentroid;
         end
         
         % Get centroids in range
         function [centroids, cell_ids, distance] = getCentroidsInRange(obj, time, queryCentroid, distanceRadius)
-            [referenceCentroids, validCells] = obj.getCentroids(time);
+            if(queryCentroid(:,1))
+                [referenceCentroids, validCells] = obj.getCentroids(time);
+            else
+                referenceCentroids = [];
+            end
             centroids = [];
             cell_ids = [];
             
