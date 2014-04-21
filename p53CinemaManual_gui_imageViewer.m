@@ -56,7 +56,12 @@ cmapHighlight = colormap(haxesImageViewer,jet(16)); %63 matches the number of el
 colormap(haxesImageViewer,gray(255));
 sourceImage = image('Parent',haxesImageViewer,'CData',master.obj_imageViewer.currentImage);
 hold(haxesImageViewer, 'on');
-trackedCellsPatch = patch('XData',100,'YData',100,...
+cellFateEventPatch = patch('XData',[],'YData',[],...
+    'EdgeColor','none','FaceColor','none','MarkerSize',20,...
+    'Marker','o','MarkerEdgeColor',[0.7,0.6,0],'MarkerFaceColor',[1,0.9,0],...
+    'Parent',haxesImageViewer,'LineSmoothing', 'off');
+
+trackedCellsPatch = patch('XData',[],'YData',[],...
     'EdgeColor','none','FaceColor','none','MarkerSize',10,...
     'Marker','o','MarkerEdgeColor',[0,0.75,1],'MarkerFaceColor',[0,0.25,1],...
     'Parent',haxesImageViewer,'LineSmoothing', 'off');
@@ -113,6 +118,7 @@ handles.pushbuttonFirstImage = hpushbuttonFirstImage;
 handles.pushbuttonLastImage = hpushbuttonLastImage;
 handles.hsliderExploreStack = hsliderExploreStack;
 handles.cmapHighlight = cmapHighlight;
+handles.cellFateEventPatch = cellFateEventPatch;
 handles.trackedCellsPatch = trackedCellsPatch;
 handles.selectedCellPatch = selectedCellPatch;
 handles.cellsInRangePatch = cellsInRangePatch;
@@ -141,45 +147,15 @@ set(f,'Visible','on');
                 master.obj_imageViewer.previousFrame;
             case 'backspace'
                 master.obj_imageViewer.obj_cellTracker.centroidsTracks.deleteTrack(master.obj_imageViewer.selectedCell);
+                master.obj_imageViewer.obj_cellTracker.centroidsDivisions.deleteTrack(master.obj_imageViewer.selectedCell);
+                master.obj_imageViewer.obj_cellTracker.centroidsDeath.deleteTrack(master.obj_imageViewer.selectedCell);
                 master.obj_imageViewer.setImage;
         end
     end
 
-% A function used multiple times to modify the values of image and slider
-% once these have been set in the imageViewer object through functions such
-% as nextFrame, previousFrame and setFrame;
-%     function setImage
-%         set(sourceImage,'CData',master.obj_imageViewer.currentImage);
-%         sliderStep = get(hsliderExploreStack,'SliderStep');
-%         set(hsliderExploreStack,'Value',sliderStep(1)*(master.obj_imageViewer.currentFrame-1));
-%         
-%         trackedCentroids = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroids(master.obj_imageViewer.currentTimepoint);
-%         set(trackedCellsPatch, 'XData', trackedCentroids(:,2), 'YData', trackedCentroids(:,1));
-%         
-%         if(master.obj_imageViewer.selectedCell)
-%             selectedCentroid = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell);
-%             set(selectedCellPatch, 'XData', selectedCentroid(:,2), 'YData', selectedCentroid(:,1));
-%         else
-%             set(selectedCellPatch, 'XData', [], 'YData', []);
-%         end
-%         
-%         if(~master.obj_fileManager.preprocessMode)
-%             return;
-%         end
-%         
-%         lookupRadius = master.obj_imageViewer.obj_cellTracker.getDistanceRadius;
-%         currentPoint = master.obj_imageViewer.pixelxy;
-%         if(~isempty(currentPoint))
-%             highlightedCentroids = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getCentroidsInRange(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
-%             set(cellsInRangePatch, 'XData', highlightedCentroids(:,2), 'YData', highlightedCentroids(:,1));
-%             
-%             closestCentroid = master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
-%             set(closestCellPatch, 'XData', closestCentroid(:,2), 'YData', closestCentroid(:,1));
-%         end
-%     end
 %%
 %
-    function fWindowButtonDownFcn(~,~)
+    function fWindowButtonDownFcn(source,event)
         %%
         % This if statement prevents multiple button firings from a single
         % click event
@@ -233,8 +209,28 @@ set(f,'Visible','on');
             master.obj_imageViewer.obj_cellTracker.firstClick = 0;
         end
         
+        %% Set the centroids in selected cell and time
         master.obj_imageViewer.obj_cellTracker.centroidsTracks.setCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, queryCentroid, 1);
+        % Move centroid if there was one in division or death events
+        if(master.obj_imageViewer.obj_cellTracker.centroidsDivisions.getValue(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell))
+                master.obj_imageViewer.obj_cellTracker.centroidsDivisions.setCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, queryCentroid, 1);                
+        end
+        if(master.obj_imageViewer.obj_cellTracker.centroidsDeath.getValue(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell))
+                master.obj_imageViewer.obj_cellTracker.centroidsDeath.setCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, queryCentroid, 1);                
+        end
+        
         master.obj_imageViewer.obj_cellTracker.setAvailableCells;
+        
+        selectionType = get(master.obj_imageViewer.gui_imageViewer,'SelectionType');
+        if(strcmp(selectionType, 'alt'))
+            annotationType = master.obj_imageViewer.obj_cellTracker.cellFateEvent;
+            if(strcmp(annotationType, 'Division'))
+                master.obj_imageViewer.obj_cellTracker.centroidsDivisions.setCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, queryCentroid, 1);                
+            end
+            if(strcmp(annotationType, 'Death'))
+                master.obj_imageViewer.obj_cellTracker.centroidsDeath.setCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, queryCentroid, 1);                
+            end
+        end
         
         master.obj_imageViewer.setImage;
         drawnow;

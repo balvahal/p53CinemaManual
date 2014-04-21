@@ -217,6 +217,10 @@ classdef p53CinemaManual_object_imageViewer < handle
             sliderStep = get(handles.hsliderExploreStack,'SliderStep');
             set(handles.hsliderExploreStack,'Value',sliderStep(1)*(obj.master.obj_imageViewer.currentFrame-1));
             
+            cellFateEventCentroids = vertcat(obj.master.obj_imageViewer.obj_cellTracker.centroidsDivisions.getCentroids(obj.master.obj_imageViewer.currentTimepoint), ...
+                obj.master.obj_imageViewer.obj_cellTracker.centroidsDeath.getCentroids(obj.master.obj_imageViewer.currentTimepoint));
+            set(handles.cellFateEventPatch, 'XData', cellFateEventCentroids(:,2), 'YData', cellFateEventCentroids(:,1));
+            
             trackedCentroids = obj.master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroids(obj.master.obj_imageViewer.currentTimepoint);
             set(handles.trackedCellsPatch, 'XData', trackedCentroids(:,2), 'YData', trackedCentroids(:,1));
             

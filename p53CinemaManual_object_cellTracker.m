@@ -15,8 +15,7 @@ classdef p53CinemaManual_object_cellTracker < handle
         centroidsLocalMaxima;
         centroidsTracks;
         centroidsDivisions;
-        centroidsDeath;
-        
+        centroidsDeath;        
     end
     events
         
@@ -70,6 +69,16 @@ classdef p53CinemaManual_object_cellTracker < handle
         function radius = getFrameSkip(obj)
             handles = guidata(obj.gui_cellTracker);
             radius = str2double(get(handles.heditFrameSkip, 'String'));
+        end
+        
+        function annotationType = cellFateEvent(obj)
+            handles = guidata(obj.gui_cellTracker);
+            eventType = get(handles.u0, 'Value');
+            if(eventType)
+                annotationType = 'Division';
+            else
+                annotationType = 'Death';
+            end
         end
                 
         %% Delete function

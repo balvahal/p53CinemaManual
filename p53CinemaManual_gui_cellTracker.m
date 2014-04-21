@@ -6,7 +6,7 @@ function [f] = p53CinemaManual_gui_cellTracker(master)
 set(0,'units','characters');
 Char_SS = get(0,'screensize');
 fwidth = 450/master.ppChar(1);
-fheight = 200/master.ppChar(2);
+fheight = 250/master.ppChar(2);
 fx = Char_SS(3) - (Char_SS(3)*.1 + fwidth);
 fy = Char_SS(4) - (Char_SS(4)*.1 + fheight*2.75);
 f = figure('Visible','off','Units','characters','MenuBar','none',...
@@ -69,6 +69,22 @@ heditDistanceRadius = uicontrol('Style','edit','Units','characters',...
 
 %% Layout: special events
 
+hy = hy - hmargin - hheight;
+htextTrackEvent = uicontrol('Style','text','Units','characters',...
+    'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
+    'String','Cell fate','Position',[hx, hy, hwidth, hheight],...
+    'parent',f);
+hy = hy - hheight;
+hbuttongroupTrackEvent = uibuttongroup('Visible','off','Units',get(f,'Units'),...
+    'Position',[hx + hwidth + hmargin, hy, hwidth + hmargin_short, hheight * 2 + hmargin_short], 'Parent', f);
+% Create three radio buttons in the button group.
+u0 = uicontrol('Style','radiobutton','String','Division','Units',get(f,'Units'),...
+    'Position',[0.5, hheight, hwidth - 1, hheight],'parent',hbuttongroupTrackEvent,'HandleVisibility','on');
+u1 = uicontrol('Style','radiobutton','String','Death','Units',get(f,'Units'),...
+    'Position',[0.5, 0, hwidth - 1, hheight],'parent',hbuttongroupTrackEvent,'HandleVisibility','on','Visible', 'on');
+set(hbuttongroupTrackEvent,'Visible','on');
+
+
 handles.htogglebuttonTrackingMode = htogglebuttonTrackingMode;
 handles.hpushbuttonPause = hpushbuttonPause;
 handles.hpusbuttonLoadAnnotations = hpusbuttonLoadAnnotations;
@@ -78,6 +94,9 @@ handles.htextFrameSkip = htextFrameSkip;
 handles.heditFrameSkip = heditFrameSkip;
 handles.htextDistanceRadius = htextDistanceRadius;
 handles.heditDistanceRadius = heditDistanceRadius;
+handles.hbuttongroupTrackEvent = hbuttongroupTrackEvent;
+handles.u0 = u0;
+handles.u1 = u1;
 guidata(f, handles);
 
 %%
@@ -124,6 +143,14 @@ set(f,'Visible','on');
             master.obj_imageViewer.setImage;
         end
         
+    end
+
+    function selcbk(source,eventdata)
+        disp(source);
+        disp([eventdata.EventName,'  ',...
+            get(eventdata.OldValue,'String'),'  ', ...
+            get(eventdata.NewValue,'String')]);
+        disp(get(get(source,'SelectedObject'),'String'));
     end
     
 %% Auxiliary functions
