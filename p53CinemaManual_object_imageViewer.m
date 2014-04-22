@@ -58,16 +58,13 @@ classdef p53CinemaManual_object_imageViewer < handle
                 obj.imageBuffer = uint8(zeros(obj.image_height, obj.image_width, master.obj_fileManager.numImages));
                 for i=1:master.obj_fileManager.numImages
                     master.obj_fileManager.setProgressBar(i,master.obj_fileManager.numImages,'Loading status');
-                    obj.imageBuffer(:,:,i) = obj.readImage(i);
-                end
-                %% Preprocess images
-                %
-                for i=1:master.obj_fileManager.numImages
-                    master.obj_fileManager.setProgressBar(i,master.obj_fileManager.numImages,'Loading status');
+                    % Load image
+                    referenceImage = obj.readImage(i);
+                    obj.imageBuffer(:,:,i) = uint8(bitshift(referenceImage, -4));
+                    
+                    % Preprocess and find local maxima
                     timepoint = master.obj_fileManager.currentImageTimepoints(i);
-                    if(strcmp(master.obj_fileManager.maximaChannel, master.obj_fileManager.selectedChannel))
-                        referenceImage = obj.imageBuffer(:,:,i);
-                    else
+                    if(~strcmp(master.obj_fileManager.maximaChannel, master.obj_fileManager.selectedChannel))
                         referenceImageName = master.obj_fileManager.getFilename(master.obj_fileManager.selectedPosition, master.obj_fileManager.maximaChannel, master.obj_fileManager.currentImageTimepoints(i));
                         referenceImage = imread(fullfile(master.obj_fileManager.rawdatapath, referenceImageName));
                     end
@@ -156,7 +153,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             if(obj.master.obj_fileManager.preallocateMode)
                 obj.currentImage = obj.imageBuffer(:,:,frame);
             else
-                obj.currentImage = obj.readImage(frame);
+                obj.currentImage = uint8(bitshift(obj.readImage(frame), -4));
             end
             obj.currentTimepoint = obj.master.obj_fileManager.currentImageTimepoints(frame);
             
@@ -210,7 +207,7 @@ classdef p53CinemaManual_object_imageViewer < handle
         %% Image manipulation
         function IM = readImage(obj, index)
             IM = imread(fullfile(obj.master.obj_fileManager.rawdatapath,obj.master.obj_fileManager.currentImageFilenames{index}));
-            IM = uint8(bitshift(IM, -4));
+            %IM = uint8(bitshift(IM, -4));
         end
         
         function setImage(obj)
