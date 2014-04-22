@@ -68,12 +68,20 @@ classdef p53CinemaManual_object_fileManager < handle
         
         %% Generate image sequence
         function generateImageSequence(obj)
-            relevantImageIndex = strcmp(obj.database.group_label, obj.selectedGroup) & strcmp(obj.database.channel_name, obj.selectedChannel) & obj.database.position_number == obj.selectedPosition;
+            if(~iscell(obj.database.channel_name))
+                channel_filter = obj.database.channel_name == str2double(obj.selectedChannel);
+            else
+                channel_filter = strcmp(obj.database.channel_name, obj.selectedChannel);
+            end
+            relevantImageIndex = strcmp(obj.database.group_label, obj.selectedGroup) & channel_filter & obj.database.position_number == obj.selectedPosition;
             
             obj.currentImageFilenames = obj.database.filename(relevantImageIndex);
             obj.currentImageTimepoints = obj.database.timepoint(relevantImageIndex);
             [~, orderIndex] = sort(obj.currentImageTimepoints);
-                        
+            
+            %orderIndex = orderIndex(1:10);
+            %obj.maxTimepoint = max(obj.currentImageTimepoints(orderIndex));
+            
             obj.currentImageTimepoints = obj.currentImageTimepoints(orderIndex);
             obj.currentImageFilenames = obj.currentImageFilenames(orderIndex);
             obj.maxTimepoint = max(obj.database.timepoint(strcmp(obj.database.group_label, obj.selectedGroup) & obj.database.position_number == obj.selectedPosition));
