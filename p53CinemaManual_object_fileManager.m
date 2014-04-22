@@ -59,6 +59,13 @@ classdef p53CinemaManual_object_fileManager < handle
             obj.preallocateMode = value;
         end
         
+        function setProgressBar(obj, value, maxValue, message)
+            handles = guidata(obj.master.obj_fileManager.gui_fileManager);
+            set(handles.hprogressbarhandleLoadingBar, 'Maximum', maxValue);
+            set(handles.hprogressbarhandleLoadingBar, 'Value', value);
+            set(handles.htextLoadingBar, 'String', message);
+        end
+        
         %% Generate image sequence
         function generateImageSequence(obj)
             relevantImageIndex = strcmp(obj.database.group_label, obj.selectedGroup) & strcmp(obj.database.channel_name, obj.selectedChannel) & obj.database.position_number == obj.selectedPosition;

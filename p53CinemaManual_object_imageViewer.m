@@ -54,13 +54,16 @@ classdef p53CinemaManual_object_imageViewer < handle
             
             obj.obj_cellTracker = p53CinemaManual_object_cellTracker(master);
             if master.obj_fileManager.preallocateMode
+                master.obj_fileManager.setProgressBar(1,master.obj_fileManager.numImages,'Loading status');
                 obj.imageBuffer = uint8(zeros(obj.image_height, obj.image_width, master.obj_fileManager.numImages));
                 for i=1:master.obj_fileManager.numImages
+                    master.obj_fileManager.setProgressBar(i,master.obj_fileManager.numImages,'Loading status');
                     obj.imageBuffer(:,:,i) = obj.readImage(i);
                 end
                 %% Preprocess images
                 %
                 for i=1:master.obj_fileManager.numImages
+                    master.obj_fileManager.setProgressBar(i,master.obj_fileManager.numImages,'Loading status');
                     timepoint = master.obj_fileManager.currentImageTimepoints(i);
                     if(strcmp(master.obj_fileManager.maximaChannel, master.obj_fileManager.selectedChannel))
                         referenceImage = obj.imageBuffer(:,:,i);
@@ -71,6 +74,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                     localMaxima = getImageMaxima(referenceImage);
                     obj.obj_cellTracker.centroidsLocalMaxima.insertCentroids(timepoint, localMaxima);
                 end
+                master.obj_fileManager.setProgressBar(0,master.obj_fileManager.numImages,'Loading status');
             end
             obj.selectedCell = 0;
             obj.setFrame(1);
