@@ -126,6 +126,8 @@ classdef p53CinemaManual_object_imageViewer < handle
             cmap = vertcat(zeros(mymin,3),cmap,ones(255-mymax,3));
             handles2 = guidata(obj.gui_imageViewer);
             colormap(handles2.axesImageViewer,cmap);
+            handles3 = guidata(obj.gui_zoomMap);
+            colormap(handles3.axesZoomMap,cmap);
         end
         %% findImageHistogram
         % Assumes image is uint8 0-255.
