@@ -145,10 +145,7 @@ set(f,'Visible','on');
             case 'comma'
                 master.obj_imageViewer.previousFrame;
             case 'backspace'
-                master.obj_imageViewer.obj_cellTracker.centroidsTracks.deleteTrack(master.obj_imageViewer.selectedCell);
-                master.obj_imageViewer.obj_cellTracker.centroidsDivisions.deleteTrack(master.obj_imageViewer.selectedCell);
-                master.obj_imageViewer.obj_cellTracker.centroidsDeath.deleteTrack(master.obj_imageViewer.selectedCell);
-                master.obj_imageViewer.setImage;
+                master.obj_imageViewer.deleteSelectedCellTrack();
         end
     end
 

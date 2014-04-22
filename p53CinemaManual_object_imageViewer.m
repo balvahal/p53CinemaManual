@@ -198,6 +198,8 @@ classdef p53CinemaManual_object_imageViewer < handle
         
         function deleteSelectedCellTrack(obj)
             obj.obj_cellTracker.centroidsTracks.deleteTrack(obj.selectedCell);
+            obj.obj_cellTracker.centroidsDivisions.deleteTrack(obj.selectedCell);
+            obj.obj_cellTracker.centroidsDeath.deleteTrack(obj.selectedCell);
             obj.setSelectedCell(0);
             obj.obj_cellTracker.setAvailableCells;
             obj.obj_cellTracker.stopTracking;
