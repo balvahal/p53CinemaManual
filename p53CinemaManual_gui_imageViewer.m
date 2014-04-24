@@ -39,7 +39,7 @@ hy = (fheight-hheightaxes + 30/master.ppChar(2))/2;
 %hx = (fwidth-hwidth)/2;
 %hy = (fheight-hheight-100/master.ppChar(2))/2+100/master.ppChar(2);
 haxesImageViewer = axes('Units','characters','DrawMode','fast',...
-    'Position',[hx hy hwidthaxes  hheightaxes ],'YDir','reverse','Visible','off',...
+    'Position',[hx hy hwidthaxes  hheightaxes ],'YDir','reverse','Visible','on',...
     'XLim',[1-0.5,master.obj_imageViewer.image_width+0.5],'YLim',[1-0.5,master.obj_imageViewer.image_height+0.5]); %when displaying images the center of the pixels are located at the position on the axis. Therefore, the limits must account for the half pixel border.
 %% Create an axes
 % highlighted cell with hover haxesHighlight =
@@ -151,7 +151,7 @@ set(f,'Visible','on');
 
 %%
 %
-    function fWindowButtonDownFcn(source,event)
+    function fWindowButtonDownFcn(~,~)
         master.obj_imageViewer.obj_cellTracker.triggerTracking(get(master.obj_imageViewer.gui_imageViewer,'SelectionType'));
 %         %%
 %         % This if statement prevents multiple button firings from a single

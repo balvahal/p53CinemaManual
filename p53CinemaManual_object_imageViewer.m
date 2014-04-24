@@ -33,13 +33,16 @@ classdef p53CinemaManual_object_imageViewer < handle
         selectedCell;
         
         contrastHistogram;
+        
+        zoomArray = [1, 0.8, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1];
+        zoomIndex = 1;
     end
     events
         
     end
     methods
         %% object constructor
-        % 
+        %
         function obj = p53CinemaManual_object_imageViewer(master)
             obj.master = master;
             %% get image info from first image
@@ -93,10 +96,13 @@ classdef p53CinemaManual_object_imageViewer < handle
                     myRelativePoint(2) > axesOrigin(4)
                 obj.pixelxy = [];
             else
-                x = myRelativePoint(1)*obj.master.ppChar(1);
-                y = (axesOrigin(4)-myRelativePoint(2))*obj.master.ppChar(2);
+                myXLim = get(handles.axesImageViewer,'XLim');
+                myYLim = get(handles.axesImageViewer,'YLim');
+                
+                x = myRelativePoint(1)/axesOrigin(3)*(myXLim(2)-myXLim(1))+myXLim(1);
+                y = (axesOrigin(4)-myRelativePoint(2))/axesOrigin(4)*(myYLim(2)-myYLim(1))+myYLim(1);
                 obj.pixelxy = [x,y];
-                obj.pixelxy = ceil(obj.pixelxy .* ([obj.image_widthChar, obj.image_heightChar]) ./ axesOrigin(3:4));
+                obj.pixelxy = ceil(obj.pixelxy);
             end
             out = obj.pixelxy;
             
@@ -143,7 +149,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             %
             obj.gui_imageViewer = p53CinemaManual_gui_imageViewer(obj.master);
             obj.gui_contrast = p53CinemaManual_gui_contrast(obj.master);
-            obj.gui_zoomMap = p53CinemaManual_gui_zoomMap(obj.master);       
+            obj.gui_zoomMap = p53CinemaManual_gui_zoomMap(obj.master);
         end
         
         %% Frame switching functions
@@ -218,7 +224,9 @@ classdef p53CinemaManual_object_imageViewer < handle
             end
             
             handles = guidata(obj.gui_imageViewer);
+            handlesZoomMap = guidata(obj.gui_zoomMap);
             set(handles.sourceImage,'CData',obj.master.obj_imageViewer.currentImage);
+            set(handlesZoomMap.sourceImage,'CData',obj.master.obj_imageViewer.currentImage);
             sliderStep = get(handles.hsliderExploreStack,'SliderStep');
             set(handles.hsliderExploreStack,'Value',sliderStep(1)*(obj.master.obj_imageViewer.currentFrame-1));
             
@@ -250,8 +258,95 @@ classdef p53CinemaManual_object_imageViewer < handle
                 set(handles.closestCellPatch, 'XData', closestCentroid(:,2), 'YData', closestCentroid(:,1));
             end
         end
-
         
+        %%
+        %
+        function obj = zoomIn(obj)
+            if obj.zoomIndex < length(obj.zoomArray)
+                obj.zoomIndex = obj.zoomIndex + 1;
+            else
+                return
+            end
+            %%
+            % get the patch position
+            newHalfWidth = obj.image_width*obj.zoomArray(obj.zoomIndex)/2;
+            newHalfHeight = obj.image_height*obj.zoomArray(obj.zoomIndex)/2;
+            handles = guidata(obj.gui_zoomMap);
+            set(handles.zoomMapRect,'Visible','off');
+            myVertices = get(handles.zoomMapRect,'Vertices');
+            myCenter = (myVertices(3,:)-myVertices(1,:))/2+myVertices(1,:);
+            myVertices(1,:) = round(myCenter + [-newHalfWidth,-newHalfHeight]);
+            myVertices(2,:) = round(myCenter + [newHalfWidth,-newHalfHeight]);
+            myVertices(3,:) = round(myCenter + [newHalfWidth,newHalfHeight]);
+            myVertices(4,:) = round(myCenter + [-newHalfWidth,newHalfHeight]);
+            set(handles.zoomMapRect,'Vertices',myVertices);
+            set(handles.zoomMapRect,'Visible','on');
+            obj.zoomPan;
+        end
+        %%
+        %
+        function obj = zoomOut(obj)
+            if obj.zoomIndex > 2
+                obj.zoomIndex = obj.zoomIndex - 1;
+            elseif obj.zoomIndex == 2
+                obj.zoomTop;
+                return
+            else
+                return
+            end
+            %%
+            % get the patch position
+            newHalfWidth = obj.image_width*obj.zoomArray(obj.zoomIndex)/2;
+            newHalfHeight = obj.image_height*obj.zoomArray(obj.zoomIndex)/2;
+            handles = guidata(obj.gui_zoomMap);
+            set(handles.zoomMapRect,'Visible','off');
+            myVertices = get(handles.zoomMapRect,'Vertices');
+            myCenter = (myVertices(3,:)-myVertices(1,:))/2+myVertices(1,:);
+            %%
+            % make sure the center does not move the rectangle |off screen|
+            if myCenter(1) - newHalfWidth < 1
+                myCenter(1) = newHalfWidth + 1;
+            elseif myCenter(1) + newHalfWidth > obj.image_width
+                myCenter(1) = obj.image_width - newHalfWidth;
+            end
+            
+            if myCenter(2) - newHalfHeight < 1
+                myCenter(2) = newHalfHeight + 1;
+            elseif myCenter(2) + newHalfHeight > obj.image_height
+                myCenter(2) = obj.image_height - newHalfHeight;
+            end
+            
+            myVertices(1,:) = round(myCenter + [-newHalfWidth,-newHalfHeight]);
+            myVertices(2,:) = round(myCenter + [newHalfWidth,-newHalfHeight]);
+            myVertices(3,:) = round(myCenter + [newHalfWidth,newHalfHeight]);
+            myVertices(4,:) = round(myCenter + [-newHalfWidth,newHalfHeight]);
+            set(handles.zoomMapRect,'Vertices',myVertices);
+            set(handles.zoomMapRect,'Visible','on');
+            obj.zoomPan;
+        end
+        %%
+        %
+        function obj = zoomTop(obj)
+            obj.zoomIndex = 1;
+            handles = guidata(obj.gui_zoomMap);
+            set(handles.zoomMapRect,'Visible','off');
+            set(handles.zoomMapRect,'Vertices',[1, 1;obj.image_width, 1;obj.image_width, obj.image_height;1, obj.image_height])
+            obj.zoomPan;
+        end
+        %%
+        %
+        function obj = zoomPan(obj)
+            %%
+            % Adjust the imageViewer limits to reflect the zoomMapRect
+            % position
+            handles = guidata(obj.gui_zoomMap);
+            myVertices = get(handles.zoomMapRect,'Vertices');
+            handles2 = guidata(obj.gui_imageViewer);
+            newXLim = [myVertices(1,1)-0.5,myVertices(3,1)+0.5];
+            newYLim = [myVertices(1,2)-0.5,myVertices(3,2)+0.5];
+            set(handles2.axesImageViewer,'XLim',newXLim);
+            set(handles2.axesImageViewer,'YLim',newYLim);
+        end
         %% Delete function
         function delete(obj)
             obj.obj_cellTracker.delete;
