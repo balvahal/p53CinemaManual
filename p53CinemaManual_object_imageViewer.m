@@ -58,12 +58,12 @@ classdef p53CinemaManual_object_imageViewer < handle
             obj.obj_cellTracker = p53CinemaManual_object_cellTracker(master);
             if master.obj_fileManager.preallocateMode
                 master.obj_fileManager.setProgressBar(1,master.obj_fileManager.numImages,'Loading status');
-                obj.imageBuffer = uint8(zeros(obj.image_height, obj.image_width, master.obj_fileManager.numImages));
+                obj.imageBuffer = uint16(zeros(obj.image_height, obj.image_width, master.obj_fileManager.numImages));
                 for i=1:master.obj_fileManager.numImages
                     master.obj_fileManager.setProgressBar(i,master.obj_fileManager.numImages,'Loading status');
                     % Load image
                     referenceImage = obj.readImage(i);
-                    obj.imageBuffer(:,:,i) = uint8(bitshift(referenceImage, -4));
+                    obj.imageBuffer(:,:,i) = referenceImage;
                     
                     % Preprocess and find local maxima
                     timepoint = master.obj_fileManager.currentImageTimepoints(i);
@@ -74,6 +74,12 @@ classdef p53CinemaManual_object_imageViewer < handle
                     localMaxima = getImageMaxima(referenceImage);
                     obj.obj_cellTracker.centroidsLocalMaxima.insertCentroids(timepoint, localMaxima);
                 end
+                
+                %Get the range of the dataset
+                quantileRange = quantile(double(obj.imageBuffer(:)), [0.01, 0.99]);
+                obj.imageBuffer = double((obj.imageBuffer - quantileRange(1))) / double(quantileRange(2)) * (2^16-1);
+                obj.imageBuffer = uint8(bitshift(uint16(obj.imageBuffer), -8));
+                
                 master.obj_fileManager.setProgressBar(0,master.obj_fileManager.numImages,'Loading status');
             end
             obj.selectedCell = 0;
