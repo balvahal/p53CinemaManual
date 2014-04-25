@@ -63,7 +63,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                     master.obj_fileManager.setProgressBar(i,master.obj_fileManager.numImages,'Loading status');
                     % Load image
                     referenceImage = obj.readImage(i);
-                    obj.imageBuffer(:,:,i) = referenceImage;
+                    obj.imageBuffer(:,:,i) = uint8(adapthisteq(imnormalize(referenceImage)) * 255);
                     
                     % Preprocess and find local maxima
                     timepoint = master.obj_fileManager.currentImageTimepoints(i);
@@ -76,9 +76,9 @@ classdef p53CinemaManual_object_imageViewer < handle
                 end
                 
                 %Get the range of the dataset
-                quantileRange = quantile(double(obj.imageBuffer(:)), [0.01, 0.99]);
-                obj.imageBuffer = double((obj.imageBuffer - quantileRange(1))) / double(quantileRange(2)) * (2^16-1);
-                obj.imageBuffer = uint8(bitshift(uint16(obj.imageBuffer), -8));
+%                 quantileRange = quantile(double(obj.imageBuffer(:)), [0.01, 0.99]);
+%                 obj.imageBuffer = double((obj.imageBuffer - quantileRange(1))) / double(quantileRange(2)) * (2^16-1);
+%                 obj.imageBuffer = uint8(bitshift(uint16(obj.imageBuffer), -8));
                 
                 master.obj_fileManager.setProgressBar(0,master.obj_fileManager.numImages,'Loading status');
             end
