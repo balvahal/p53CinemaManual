@@ -21,7 +21,9 @@ f = figure('Visible','off','Units','characters','MenuBar','none',...
     'Renderer','OpenGL','Position',[fx fy hwidthaxes hheightaxes],...
     'CloseRequestFcn',{@fCloseRequestFcn},...
     'KeyPressFcn',{@fKeyPressFcn},...
-    'WindowButtonDownFcn',{@fWindowButtonDownFcn});
+    'WindowButtonDownFcn',{@fWindowButtonDownFcn},...
+    'WindowButtonMotionFcn',{@fWindowButtonMotionFcn}, ...
+    'WindowButtonUpFcn',{@fWindowButtonUpFcn});
 %% Add axes that fit the figure 1 to 1
 %
 hx = 0;
@@ -41,6 +43,7 @@ hzoomMapRect = patch('Parent',haxesZoomMap,...
     'Faces',[1,2,3,4],...
     'LineStyle','none','FaceColor',[255 215 0]/255,'FaceAlpha',0.2,...
     'Visible','off');
+
 %%
 % store the uicontrol handles in the figure handles via guidata()
 handles.axesZoomMap = haxesZoomMap;
@@ -50,6 +53,7 @@ guidata(f,handles);
 %%
 % make the gui visible
 set(f,'Visible','on');
+setappdata(f, 'panningActive', 0);
 
 %% Callbacks
 %
@@ -84,11 +88,40 @@ set(f,'Visible','on');
         if master.obj_imageViewer.zoomIndex == 1
             return
         end
-        %%
-        %
+        
+        setappdata(f, 'panningActive', 1);
         set(handles.zoomMapRect,'Visible','off');
         myCurrentPoint = get(f,'CurrentPoint');
         figureSize = get(f,'Position');
+        
+        myVertices = evaluateNewCenter(myCurrentPoint, figureSize);
+        
+        set(hzoomMapRect,'Vertices',myVertices);
+        master.obj_imageViewer.zoomPan;
+        set(handles.zoomMapRect,'Visible','on');
+        
+    end
+
+    function fWindowButtonMotionFcn(~,~)
+        if master.obj_imageViewer.zoomIndex == 1 || ~getappdata(f, 'panningActive')
+            return
+        end
+        set(handles.zoomMapRect,'Visible','off');
+        myCurrentPoint = get(f,'CurrentPoint');
+        figureSize = get(f,'Position');
+        
+        myVertices = evaluateNewCenter(myCurrentPoint, figureSize);
+        
+        set(hzoomMapRect,'Vertices',myVertices);
+        master.obj_imageViewer.zoomPan;
+        set(handles.zoomMapRect,'Visible','on');
+    end
+
+    function fWindowButtonUpFcn(~,~)
+        setappdata(f, 'panningActive', 0);
+    end
+
+    function myVertices = evaluateNewCenter(myCurrentPoint, figureSize)
         myCurrentPoint = [myCurrentPoint(1),figureSize(4)-myCurrentPoint(2)];
         myCurrentPoint(1) = myCurrentPoint(1)/figureSize(3)*master.obj_imageViewer.image_width;
         myCurrentPoint(2) = myCurrentPoint(2)/figureSize(4)*master.obj_imageViewer.image_height;
@@ -112,10 +145,5 @@ set(f,'Visible','on');
         myVertices(2,:) = round(myCurrentPoint + [newHalfWidth,-newHalfHeight]);
         myVertices(3,:) = round(myCurrentPoint + [newHalfWidth,newHalfHeight]);
         myVertices(4,:) = round(myCurrentPoint + [-newHalfWidth,newHalfHeight]);
-        
-        set(hzoomMapRect,'Vertices',myVertices);
-        master.obj_imageViewer.zoomPan;
-        set(handles.zoomMapRect,'Visible','on');
-        
     end
 end
