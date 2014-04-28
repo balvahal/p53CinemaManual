@@ -12,6 +12,7 @@ classdef p53CinemaManual_object_master < handle
         obj_imageViewer;
         obj_fileManager;
         debugmode = true;
+        outputdirectory = pwd;
     end
     properties (SetAccess = private)
         ppChar; % the guis are all in character units, but the images are defined by pixels.

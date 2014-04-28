@@ -124,6 +124,8 @@ set(f,'Visible','on');
         mainpath = master.obj_fileManager.mainpath;
         rawdatapath = master.obj_fileManager.rawdatapath;
         centroidsTracks = master.obj_imageViewer.obj_cellTracker.centroidsTracks;
+        master.data = p53CinemaManual_object_data;
+        master.data.importCentroidsTracks(centroidsTracks);
         centroidsDivisions = master.obj_imageViewer.obj_cellTracker.centroidsDivisions;
         centroidsDeath = master.obj_imageViewer.obj_cellTracker.centroidsDeath;
         

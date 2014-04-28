@@ -18,5 +18,19 @@ classdef p53CinemaManual_object_data < handle
         function obj = p53CinemaManual_object_data()
             
         end
+        function obj = importCentroidsTracks(obj,centroidsTracks)
+            firsttimepoint = centroidsTracks.singleCells(1).point;
+            firsttimepoint = sum(firsttimepoint,2);
+            number_of_cells = sum(firsttimepoint==0);
+            for i = 1:number_of_cells
+                tempArray = zeros(length(centroidsTracks.singleCells),2);
+            for j = 1:length(centroidsTracks.singleCells)
+                tempPoints = centroidsTracks.singleCells(j).point;
+                tempArray(j,:) = tempPoints(i,:);
+            end
+            tempMap = containers.Map({num2str(i)},{tempArray});
+            obj.manualTrackingData = [obj.manualTrackingData;tempMap];
+            end
+        end
     end
 end
