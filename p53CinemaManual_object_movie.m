@@ -21,8 +21,8 @@ classdef p53CinemaManual_object_movie < handle
         end      
         %%
         %
-        function obj = movies4AllCells(obj,p53CMData)
-            
+        function obj = movies4AllCells(obj)
+            [obj] = p53CinemaManual_method_movie_movies4AllCells(obj);
         end
         %% Delete function
         function delete(obj)
