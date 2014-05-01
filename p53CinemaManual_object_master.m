@@ -51,6 +51,7 @@ classdef p53CinemaManual_object_master < handle
         function delete(obj)
             delete(obj.obj_fileManager);
             delete(obj.obj_imageViewer);
+            delete(obj.data);
         end
     end
 end
