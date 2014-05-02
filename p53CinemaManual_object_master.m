@@ -11,7 +11,7 @@ classdef p53CinemaManual_object_master < handle
         data;
         obj_imageViewer;
         obj_fileManager;
-        debugmode = true;
+        debugmode = false;
         outputdirectory = pwd;
     end
     properties (SetAccess = private)
