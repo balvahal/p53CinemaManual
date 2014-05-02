@@ -13,8 +13,8 @@ classdef p53CinemaManual_object_data < handle
         manualTrackingData = containers.Map;
         motherLineage = containers.Map;
         timepoints = containers.Map;
-        cellPerspective;
-        cellProtoContainer;
+        cellPerspective = containers.Map;
+        cellPerspectivePrototype;
         cellkeys;
         cellvalues;
     end
@@ -23,11 +23,11 @@ classdef p53CinemaManual_object_data < handle
     end
     methods
         function obj = p53CinemaManual_object_data()
-            cellkeys{1} = 'stagePositionOrigin';    cellvalues{1} = 0;
-            cellkeys{2} = 'manualTrackingData';     cellvalues{2} = [0,0];
-            cellkeys{3} = 'motherLineage';          cellvalues{3} = '';
-            cellkeys{4} = 'timepoints';             cellvalues{4} = 0;
-            cellProtoContainer = containers.Map(cellkeys,cellvalues);
+            obj.cellkeys{1} = 'stagePositionNumber';    obj.cellvalues{1} = 0;
+            obj.cellkeys{2} = 'manualTrackingData';     obj.cellvalues{2} = [0,0];
+            obj.cellkeys{3} = 'motherLineage';          obj.cellvalues{3} = '';
+            obj.cellkeys{4} = 'timepoints';             obj.cellvalues{4} = 0;
+            obj.cellPerspectivePrototype = containers.Map(obj.cellkeys,obj.cellvalues);
             
         end
         function obj = importCentroidsTracks(obj,centroidsTracks)
