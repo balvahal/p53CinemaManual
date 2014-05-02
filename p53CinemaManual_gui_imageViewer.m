@@ -146,6 +146,7 @@ set(f,'Visible','on');
                 master.obj_imageViewer.previousFrame;
             case 'backspace'
                 master.obj_imageViewer.deleteSelectedCellTrack();
+                %master.obj_imageViewer.centroidsTracks.deleteCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell);
         end
     end
 
