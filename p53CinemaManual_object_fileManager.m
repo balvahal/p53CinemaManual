@@ -36,9 +36,11 @@ classdef p53CinemaManual_object_fileManager < handle
         %% Set variables
         function setDatabase(obj, database)
             obj.database = database;
+            obj.master.data.database = database;
         end
         function setRawDataPath(obj, rawdatapath)
             obj.rawdatapath = rawdatapath;
+            obj.master.data.imagepath = rawdatapath;
         end
         function setSelectedGroup(obj, selectedGroup)
             obj.selectedGroup = selectedGroup;

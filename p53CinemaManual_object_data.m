@@ -8,15 +8,12 @@
 % derived that make the data convenient to interact with.
 classdef p53CinemaManual_object_data < handle
     properties
-        cellIDs = cell(0,0);
-        stagePositionOrigin = containers.Map;
-        manualTrackingData = containers.Map;
-        motherLineage = containers.Map;
-        timepoints = containers.Map;
         cellPerspective = containers.Map;
-        cellPerspectivePrototype;
         cellkeys;
         cellvalues;
+        database;
+        imagepath;
+        outputdirectory;
     end
     events
         
@@ -27,11 +24,13 @@ classdef p53CinemaManual_object_data < handle
             obj.cellkeys{2} = 'manualTrackingData';     obj.cellvalues{2} = [0,0];
             obj.cellkeys{3} = 'motherLineage';          obj.cellvalues{3} = '';
             obj.cellkeys{4} = 'timepoints';             obj.cellvalues{4} = 0;
-            obj.cellPerspectivePrototype = containers.Map(obj.cellkeys,obj.cellvalues);
             
         end
-        function obj = importCentroidsTracks(obj,centroidsTracks)
-            obj = p53CinemaManual_method_data_importCentroidsTracks(obj,centroidsTracks);
+        function obj = importCentroidsTracks(obj,centroidsTracks,selectedPosition)
+            obj = p53CinemaManual_method_data_importCentroidsTracks(obj,centroidsTracks,selectedPosition);
+        end
+        function newCellPerspectiveHashTable = newCellHash(obj)
+            newCellPerspectiveHashTable = containers.Map(obj.cellkeys,obj.cellvalues);
         end
     end
 end

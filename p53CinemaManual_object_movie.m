@@ -2,22 +2,25 @@
 %
 classdef p53CinemaManual_object_movie < handle
     properties
-        master;
+        obj_data;
         size = [50,50];
-        framerate;
+        resizeNumber = 0.5;
+        framerate = 1/15; %in powerpoint the max fps is 15. To go faster frames must be cut out.
+        outputdirectory;
     end
     events
         
     end
     methods
         %% Constructor
-        function obj = p53CinemaManual_object_cellTracker(master)
-            obj.master = master;
+        function obj = p53CinemaManual_object_movie(obj_data)
+            obj.obj_data = obj_data;
             %%
             % create folder to hold output movies
-            if ~isdir(fullfile(master.outputdirectory,'MOVIES'))
-                mkdir(fullfile(master.outputdirectory,'MOVIES'));
+            if ~isdir(fullfile(obj_data.outputdirectory,'MOVIES'))
+                mkdir(fullfile(obj_data.outputdirectory,'MOVIES'));
             end
+            obj.outputdirectory = fullfile(obj_data.outputdirectory,'MOVIES');
         end      
         %%
         %
@@ -26,8 +29,7 @@ classdef p53CinemaManual_object_movie < handle
         end
         %% Delete function
         function delete(obj)
-            % Ask if the user wants to save the annotation
-            delete(obj.gui_cellTracker);
+            delete(obj.obj_data);
         end
     end
 end

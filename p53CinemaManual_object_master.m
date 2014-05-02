@@ -35,7 +35,8 @@ classdef p53CinemaManual_object_master < handle
             
             %% Load settings
             %
-
+            obj.data = p53CinemaManual_object_data;
+            obj.data.outputdirectory = obj.outputdirectory;
             %% Start all guis
             %
             

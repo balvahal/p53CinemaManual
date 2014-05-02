@@ -124,13 +124,14 @@ set(f,'Visible','on');
         mainpath = master.obj_fileManager.mainpath;
         rawdatapath = master.obj_fileManager.rawdatapath;
         centroidsTracks = master.obj_imageViewer.obj_cellTracker.centroidsTracks;
-%         master.data = p53CinemaManual_object_data;
-%         master.data.importCentroidsTracks(centroidsTracks);
+        master.data.importCentroidsTracks(centroidsTracks,selectedPosition);
         centroidsDivisions = master.obj_imageViewer.obj_cellTracker.centroidsDivisions;
         centroidsDeath = master.obj_imageViewer.obj_cellTracker.centroidsDeath;
         
         uisave({'selectedGroup','selectedPosition','databaseFile','rawdatapath','centroidsTracks','centroidsDivisions','centroidsDeath'},...
             fullfile(mainpath, sprintf('tracking_s%d.mat', selectedPosition)));
+        mydata = master.data;
+        save(fullfile('C:\Users\kk128\Documents\MATLAB', sprintf('trackingdataobj_s%d.mat', selectedPosition)),'mydata');
     end
 
     function pushbuttonLoadAnnotations_Callback(~,~)
