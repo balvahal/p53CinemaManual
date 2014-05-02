@@ -134,16 +134,32 @@ set(f,'Visible','on');
     end
 
     function pushbuttonLoadAnnotations_Callback(~,~)
-        [annotationFile, sourcePath] = uigetfile(fullfile(master.obj_fileManager.mainpath, '*.mat'));
-        if(~isempty(annotationFile))
+        [annotationFile, sourcePath] = uigetfile(fullfile(master.obj_fileManager.mainpath, '*.mat;*.txt'));
+        if(isempty(annotationFile))
+            return
+        end;
+        [~,~,etx] = fileparts(annotationFile);
+        if(strcmp(etx, '.txt'))
+            % If the extension of the file is txt, assume that it is a
+            % table with the centroids and populate the centroidsTracks
+            % object (a patch at this moment)
+            myCentroids = readtable(fullfile(sourcePath, annotationFile), 'Delimiter', '\t');
+            for i=1:max(myCentroids.timepoint)
+                subCentroids = table2array(myCentroids(myCentroids.timepoint == i, 3:4));
+                subValues = table2array(myCentroids(myCentroids.timepoint == i, 5));
+                master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).point(1:size(subCentroids,1),:) = subCentroids;
+                master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).value(1:size(subCentroids,1)) = subValues;
+            end
+        else
             loadStruct = load(fullfile(sourcePath, annotationFile));
             master.obj_imageViewer.obj_cellTracker.centroidsTracks = loadStruct.centroidsTracks;
             master.obj_imageViewer.obj_cellTracker.centroidsDivisions = loadStruct.centroidsDivisions;
             master.obj_imageViewer.obj_cellTracker.centroidsDeath = loadStruct.centroidsDeath;
-            master.obj_imageViewer.selectedCell = 0;
-            master.obj_imageViewer.obj_cellTracker.setAvailableCells;
-            master.obj_imageViewer.setImage;
+            
         end
+        master.obj_imageViewer.selectedCell = 0;
+        master.obj_imageViewer.obj_cellTracker.setAvailableCells;
+        master.obj_imageViewer.setImage;
         
     end
 
