@@ -148,8 +148,9 @@ set(f,'Visible','on');
             for i=1:max(myCentroids.timepoint)
                 subCentroids = table2array(myCentroids(myCentroids.timepoint == i, 3:4));
                 subValues = table2array(myCentroids(myCentroids.timepoint == i, 5));
-                master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).point(1:size(subCentroids,1),:) = subCentroids;
-                master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).value(1:size(subCentroids,1)) = subValues;
+                subIndex = table2array(myCentroids(myCentroids.timepoint == i, 1));
+                master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).point(subIndex,:) = subCentroids;
+                master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).value(subIndex) = subValues;
             end
         else
             loadStruct = load(fullfile(sourcePath, annotationFile));

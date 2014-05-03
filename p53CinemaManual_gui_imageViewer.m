@@ -145,8 +145,13 @@ set(f,'Visible','on');
             case 'comma'
                 master.obj_imageViewer.previousFrame;
             case 'backspace'
-                master.obj_imageViewer.deleteSelectedCellTrack();
-                %master.obj_imageViewer.centroidsTracks.deleteCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell);
+                currentCentroid = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell);
+                if(currentCentroid(1) > 0)
+                    master.obj_imageViewer.obj_cellTracker.centroidsTracks.setCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, [0,0], 0);
+                    master.obj_imageViewer.setImage;
+                else
+                    master.obj_imageViewer.deleteSelectedCellTrack();
+                end
         end
     end
 
