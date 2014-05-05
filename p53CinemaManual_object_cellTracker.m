@@ -82,80 +82,81 @@ classdef p53CinemaManual_object_cellTracker < handle
         end
         
         function triggerTracking(obj, altEvent)
+            p53CinemaManual_method_cellTracker_triggerTracking(obj,altEvent);
             %%
-            if obj.master.debugmode
-                currentPoint = obj.master.obj_imageViewer.getPixelxy;
-                if ~isempty(currentPoint)
-                    mystr = sprintf('x = %d\ty = %d',currentPoint(1),currentPoint(2));
-                    disp(mystr);
-                else
-                    mystr = sprintf('OUTSIDE AXES!!!');
-                    disp(mystr);
-                end
-            end
-            if(~obj.isTracking)
-                return;
-            end
-            
-            currentPoint = obj.master.obj_imageViewer.getPixelxy;
-            currentTimepoint = obj.master.obj_imageViewer.currentTimepoint;
-            if(isempty(currentPoint))
-                return;
-            end
-            % If the dataset has been preprocessed, perform tracking under
-            % "magnet mode"
-            if(obj.master.obj_fileManager.preprocessMode)
-                lookupRadius = obj.getDistanceRadius;
-                queryCentroid = obj.centroidsLocalMaxima.getClosestCentroid(currentTimepoint, fliplr(currentPoint), lookupRadius);
-            else
-                queryCentroid = fliplr(currentPoint);
-            end
-            % If this is the first time the user clicks after starting a new
-            % track, define the selected cell
-            if(obj.firstClick)
-                lookupRadius = obj.getDistanceRadius / 6;
-                [cellCentroid1, cell_id1] = obj.centroidsTracks.getClosestCentroid(currentTimepoint, queryCentroid, lookupRadius);
-                [cellCentroid2, cell_id2] = obj.centroidsTracks.getClosestCentroid(currentTimepoint, fliplr(currentPoint), lookupRadius);
-                if(~isempty(cell_id2))
-                    obj.master.obj_imageViewer.setSelectedCell(cell_id2);
-                    queryCentroid = cellCentroid2;
-                elseif(~isempty(cell_id1))
-                    obj.master.obj_imageViewer.setSelectedCell(cell_id1);
-                    queryCentroid = cellCentroid1;
-                else
-                    obj.master.obj_imageViewer.setSelectedCell(obj.centroidsTracks.getAvailableCellId);
-                end
-                obj.firstClick = 0;
-            end
-            
-            %% Set the centroids in selected cell and time
-            selectedCell = obj.master.obj_imageViewer.selectedCell;
-            obj.centroidsTracks.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
-            % Move centroid if there was one in division or death events
-            if(obj.centroidsDivisions.getValue(currentTimepoint, selectedCell))
-                obj.centroidsDivisions.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
-            end
-            if(obj.centroidsDeath.getValue(currentTimepoint, selectedCell))
-                obj.centroidsDeath.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
-            end
-            
-            obj.setAvailableCells;
-            
-            selectionType = altEvent;
-            if(strcmp(selectionType, 'alt'))
-                annotationType = obj.cellFateEvent;
-                if(strcmp(annotationType, 'Division'))
-                    obj.centroidsDivisions.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
-                end
-                if(strcmp(annotationType, 'Death'))
-                    obj.centroidsDeath.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
-                end
-            end
-            
-            obj.master.obj_imageViewer.setImage;
-            drawnow;
-            frameSkip = obj.getFrameSkip;
-            obj.master.obj_imageViewer.nextFrame;
+%             if obj.master.debugmode
+%                 currentPoint = obj.master.obj_imageViewer.getPixelxy;
+%                 if ~isempty(currentPoint)
+%                     mystr = sprintf('x = %d\ty = %d',currentPoint(1),currentPoint(2));
+%                     disp(mystr);
+%                 else
+%                     mystr = sprintf('OUTSIDE AXES!!!');
+%                     disp(mystr);
+%                 end
+%             end
+%             if(~obj.isTracking)
+%                 return;
+%             end
+%             
+%             currentPoint = obj.master.obj_imageViewer.getPixelxy;
+%             currentTimepoint = obj.master.obj_imageViewer.currentTimepoint;
+%             if(isempty(currentPoint))
+%                 return;
+%             end
+%             % If the dataset has been preprocessed, perform tracking under
+%             % "magnet mode"
+%             if(obj.master.obj_fileManager.preprocessMode)
+%                 lookupRadius = obj.getDistanceRadius;
+%                 queryCentroid = obj.centroidsLocalMaxima.getClosestCentroid(currentTimepoint, fliplr(currentPoint), lookupRadius);
+%             else
+%                 queryCentroid = fliplr(currentPoint);
+%             end
+%             % If this is the first time the user clicks after starting a new
+%             % track, define the selected cell
+%             if(obj.firstClick)
+%                 lookupRadius = obj.getDistanceRadius / 6; % 6 was chosen empircally when comparing a 30 pixel radius search area with a 5 pixel radius selection area
+%                 [cellCentroid1, cell_id1] = obj.centroidsTracks.getClosestCentroid(currentTimepoint, queryCentroid, lookupRadius);
+%                 [cellCentroid2, cell_id2] = obj.centroidsTracks.getClosestCentroid(currentTimepoint, fliplr(currentPoint), lookupRadius);
+%                 if(~isempty(cell_id2))
+%                     obj.master.obj_imageViewer.setSelectedCell(cell_id2);
+%                     queryCentroid = cellCentroid2;
+%                 elseif(~isempty(cell_id1))
+%                     obj.master.obj_imageViewer.setSelectedCell(cell_id1);
+%                     queryCentroid = cellCentroid1;
+%                 else
+%                     obj.master.obj_imageViewer.setSelectedCell(obj.centroidsTracks.getAvailableCellId);
+%                 end
+%                 obj.firstClick = 0;
+%             end
+%             
+%             %% Set the centroids in selected cell and time
+%             selectedCell = obj.master.obj_imageViewer.selectedCell;
+%             obj.centroidsTracks.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
+%             % Move centroid if there was one in division or death events
+%             if(obj.centroidsDivisions.getValue(currentTimepoint, selectedCell))
+%                 obj.centroidsDivisions.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
+%             end
+%             if(obj.centroidsDeath.getValue(currentTimepoint, selectedCell))
+%                 obj.centroidsDeath.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
+%             end
+%             
+%             obj.setAvailableCells;
+%             
+%             selectionType = altEvent;
+%             if(strcmp(selectionType, 'alt'))
+%                 annotationType = obj.cellFateEvent;
+%                 if(strcmp(annotationType, 'Division'))
+%                     obj.centroidsDivisions.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
+%                 end
+%                 if(strcmp(annotationType, 'Death'))
+%                     obj.centroidsDeath.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
+%                 end
+%             end
+%             
+%             obj.master.obj_imageViewer.setImage;
+%             drawnow;
+%             frameSkip = obj.getFrameSkip;
+%             obj.master.obj_imageViewer.nextFrame;
         end
                 
         %% Delete function

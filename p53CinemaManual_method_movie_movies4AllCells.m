@@ -19,7 +19,7 @@ for i = 1:length(cellnames)
             logicalvector = mydata.database.timepoint == t &...
                 strcmp(mydata.database.channel_name,channelnames{j}) &...
                 mydata.database.position_number == mycellhash('stagePositionNumber');
-            if sum(logicalvector == 1) 
+            if sum(logicalvector) == 1 
                 myfilename = mydata.database.filename{logicalvector};
             else
                 warning('MovieAllCell:missingImage','image might be missing');
