@@ -28,6 +28,7 @@ classdef p53CinemaManual_object_imageViewer < handle
         currentImage;
         currentTimepoint;
         currentFrame = 1;
+        pixelRowCol;
         pixelxy;
         
         selectedCell;
@@ -102,6 +103,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                     myRelativePoint(1) > axesOrigin(3) || ...
                     myRelativePoint(2) > axesOrigin(4)
                 obj.pixelxy = [];
+                obj.pixelRowCol = [];
             else
                 myXLim = get(handles.axesImageViewer,'XLim');
                 myYLim = get(handles.axesImageViewer,'YLim');
@@ -110,9 +112,38 @@ classdef p53CinemaManual_object_imageViewer < handle
                 y = (axesOrigin(4)-myRelativePoint(2))/axesOrigin(4)*(myYLim(2)-myYLim(1))+myYLim(1);
                 obj.pixelxy = [x,y];
                 obj.pixelxy = ceil(obj.pixelxy);
+                obj.pixelRowCol = fliplr(obj.pixelxy);
+                
             end
             out = obj.pixelxy;
-            
+        end
+        %% getPixelRowCol
+        % Find the location of mouse relative to the image in the viewer.
+        % This function takes into account that the axes YDir is reversed
+        % and that the point on the disply may not be 1:1 with the pixels
+        % of the image.
+        function out = getPixelRowCol(obj)
+            myCurrentPoint = get(obj.gui_imageViewer,'CurrentPoint');
+            handles = guidata(obj.gui_imageViewer);
+            axesOrigin = get(handles.axesImageViewer,'Position');
+            myRelativePoint = myCurrentPoint - axesOrigin([2,1]);
+            if any(myRelativePoint<0) || ...
+                    myRelativePoint(1) > axesOrigin(3) || ...
+                    myRelativePoint(2) > axesOrigin(4)
+                obj.pixelRowCol = [];
+                obj.pixelxy = [];
+            else
+                myXLim = get(handles.axesImageViewer,'XLim');
+                myYLim = get(handles.axesImageViewer,'YLim');
+                
+                x = myRelativePoint(1)/axesOrigin(3)*(myXLim(2)-myXLim(1))+myXLim(1);
+                y = (axesOrigin(4)-myRelativePoint(2))/axesOrigin(4)*(myYLim(2)-myYLim(1))+myYLim(1);
+                obj.pixelRowCol = [y,x];
+                obj.pixelRowCol = ceil(obj.pixelRowCol);
+                obj.pixelxy = fliplr(obj.pixelRowCol);
+                
+            end
+            out = obj.pixelRowCol;
         end
         %% resetContrast
         % Set the contrast to reflect the full uint8 range, i.e. 0-255.
@@ -169,6 +200,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                 obj.currentImage = obj.imageBuffer(:,:,frame);
             else
                 obj.currentImage = uint8(bitshift(obj.readImage(frame), -4));
+                %obj.currentImage = uint8(imnormalize(imbackground(obj.readImage(frame), 10, 100)) * 255);
             end
             obj.currentTimepoint = obj.master.obj_fileManager.currentImageTimepoints(frame);
             
