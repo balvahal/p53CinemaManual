@@ -63,8 +63,8 @@ classdef p53CinemaManual_object_imageViewer < handle
                     master.obj_fileManager.setProgressBar(i,master.obj_fileManager.numImages,'Loading status');
                     % Load image
                     referenceImage = obj.readImage(i);
-                    %obj.imageBuffer(:,:,i) = uint8(adapthisteq(imnormalize(referenceImage)) * 255);
-                    obj.imageBuffer(:,:,i) = uint8(imnormalize(imbackground(referenceImage, 10, 100)) * 255);
+                    obj.imageBuffer(:,:,i) = uint8(adapthisteq(imnormalize(referenceImage)) * 255);
+                    %obj.imageBuffer(:,:,i) = uint8(imnormalize(imbackground(referenceImage, 10, 100)) * 255);
                     
                     % Preprocess and find local maxima
                     timepoint = master.obj_fileManager.currentImageTimepoints(i);
@@ -161,7 +161,9 @@ classdef p53CinemaManual_object_imageViewer < handle
         
         %% Frame switching functions
         function setFrame(obj, frame)
+            previousFrame = obj.currentFrame;
             frame = min(max(frame,1), obj.master.obj_fileManager.numImages);
+            directionality = sign(frame - previousFrame);
             obj.currentFrame = frame;
             if(obj.master.obj_fileManager.preallocateMode)
                 obj.currentImage = obj.imageBuffer(:,:,frame);
