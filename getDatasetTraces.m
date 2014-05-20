@@ -1,4 +1,4 @@
-function [singleCellTraces, cellAnnotation] = getDatasetTraces(trackingPath)
+function [singleCellTraces, cellAnnotation] = getDatasetTraces(trackingPath,channel)
     trackingFiles = dir(trackingPath);
     trackingFiles = {trackingFiles(:).name};
     validFiles = regexp(trackingFiles, '\.mat', 'once');
@@ -15,16 +15,16 @@ function [singleCellTraces, cellAnnotation] = getDatasetTraces(trackingPath)
     for i=1:length(trackingFiles)
         load(fullfile(trackingPath, trackingFiles{i}));
         database = readtable(databaseFile, 'Delimiter', '\t');
-        traces = getSingleCellTracks2(rawdatapath, database, selectedGroup, selectedPosition, 'YFP', centroidsTracks);
-        n = size(traces,1);
+        traces = getSingleCellTracks2(rawdatapath, database, selectedGroup, selectedPosition, channel, centroidsTracks);
+        n = length(centroidsTracks.getTrackedCellIds);
         
         subsetIndex = counter:(counter + n - 1);
         singleCellTraces(subsetIndex,:) = traces;
         cellAnnotation(subsetIndex,1) = repmat({selectedGroup}, n, 1);
-        cellAnnotation(subsetIndex,2) = repmat(selectedPosition, n, 1);
-        cellAnnotation(subsetIndex,3) = centroidsTracks.getTrackedCellIds;
+        cellAnnotation(subsetIndex,2) = repmat({selectedPosition}, n, 1);
+        cellAnnotation(subsetIndex,3) = {centroidsTracks.getTrackedCellIds};
         
-        counter = counter + 1;
+        counter = counter + n;
     end
     singleCellTraces = singleCellTraces(1:(counter-1),:);
     cellAnnotation = cellAnnotation(1:(counter-1),:);
