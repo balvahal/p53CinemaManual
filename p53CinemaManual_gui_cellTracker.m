@@ -129,7 +129,7 @@ set(f,'Visible','on');
         centroidsDeath = master.obj_imageViewer.obj_cellTracker.centroidsDeath;
         
         uisave({'selectedGroup','selectedPosition','databaseFile','rawdatapath','centroidsTracks','centroidsDivisions','centroidsDeath'},...
-            fullfile(mainpath, sprintf('tracking_s%d.mat', selectedPosition)));
+            fullfile(mainpath, sprintf('%_s%d_tracking.mat', selectedGroup, selectedPosition)));
         mydata = master.data;
         save(fullfile('C:\Users\kk128\Documents\MATLAB', sprintf('trackingdataobj_s%d.mat', selectedPosition)),'mydata');
     end
