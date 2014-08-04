@@ -49,8 +49,9 @@ classdef p53CinemaManual_object_imageViewer < handle
             %% get image info from first image
             %
             myinfo = imfinfo(fullfile(master.obj_fileManager.rawdatapath,master.obj_fileManager.currentImageFilenames{1}));
-            obj.image_width = myinfo.Width;
-            obj.image_height = myinfo.Height;
+            imageResizeFactor = 0.25;
+            obj.image_width = round(myinfo.Width * imageResizeFactor);
+            obj.image_height = round(myinfo.Height * imageResizeFactor);
             obj.image_widthChar = obj.image_width/master.ppChar(1);
             obj.image_heightChar = obj.image_height/master.ppChar(2);
             %% Preload images
@@ -63,7 +64,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                 for i=1:master.obj_fileManager.numImages
                     master.obj_fileManager.setProgressBar(i,master.obj_fileManager.numImages,'Loading status');
                     % Load image
-                    referenceImage = obj.readImage(i);
+                    referenceImage = imresize(obj.readImage(i), imageResizeFactor);
                     obj.imageBuffer(:,:,i) = uint8(adapthisteq(imnormalize(referenceImage)) * 255);
                     %obj.imageBuffer(:,:,i) = uint8(imnormalize(imbackground(referenceImage, 10, 100)) * 255);
                     
