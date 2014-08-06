@@ -31,6 +31,7 @@ end
 if(obj_cellT.master.obj_fileManager.preprocessMode)
     lookupRadius = obj_cellT.getDistanceRadius;
     queryCentroid = obj_cellT.centroidsLocalMaxima.getClosestCentroid(currentTimepoint, currentRowCol, lookupRadius);
+    queryCentroid = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, queryCentroid, lookupRadius);
 else
     queryCentroid = currentRowCol;
 end
@@ -54,6 +55,9 @@ end
 
 %% Set the centroids in selected cell and time
 selectedCell = obj_cellT.master.obj_imageViewer.selectedCell;
+if(strcmp(altEvent, 'alt')) % Override predictions if user used left click
+    queryCentroid = currentRowCol;
+end
 obj_cellT.centroidsTracks.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
 % Move centroid if there was one in division or death events
 if(obj_cellT.centroidsDivisions.getValue(currentTimepoint, selectedCell))
@@ -65,16 +69,16 @@ end
 
 obj_cellT.setAvailableCells;
 
-selectionType = altEvent;
-if(strcmp(selectionType, 'alt'))
-    annotationType = obj_cellT.cellFateEvent;
-    if(strcmp(annotationType, 'Division'))
-        obj_cellT.centroidsDivisions.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
-    end
-    if(strcmp(annotationType, 'Death'))
-        obj_cellT.centroidsDeath.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
-    end
-end
+% selectionType = altEvent;
+% if(strcmp(selectionType, 'alt'))
+%     annotationType = obj_cellT.cellFateEvent;
+%     if(strcmp(annotationType, 'Division'))
+%         obj_cellT.centroidsDivisions.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
+%     end
+%     if(strcmp(annotationType, 'Death'))
+%         obj_cellT.centroidsDeath.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
+%     end
+% end
 
 obj_cellT.master.obj_imageViewer.setImage;
 drawnow;
