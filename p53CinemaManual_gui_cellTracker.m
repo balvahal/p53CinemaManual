@@ -79,9 +79,11 @@ hbuttongroupTrackEvent = uibuttongroup('Visible','off','Units',get(f,'Units'),..
     'Position',[hx + hwidth + hmargin, hy, hwidth + hmargin_short, hheight * 2 + hmargin_short], 'Parent', f);
 % Create three radio buttons in the button group.
 u0 = uicontrol('Style','pushbutton','String','Division','Units',get(f,'Units'),...
-    'Position',[0.5, hheight, hwidth - 1, hheight],'parent',hbuttongroupTrackEvent,'HandleVisibility','on');
+    'Position',[0.5, hheight, hwidth - 1, hheight],'parent',hbuttongroupTrackEvent,'HandleVisibility','on',...
+    'Callback',{@u0Pushbutton_Callback});
 u1 = uicontrol('Style','pushbutton','String','Death','Units',get(f,'Units'),...
-    'Position',[0.5, 0, hwidth - 1, hheight],'parent',hbuttongroupTrackEvent,'HandleVisibility','on','Visible', 'on');
+    'Position',[0.5, 0, hwidth - 1, hheight],'parent',hbuttongroupTrackEvent,'HandleVisibility','on','Visible', 'on', ...
+    'Callback',{@u1Pushbutton_Callback});
 set(hbuttongroupTrackEvent,'Visible','on');
 
 
@@ -172,7 +174,16 @@ set(f,'Visible','on');
             get(eventdata.NewValue,'String')]);
         disp(get(get(source,'SelectedObject'),'String'));
     end
-    
+
+    function u0Pushbutton_Callback(source, eventdata)
+        master.obj_imageViewer.obj_cellTracker.setDivisionEvent;
+        master.obj_imageViewer.setImage;
+    end
+
+    function u1Pushbutton_Callback(source, eventdata)
+        master.obj_imageViewer.obj_cellTracker.setDeathEvent;
+        master.obj_imageViewer.setImage;
+    end    
 %% Auxiliary functions
     function str = getCurrentPopupString(hh)
         %# getCurrentPopupString returns the currently selected string in the popupmenu with handle hh

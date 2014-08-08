@@ -71,13 +71,17 @@ classdef p53CinemaManual_object_cellTracker < handle
             radius = str2double(get(handles.heditFrameSkip, 'String'));
         end
         
-        function annotationType = cellFateEvent(obj)
-            handles = guidata(obj.gui_cellTracker);
-            eventType = get(handles.u0, 'Value');
-            if(eventType)
-                annotationType = 'Division';
-            else
-                annotationType = 'Death';
+        function [] = setDivisionEvent(obj)
+            centroid = obj.centroidsTracks.getCentroid(obj.master.obj_imageViewer.currentTimepoint, obj.master.obj_imageViewer.selectedCell);
+            if(centroid(1) > 0)
+                obj.centroidsDivisions.setCentroid(obj.master.obj_imageViewer.currentTimepoint, obj.master.obj_imageViewer.selectedCell, centroid, 0);
+            end
+        end
+        
+        function [] = setDeathEvent(obj)
+            centroid = obj.centroidsTracks.getCentroid(obj.master.obj_imageViewer.currentTimepoint, obj.master.obj_imageViewer.selectedCell);
+            if(centroid(1) > 0)
+                obj.centroidsDeath.setCentroid(obj.master.obj_imageViewer.currentTimepoint, obj.master.obj_imageViewer.selectedCell, centroid, 0);
             end
         end
         
