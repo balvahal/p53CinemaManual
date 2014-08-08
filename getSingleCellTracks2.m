@@ -17,12 +17,12 @@ function singleCellTracks = getSingleCellTracks2(rawdatapath, database, group, p
         %YFP_background = imbackground(YFP_ff, 10, 50);
         %YFP_background = YFP_ff;
         %YFP_background = YFP;
-%         YFP_background = imbackground(YFP, 10, 50);
-%         YFP_background = imfilter(YFP_background, fspecial('gaussian', 30, 4));
+        YFP_background = imbackground(YFP, 10, 50);
+        YFP_background = imfilter(YFP_background, fspecial('gaussian', 30, 4));
         
         [currentCentroids, validCells] = centroids.getCentroids(i);
         
-        scalingFactor = 2;
+        scalingFactor = 1;
         currentCentroids(:,1) = min(currentCentroids(:,1) * scalingFactor, size(YFP,1));
         currentCentroids(:,2) = min(currentCentroids(:,2) * scalingFactor, size(YFP,2));
         
