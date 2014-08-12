@@ -33,6 +33,7 @@ Objects = Objects | imfill(EdgeImage, 'holes');
 %LocalMaxima = bwmorph(imregionalmax(bwdist(~Objects)), 'shrink', 'Inf');
 
 LocalMaxima = LocalMaxima .* Objects;
+%LocalMaxima = imregionalmax(bwdist(~Objects));
 LocalMaxima = bwmorph(LocalMaxima, 'shrink', 'inf');
 
 [y,x] = ind2sub(size(IM), find(LocalMaxima));
