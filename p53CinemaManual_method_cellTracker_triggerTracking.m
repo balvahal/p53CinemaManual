@@ -31,7 +31,7 @@ end
 if(obj_cellT.master.obj_fileManager.preprocessMode)
     lookupRadius = obj_cellT.getDistanceRadius;
     queryCentroid = obj_cellT.centroidsLocalMaxima.getClosestCentroid(currentTimepoint, currentRowCol, lookupRadius);
-    queryCentroid = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, queryCentroid, 2);
+    queryCentroid = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, queryCentroid, 1);
 else
     queryCentroid = currentRowCol;
 end
@@ -40,7 +40,7 @@ end
 if(obj_cellT.firstClick)
     lookupRadius = obj_cellT.getDistanceRadius / 6; % 6 was chosen empircally when comparing a 30 pixel radius search area with a 5 pixel radius selection area
     [cellCentroid1, cell_id1] = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, queryCentroid, lookupRadius);
-    [cellCentroid2, cell_id2] = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, currentRowCol, lookupRadius);
+    [cellCentroid2, cell_id2] = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, currentRowCol, 2);
     if(~isempty(cell_id2))
         obj_cellT.master.obj_imageViewer.setSelectedCell(cell_id2);
         queryCentroid = cellCentroid2;
