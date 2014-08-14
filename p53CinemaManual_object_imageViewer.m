@@ -49,7 +49,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             %% get image info from first image
             %
             myinfo = imfinfo(fullfile(master.obj_fileManager.rawdatapath,master.obj_fileManager.currentImageFilenames{1}));
-            imageResizeFactor = 1;
+            imageResizeFactor = 0.5;
             obj.image_width = round(myinfo.Width * imageResizeFactor);
             obj.image_height = round(myinfo.Height * imageResizeFactor);
             obj.image_widthChar = obj.image_width/master.ppChar(1);

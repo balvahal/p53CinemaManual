@@ -22,7 +22,7 @@ function singleCellTracks = getSingleCellTracks2(rawdatapath, database, group, p
         
         [currentCentroids, validCells] = centroids.getCentroids(i);
         
-        scalingFactor = 1;
+        scalingFactor = 2;
         currentCentroids(:,1) = min(currentCentroids(:,1) * scalingFactor, size(YFP,1));
         currentCentroids(:,2) = min(currentCentroids(:,2) * scalingFactor, size(YFP,2));
         
