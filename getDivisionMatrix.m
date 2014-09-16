@@ -1,13 +1,8 @@
-function divisionMatrix = getDivisionMatrix(centroidsDivisions)
-    trackedCells = centroidsDivisions.getTrackedCellIds;
+function divisionMatrix = getDivisionMatrix(centroidsTracks, centroidsDivisions)
+    trackedCells = centroidsTracks.getTrackedCellIds;
     divisionMatrix = zeros(length(trackedCells), length(centroidsDivisions.singleCells));
-    for i = 1:length(trackedCells)
-        currentTrack = centroidsDivisions.getCellTrack(trackedCells(i));
-        divisionEvents = find(currentTrack(:,1) > 0);
-        if(~isempty(divisionEvents))
-            divisionMatrix(i,1:length(divisionEvents)) = divisionEvents;
-        end
+    for t = 1:length(centroidsDivisions.singleCells)
+        [~, validCells] = centroidsDivisions.getCentroids(t);
+        divisionMatrix(validCells,t) = 1;
     end
-    maxDivision = max(sum(divisionMatrix > 0, 2));
-    divisionMatrix = divisionMatrix(:,1:maxDivision);
 end

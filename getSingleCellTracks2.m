@@ -11,25 +11,25 @@ function singleCellTracks = getSingleCellTracks2(rawdatapath, database, group, p
             continue;
         end
         YFP = double(imread(fullfile(rawdatapath, filename)));
-        YFP_background = imfilter(YFP, fspecial('gaussian', 30, 4));
+        %YFP_background = imfilter(YFP, fspecial('gaussian', 30, 4));
         
         %YFP_ff = flatfield_correctImage(YFP, ff_offset, ff_gain);
         %YFP_background = imbackground(YFP_ff, 10, 50);
         %YFP_background = YFP_ff;
         %YFP_background = YFP;
         YFP_background = imbackground(YFP, 10, 50);
-        YFP_background = imfilter(YFP_background, fspecial('gaussian', 30, 4));
+        %YFP_background = imfilter(YFP_background, fspecial('gaussian', 30, 4));
         
         [currentCentroids, validCells] = centroids.getCentroids(i);
         
-        scalingFactor = 2;
+        scalingFactor = 1;
         currentCentroids(:,1) = min(currentCentroids(:,1) * scalingFactor, size(YFP,1));
         currentCentroids(:,2) = min(currentCentroids(:,2) * scalingFactor, size(YFP,2));
         
         currentCentroids = sub2ind(size(YFP), currentCentroids(:,1), currentCentroids(:,2));
         mask = zeros(size(YFP));
         mask(currentCentroids) = validCells;
-        mask = imdilate(mask, strel('disk', 15));
+        mask = imdilate(mask, strel('disk', 7));
         measurements = regionprops(mask, YFP_background, 'MeanIntensity');
         
         measuredCells = ~isnan([measurements.MeanIntensity]);

@@ -1,4 +1,4 @@
-function [singleCellTraces, cellAnnotation] = getDatasetTraces(trackingPath,ffpath,channel)
+function [singleCellTraces, cellAnnotation, divisionMatrix] = getDatasetTraces(trackingPath,ffpath,channel)
     trackingFiles = dir(trackingPath);
     trackingFiles = {trackingFiles(:).name};
     validFiles = regexp(trackingFiles, '\.mat', 'once');
@@ -9,6 +9,7 @@ function [singleCellTraces, cellAnnotation] = getDatasetTraces(trackingPath,ffpa
     maxCells = 10000;
     
     singleCellTraces = -ones(maxCells, numTimepoints);
+    divisionMatrix = -ones(maxCells, 10);
     cellAnnotation = cell(maxCells, 3);
     
     % Prepare flatfield images
