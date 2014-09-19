@@ -157,8 +157,12 @@ set(f,'Visible','on');
         else
             loadStruct = load(fullfile(sourcePath, annotationFile));
             master.obj_imageViewer.obj_cellTracker.centroidsTracks = loadStruct.centroidsTracks;
-            master.obj_imageViewer.obj_cellTracker.centroidsDivisions = loadStruct.centroidsDivisions;
-            master.obj_imageViewer.obj_cellTracker.centroidsDeath = loadStruct.centroidsDeath;
+            if(any(strcmp(fieldnames(loadStruct), 'centroidsDivisions')))
+                master.obj_imageViewer.obj_cellTracker.centroidsDivisions = loadStruct.centroidsDivisions;
+            end
+            if(any(strcmp(fieldnames(loadStruct), 'centroidsDeath')))
+                master.obj_imageViewer.obj_cellTracker.centroidsDeath = loadStruct.centroidsDeath;
+            end
             
         end
         master.obj_imageViewer.selectedCell = 0;

@@ -1,4 +1,4 @@
-function [singleCellTraces, cellAnnotation, divisionMatrix] = getDatasetTraces(trackingPath,ffpath,channel)
+function [singleCellTraces, cellAnnotation, divisionMatrixDataset, filledSingleCellTraces, filledDivisionMatrixDataset] = getDatasetTraces_fillLineageInformation(trackingPath,ffpath,channel)
     trackingFiles = dir(trackingPath);
     trackingFiles = {trackingFiles(:).name};
     validFiles = regexp(trackingFiles, '\.mat', 'once');
@@ -9,7 +9,9 @@ function [singleCellTraces, cellAnnotation, divisionMatrix] = getDatasetTraces(t
     maxCells = 10000;
     
     singleCellTraces = -ones(maxCells, numTimepoints);
-    divisionMatrix = -ones(maxCells, 10);
+    divisionMatrixDataset = -ones(maxCells, numTimepoints);
+    filledDivisionMatrixDataset = -ones(maxCells, numTimepoints);
+    filledSingleCellTraces = -ones(maxCells, numTimepoints);
     cellAnnotation = cell(maxCells, 3);
     
     % Prepare flatfield images
@@ -24,19 +26,29 @@ function [singleCellTraces, cellAnnotation, divisionMatrix] = getDatasetTraces(t
         load(fullfile(trackingPath, trackingFiles{i}));
         database = readtable(databaseFile, 'Delimiter', '\t');
         traces = getSingleCellTracks2(rawdatapath, database, selectedGroup, selectedPosition, channel, centroidsTracks, ff_offset, ff_gain);
-        n = length(centroidsTracks.getTrackedCellIds);
+        divisionMatrix = getDivisionMatrix(centroidsTracks, centroidsDivisions);
+        filledTraces = fillLineageInformation(traces, centroidsDivisions);
+        filledDivisionMatrix = fillLineageInformation(divisionMatrix, centroidsDivisions);
         
+        n = length(centroidsTracks.getTrackedCellIds);
+
         subsetIndex = counter:(counter + n - 1);
         singleCellTraces(subsetIndex,:) = traces;
+        divisionMatrixDataset(subsetIndex,:) = divisionMatrix;
+        filledDivisionMatrixDataset(subsetIndex,:) = filledDivisionMatrix;
+        filledSingleCellTraces(subsetIndex,:) = filledTraces;
+        
         cellAnnotation(subsetIndex,1) = repmat({selectedGroup}, n, 1);
         cellAnnotation(subsetIndex,2) = repmat({selectedPosition}, n, 1);
         trackedCells = centroidsTracks.getTrackedCellIds;
         for j =1:length(subsetIndex)
             cellAnnotation(subsetIndex(j),3) = {trackedCells(j)};
         end
-        
         counter = counter + n;
     end
     singleCellTraces = singleCellTraces(1:(counter-1),:);
+    divisionMatrixDataset = divisionMatrixDataset(1:(counter-1),:);
+    filledDivisionMatrixDataset = filledDivisionMatrixDataset(1:(counter-1),:);
+    filledSingleCellTraces = filledSingleCellTraces(1:(counter-1),:);    
     cellAnnotation = cellAnnotation(1:(counter-1),:);
 end
