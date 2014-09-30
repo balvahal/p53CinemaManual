@@ -20,14 +20,19 @@ function [singleCellTraces, cellAnnotation, divisionMatrix] = getDatasetTraces(t
     end
     
     counter = 1;
+    progress = 10;
     for i=1:length(trackingFiles)
+        if(i/length(trackingFiles) * 100 > progress)
+            fprintf('%d ', progress);
+            progress = progress + 10;
+        end
         load(fullfile(trackingPath, trackingFiles{i}));
         database = readtable(databaseFile, 'Delimiter', '\t');
         traces = getSingleCellTracks2(rawdatapath, database, selectedGroup, selectedPosition, channel, centroidsTracks, ff_offset, ff_gain);
         n = length(centroidsTracks.getTrackedCellIds);
         
         subsetIndex = counter:(counter + n - 1);
-        singleCellTraces(subsetIndex,:) = traces;
+        singleCellTraces(subsetIndex,1:size(traces,2)) = traces;
         cellAnnotation(subsetIndex,1) = repmat({selectedGroup}, n, 1);
         cellAnnotation(subsetIndex,2) = repmat({selectedPosition}, n, 1);
         trackedCells = centroidsTracks.getTrackedCellIds;
@@ -37,6 +42,7 @@ function [singleCellTraces, cellAnnotation, divisionMatrix] = getDatasetTraces(t
         
         counter = counter + n;
     end
+    fprintf('\n');
     singleCellTraces = singleCellTraces(1:(counter-1),:);
     cellAnnotation = cellAnnotation(1:(counter-1),:);
 end

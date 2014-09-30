@@ -144,6 +144,38 @@ set(f,'Visible','on');
                 master.obj_imageViewer.nextFrame;
             case 'comma'
                 master.obj_imageViewer.previousFrame;
+            case 'rightarrow'
+                breakpoints = getTrackBreakpoints(master.obj_imageViewer.obj_cellTracker.centroidsTracks);
+                if(~isempty(breakpoints))
+                    jumpFrame = find(breakpoints > master.obj_imageViewer.currentFrame,1,'first');
+                    if(~isempty(jumpFrame))
+                        master.obj_imageViewer.setFrame(breakpoints(jumpFrame));
+                    end
+                end
+            case 'leftarrow'
+                breakpoints = getTrackBreakpoints(master.obj_imageViewer.obj_cellTracker.centroidsTracks);
+                if(~isempty(breakpoints))
+                    jumpFrame = find(breakpoints < master.obj_imageViewer.currentFrame,1,'last');
+                    if(~isempty(jumpFrame))
+                        master.obj_imageViewer.setFrame(breakpoints(jumpFrame));
+                    end
+                end
+            case 'downarrow'
+                breakpoints = getTrackBreakpoints(master.obj_imageViewer.obj_cellTracker.centroidsDivisions);
+                if(~isempty(breakpoints))
+                    jumpFrame = find(breakpoints > master.obj_imageViewer.currentFrame,1,'first');
+                    if(~isempty(jumpFrame))
+                        master.obj_imageViewer.setFrame(breakpoints(jumpFrame));
+                    end
+                end
+            case 'uparrow'
+                breakpoints = getTrackBreakpoints(master.obj_imageViewer.obj_cellTracker.centroidsDivisions);
+                if(~isempty(breakpoints))
+                    jumpFrame = find(breakpoints < master.obj_imageViewer.currentFrame,1,'last');
+                    if(~isempty(jumpFrame))
+                        master.obj_imageViewer.setFrame(breakpoints(jumpFrame));
+                    end
+                end
             case 'backspace'
                 currentCentroid = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell);
                 if(currentCentroid(1) > 0)
@@ -154,6 +186,23 @@ set(f,'Visible','on');
                 else
                     master.obj_imageViewer.deleteSelectedCellTrack();
                 end
+        end
+    end
+
+    function breakpoints = getTrackBreakpoints(centroidsObject)
+        selectedCell = master.obj_imageViewer.selectedCell;
+        if(master.obj_imageViewer.selectedCell > 0)
+            currentTrack = centroidsObject.getCellTrack(selectedCell);
+            currentTrack = currentTrack(master.obj_fileManager.currentImageTimepoints,:);
+            activeTimepoints = find(currentTrack(:,1) > 0);
+            if(~isempty(activeTimepoints))
+                breakpoints = unique([1, find(diff(activeTimepoints) > 1)'+1, length(activeTimepoints)]);
+                breakpoints = activeTimepoints(breakpoints);
+            else
+                breakpoints = [];
+            end
+        else
+            breakpoints = [];
         end
     end
 
