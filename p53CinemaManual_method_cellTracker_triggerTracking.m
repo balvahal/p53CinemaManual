@@ -33,7 +33,8 @@ if(obj_cellT.master.obj_fileManager.preprocessMode)
     queryCentroid = obj_cellT.centroidsLocalMaxima.getClosestCentroid(currentTimepoint, currentRowCol, lookupRadius);
     queryCentroid = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, queryCentroid, 1);
 else
-    queryCentroid = currentRowCol;
+    lookupRadius = obj_cellT.getDistanceRadius;
+    queryCentroid = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, currentRowCol, 2);
 end
 % If this is the first time the user clicks after starting a new track,
 % define the selected cell

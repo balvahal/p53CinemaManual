@@ -70,13 +70,15 @@ classdef p53CinemaManual_object_imageViewer < handle
                     obj.imageBuffer(:,:,i) = uint8(imnormalize(referenceImage) * 255);
                     
                     % Preprocess and find local maxima
-                    timepoint = master.obj_fileManager.currentImageTimepoints(i);
-                    if(~strcmp(master.obj_fileManager.maximaChannel, master.obj_fileManager.selectedChannel))
-                        referenceImageName = master.obj_fileManager.getFilename(master.obj_fileManager.selectedPosition, master.obj_fileManager.maximaChannel, master.obj_fileManager.currentImageTimepoints(i));
-                        referenceImage = imread(fullfile(master.obj_fileManager.rawdatapath, referenceImageName));
+                    if(obj.master.obj_fileManager.preprocessMode)
+                        timepoint = master.obj_fileManager.currentImageTimepoints(i);
+                        if(~strcmp(master.obj_fileManager.maximaChannel, master.obj_fileManager.selectedChannel))
+                            referenceImageName = master.obj_fileManager.getFilename(master.obj_fileManager.selectedPosition, master.obj_fileManager.maximaChannel, master.obj_fileManager.currentImageTimepoints(i));
+                            referenceImage = imread(fullfile(master.obj_fileManager.rawdatapath, referenceImageName));
+                        end
+                        localMaxima = getImageMaxima(referenceImage);
+                        obj.obj_cellTracker.centroidsLocalMaxima.insertCentroids(timepoint, localMaxima);
                     end
-                    localMaxima = getImageMaxima(referenceImage);
-                    obj.obj_cellTracker.centroidsLocalMaxima.insertCentroids(timepoint, localMaxima);
                 end
                 
                 %Get the range of the dataset
