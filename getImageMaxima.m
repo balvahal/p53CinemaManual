@@ -1,6 +1,7 @@
 function LocalMaxima = getImageMaxima(IM)
 %IM = imnormalize(log(double(IM)));
-BlurredImage = double(imfilter(IM, fspecial('gaussian', 20, 4), 'replicate'));
+IM = medfilt2(IM, [4,4]);
+BlurredImage = double(imfilter(IM, fspecial('gaussian', 40, 4), 'replicate'));
 %BlurredImage = imnormalize(log(double(BlurredImage)));
 
 %% Intensity based local maxima
