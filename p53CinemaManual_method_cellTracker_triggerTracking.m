@@ -70,17 +70,6 @@ end
 
 obj_cellT.setAvailableCells;
 
-% selectionType = altEvent;
-% if(strcmp(selectionType, 'alt'))
-%     annotationType = obj_cellT.cellFateEvent;
-%     if(strcmp(annotationType, 'Division'))
-%         obj_cellT.centroidsDivisions.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
-%     end
-%     if(strcmp(annotationType, 'Death'))
-%         obj_cellT.centroidsDeath.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
-%     end
-% end
-
 obj_cellT.master.obj_imageViewer.setImage;
 drawnow;
 frameSkip = obj_cellT.getFrameSkip;

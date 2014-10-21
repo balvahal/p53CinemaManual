@@ -130,10 +130,22 @@ set(f,'Visible','on');
         centroidsDivisions = master.obj_imageViewer.obj_cellTracker.centroidsDivisions;
         centroidsDeath = master.obj_imageViewer.obj_cellTracker.centroidsDeath;
         
+        % A patchy solution: scale centroids given imageResizeFactor
+        for i=1:length(centroidsTracks.singleCells)
+            centroidsTracks.singleCells(i).point = centroidsTracks.singleCells(i).point / master.obj_imageViewer.imageResizeFactor;
+            centroidsDivisions.singleCells(i).point = centroidsDivisions.singleCells(i).point / master.obj_imageViewer.imageResizeFactor;
+            centroidsDeath.singleCells(i).point = centroidsDeath.singleCells(i).point / master.obj_imageViewer.imageResizeFactor;
+        end
+        
         uisave({'selectedGroup','selectedPosition','databaseFile','rawdatapath','centroidsTracks','centroidsDivisions','centroidsDeath'},...
             fullfile(mainpath, sprintf('%s_s%d_tracking.mat', selectedGroup, selectedPosition)));
-        mydata = master.data;
-        save(fullfile('C:\Users\kk128\Documents\MATLAB', sprintf('trackingdataobj_s%d.mat', selectedPosition)),'mydata');
+        
+        % Bring back centroid positions to current scale
+        for i=1:length(centroidsTracks.singleCells)
+            centroidsTracks.singleCells(i).point = centroidsTracks.singleCells(i).point * master.obj_imageViewer.imageResizeFactor;
+            centroidsDivisions.singleCells(i).point = centroidsDivisions.singleCells(i).point * master.obj_imageViewer.imageResizeFactor;
+            centroidsDeath.singleCells(i).point = centroidsDeath.singleCells(i).point * master.obj_imageViewer.imageResizeFactor;
+        end
     end
 
     function pushbuttonLoadAnnotations_Callback(~,~)
@@ -151,7 +163,7 @@ set(f,'Visible','on');
                 subCentroids = table2array(myCentroids(myCentroids.timepoint == i, 3:4));
                 subValues = table2array(myCentroids(myCentroids.timepoint == i, 5));
                 subIndex = table2array(myCentroids(myCentroids.timepoint == i, 1));
-                master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).point(subIndex,:) = subCentroids;
+                master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).point(subIndex,:) = subCentroids * master.obj_imageViewer.imageResizeFactor;
                 master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).value(subIndex) = subValues;
             end
         else
@@ -162,6 +174,12 @@ set(f,'Visible','on');
             end
             if(any(strcmp(fieldnames(loadStruct), 'centroidsDeath')))
                 master.obj_imageViewer.obj_cellTracker.centroidsDeath = loadStruct.centroidsDeath;
+            end
+            % Make sure to rescale the centroids to fit current image size
+            for i=1:length(master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells)
+                master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).point = master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).point * master.obj_imageViewer.imageResizeFactor;
+                master.obj_imageViewer.obj_cellTracker.centroidsDivisions.singleCells(i).point = master.obj_imageViewer.obj_cellTracker.centroidsDivisions.singleCells(i).point * master.obj_imageViewer.imageResizeFactor;
+                master.obj_imageViewer.obj_cellTracker.centroidsDeath.singleCells(i).point = master.obj_imageViewer.obj_cellTracker.centroidsDeath.singleCells(i).point * master.obj_imageViewer.imageResizeFactor;
             end
             
         end
