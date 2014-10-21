@@ -145,6 +145,12 @@ set(f,'Visible','on');
     function pushbuttonDatabasePath_Callback(~,~)
         [databaseFile, sourcePath] = uigetfile('./*.txt');
         database = readtable(fullfile(sourcePath, databaseFile), 'Delimiter', '\t');
+        if(~iscell(database.group_label))
+            database.group_label = cellfun(@num2str, num2cell(database.group_label), 'UniformOutput', 0);
+        end
+        if(~iscell(database.channel_name))
+            database.channel_name = cellfun(@num2str, num2cell(database.position_number), 'UniformOutput', 0);
+        end
         
         set(heditDatabasePath, 'String', fullfile(sourcePath, databaseFile));
         set(heditRawDataPath, 'String', fullfile(sourcePath, 'RAW_DATA'));

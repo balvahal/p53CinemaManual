@@ -35,12 +35,6 @@ classdef p53CinemaManual_object_fileManager < handle
         
         %% Set variables
         function setDatabase(obj, database)
-            if(~iscell(database.group_label))
-                database.position_number = cellfun(@num2str, num2cell(database.group_label), 'UniformOutput', 0);
-            end
-            if(~iscell(database.channel_name))
-                database.position_number = cellfun(@num2str, num2cell(database.position_number), 'UniformOutput', 0);
-            end
             obj.database = database;
             obj.master.data.database = database;
         end
