@@ -26,7 +26,7 @@ LocalMaxima = bwmorph(LocalMaxima, 'shrink');
 
 nbin = 100;
 [y,x] = hist(BlurredImage(:), nbin);
-threshold = x(round(nbin * SEGMENTATION_TriangleMethod(y) * 1.25));
+threshold = x(round(nbin * SEGMENTATION_TriangleMethod(y) * 1.15));
 Objects = imfill(imopen(BlurredImage > threshold, strel('disk', 4)), 'holes');
 
 EdgeImage = imdilate(edge(BlurredImage, 'canny'), strel('disk', 1));

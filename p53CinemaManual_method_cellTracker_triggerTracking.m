@@ -30,8 +30,11 @@ end
 % mode"
 if(obj_cellT.master.obj_fileManager.preprocessMode)
     lookupRadius = obj_cellT.getDistanceRadius;
-    queryCentroid = obj_cellT.centroidsLocalMaxima.getClosestCentroid(currentTimepoint, currentRowCol, lookupRadius);
-    queryCentroid = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, queryCentroid, 1);
+    [queryCentroid,d] = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, currentRowCol, 1);
+    if(isempty(d))
+        queryCentroid = obj_cellT.centroidsLocalMaxima.getClosestCentroid(currentTimepoint, currentRowCol, lookupRadius);
+    end
+        
 else
     lookupRadius = obj_cellT.getDistanceRadius;
     queryCentroid = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, currentRowCol, 2);
