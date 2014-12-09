@@ -2,38 +2,60 @@
 % a simple gui to pause, stop, and resume a running MDA
 function [f] = p53CinemaManual_gui_imageViewer(master)
 %% Create the figure
-% The size of the figure was chosen to fit within a 1920x1200 pixel
-% monitor. 
-fwidth = (40+1344+80)/master.ppChar(1); %40 pixels for a border, 80 pixels for buttons
-fheight = (40+1024+30)/master.ppChar(2); %40 pixels for a border, 30 pixels for the slider
-%fwidth = 1.1*master.obj_imageViewer.image_width/master.ppChar(1);
-%fheight = (1.1*master.obj_imageViewer.image_height + 100)/master.ppChar(2);
-fx = 10/master.ppChar(1);
-fy = 10/master.ppChar(2);
+% % The size of the figure was chosen to fit within a 1920x1200 pixel
+% % monitor. 
+% fwidth = (40+1344+80)/master.ppChar(1); %40 pixels for a border, 80 pixels for buttons
+% fheight = (40+1024+30)/master.ppChar(2); %40 pixels for a border, 30 pixels for the slider
+% %fwidth = 1.1*master.obj_imageViewer.image_width/master.ppChar(1);
+% %fheight = (1.1*master.obj_imageViewer.image_height + 100)/master.ppChar(2);
+% fx = 10/master.ppChar(1);
+% fy = 10/master.ppChar(2);
+% f = figure('Visible','off','Units','characters','MenuBar','none',...
+%     'Resize','off','Name','Image Viewer',...
+%     'Renderer','OpenGL','Position',[fx fy fwidth fheight],...
+%     'CloseRequestFcn',{@fCloseRequestFcn},...
+%     'KeyPressFcn',{@fKeyPressFcn},...
+%     'WindowButtonDownFcn',{@fWindowButtonDownFcn},...
+%     'WindowButtonMotionFcn',{@fHover},...
+%     'WindowScrollWheelFcn',{@fWindowScrollWheelFcn});
+% %% Create the axes that will show the image
+% % The size of the axes must share the same aspect ratio as source image,
+% % while maximizing the space on screen. The largest width to be accomadated
+% % is 1344. The largest height 1024. A short section of code will maximize
+% % one of these two directions and then scale the other accordingly.
+% if master.obj_imageViewer.image_width/master.obj_imageViewer.image_height > 1344/1024
+%     % then maximize the width
+%     hwidthaxes = 1344/master.ppChar(1);
+%     hheightaxes = 1344*master.obj_imageViewer.image_height/master.obj_imageViewer.image_width/master.ppChar(2);
+% else
+%     % then maximize the height
+%     hheightaxes  = 1024/master.ppChar(2);
+%     hwidthaxes  = 1024*master.obj_imageViewer.image_width/master.obj_imageViewer.image_height/master.ppChar(1);
+% end
+% hx = (fwidth-hwidthaxes - 80/master.ppChar(1))/2;
+% hy = (fheight-hheightaxes + 30/master.ppChar(2))/2;
+
+maxHeight = 1200 - 5*master.ppChar(2);
+
+hheightaxes = min(master.obj_imageViewer.image_height, maxHeight);
+hwidthaxes = hheightaxes * master.obj_imageViewer.image_width / master.obj_imageViewer.image_height;
+hheightaxes = hheightaxes/master.ppChar(2);
+hwidthaxes = hwidthaxes/master.ppChar(1);
+
+fwidth = hwidthaxes;
+fheight = hheightaxes + 5;
+
 f = figure('Visible','off','Units','characters','MenuBar','none',...
     'Resize','off','Name','Image Viewer',...
-    'Renderer','OpenGL','Position',[fx fy fwidth fheight],...
+    'Renderer','OpenGL','Position',[0 0 fwidth fheight],...
     'CloseRequestFcn',{@fCloseRequestFcn},...
     'KeyPressFcn',{@fKeyPressFcn},...
     'WindowButtonDownFcn',{@fWindowButtonDownFcn},...
     'WindowButtonMotionFcn',{@fHover},...
     'WindowScrollWheelFcn',{@fWindowScrollWheelFcn});
-%% Create the axes that will show the image
-% The size of the axes must share the same aspect ratio as source image,
-% while maximizing the space on screen. The largest width to be accomadated
-% is 1344. The largest height 1024. A short section of code will maximize
-% one of these two directions and then scale the other accordingly.
-if master.obj_imageViewer.image_width/master.obj_imageViewer.image_height > 1344/1024
-    % then maximize the width
-    hwidthaxes = 1344/master.ppChar(1);
-    hheightaxes = 1344*master.obj_imageViewer.image_height/master.obj_imageViewer.image_width/master.ppChar(2);
-else
-    % then maximize the height
-    hheightaxes  = 1024/master.ppChar(2);
-    hwidthaxes  = 1024*master.obj_imageViewer.image_width/master.obj_imageViewer.image_height/master.ppChar(1);
-end
-hx = (fwidth-hwidthaxes - 80/master.ppChar(1))/2;
-hy = (fheight-hheightaxes + 30/master.ppChar(2))/2;
+
+hx = 0; hy = 5;
+
 %hwidth = master.obj_imageViewer.image_width/master.ppChar(1);
 %hheight = master.obj_imageViewer.image_height/master.ppChar(2);
 %hx = (fwidth-hwidth)/2;
@@ -85,8 +107,8 @@ hold(haxesImageViewer, 'off');
 % Slider bar and two buttons
 hwidth = hwidthaxes;
 hheight = 20/master.ppChar(2);
-hx = (fwidth-hwidthaxes -80/master.ppChar(1))/2;
-hy = 10/master.ppChar(2);
+hx = 0;
+hy = 0;
 
 sliderStep = 1/(master.obj_fileManager.numImages - 1);
 hsliderExploreStack = uicontrol('Style','slider','Units','characters',...
@@ -96,16 +118,17 @@ hsliderExploreStack = uicontrol('Style','slider','Units','characters',...
 hListener = handle.listener(hsliderExploreStack,'ActionEvent',@sliderExploreStack_Callback);
 setappdata(hsliderExploreStack,'sliderListener',hListener);
 
+hx = 0;
+hy = hy + hheight + 1;
 hwidth = 60/master.ppChar(1);
 hheight = 30/master.ppChar(2);
-hx = fwidth-70/master.ppChar(1);
-hy = fheight-50/master.ppChar(2);
+
 hpushbuttonFirstImage = uicontrol('Style','pushbutton','Units','characters',...
     'FontSize',10,'FontName','Arial','BackgroundColor',[255 215 0]/255,...
     'String','First Image','Position',[hx hy hwidth hheight],...
     'Callback',{@pushbuttonFirstImage_Callback});
 
-hy = fheight-100/master.ppChar(2);
+hx = fwidth - hwidth;
 hpushbuttonLastImage = uicontrol('Style','pushbutton','Units','characters',...
     'FontSize',10,'FontName','Arial','BackgroundColor',[60 179 113]/255,...
     'String','Last Image','Position',[hx hy hwidth hheight],...
@@ -144,6 +167,38 @@ set(f,'Visible','on');
                 master.obj_imageViewer.nextFrame;
             case 'comma'
                 master.obj_imageViewer.previousFrame;
+            case 'rightarrow'
+                breakpoints = getTrackBreakpoints(master.obj_imageViewer.obj_cellTracker.centroidsTracks);
+                if(~isempty(breakpoints))
+                    jumpFrame = find(breakpoints > master.obj_imageViewer.currentFrame,1,'first');
+                    if(~isempty(jumpFrame))
+                        master.obj_imageViewer.setFrame(breakpoints(jumpFrame));
+                    end
+                end
+            case 'leftarrow'
+                breakpoints = getTrackBreakpoints(master.obj_imageViewer.obj_cellTracker.centroidsTracks);
+                if(~isempty(breakpoints))
+                    jumpFrame = find(breakpoints < master.obj_imageViewer.currentFrame,1,'last');
+                    if(~isempty(jumpFrame))
+                        master.obj_imageViewer.setFrame(breakpoints(jumpFrame));
+                    end
+                end
+            case 'downarrow'
+                breakpoints = getTrackBreakpoints(master.obj_imageViewer.obj_cellTracker.centroidsDivisions);
+                if(~isempty(breakpoints))
+                    jumpFrame = find(breakpoints > master.obj_imageViewer.currentFrame,1,'first');
+                    if(~isempty(jumpFrame))
+                        master.obj_imageViewer.setFrame(breakpoints(jumpFrame));
+                    end
+                end
+            case 'uparrow'
+                breakpoints = getTrackBreakpoints(master.obj_imageViewer.obj_cellTracker.centroidsDivisions);
+                if(~isempty(breakpoints))
+                    jumpFrame = find(breakpoints < master.obj_imageViewer.currentFrame,1,'last');
+                    if(~isempty(jumpFrame))
+                        master.obj_imageViewer.setFrame(breakpoints(jumpFrame));
+                    end
+                end
             case 'backspace'
                 currentCentroid = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell);
                 if(currentCentroid(1) > 0)
@@ -154,6 +209,23 @@ set(f,'Visible','on');
                 else
                     master.obj_imageViewer.deleteSelectedCellTrack();
                 end
+        end
+    end
+
+    function breakpoints = getTrackBreakpoints(centroidsObject)
+        selectedCell = master.obj_imageViewer.selectedCell;
+        if(master.obj_imageViewer.selectedCell > 0)
+            currentTrack = centroidsObject.getCellTrack(selectedCell);
+            currentTrack = currentTrack(master.obj_fileManager.currentImageTimepoints,:);
+            activeTimepoints = find(currentTrack(:,1) > 0);
+            if(~isempty(activeTimepoints))
+                breakpoints = unique([1, find(diff(activeTimepoints) > 1)'+1, length(activeTimepoints)]);
+                breakpoints = activeTimepoints(breakpoints);
+            else
+                breakpoints = [];
+            end
+        else
+            breakpoints = [];
         end
     end
 

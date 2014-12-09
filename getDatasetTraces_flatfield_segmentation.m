@@ -1,4 +1,4 @@
-function [singleCellTraces, cellAnnotation, divisionMatrix] = getDatasetTraces(database, rawdata_path, trackingPath,ffpath,channel)
+function [singleCellTraces, cellAnnotation] = getDatasetTraces_flatfield_segmentation(trackingPath, ffpath, measured_channel, segmentation_channel)
     trackingFiles = dir(trackingPath);
     trackingFiles = {trackingFiles(:).name};
     validFiles = regexp(trackingFiles, '\.mat', 'once');
@@ -9,39 +9,26 @@ function [singleCellTraces, cellAnnotation, divisionMatrix] = getDatasetTraces(d
     maxCells = 10000;
     
     singleCellTraces = -ones(maxCells, numTimepoints);
-    divisionMatrix = -ones(maxCells, 10);
     cellAnnotation = cell(maxCells, 3);
     
-    % Prepare flatfield images
-    if(~isempty(ffpath) && ~strcmp(ffpath, ''))
-        [ff_offset, ff_gain] = flatfield_readFlatfieldImages(ffpath, channel);
-    else
-        ff_offset = 0; ff_gain = 0;
-    end
+    [ff_offset, ff_gain] = flatfield_readFlatfieldImages(ffpath, measured_channel);
     
     counter = 1;
-    progress = 10;
     for i=1:length(trackingFiles)
-        if(i/length(trackingFiles) * 100 > progress)
-            fprintf('%d ', progress);
-            progress = progress + 10;
-        end
         load(fullfile(trackingPath, trackingFiles{i}));
-        traces = getSingleCellTracks2(rawdata_path, database, selectedGroup, selectedPosition, channel, centroidsTracks, ff_offset, ff_gain);
+        database = readtable(databaseFile, 'Delimiter', '\t');
+        traces = getSingleCellTracks2_flatfield_segmentation(rawdatapath, database, selectedGroup, selectedPosition, measured_channel, segmentation_channel, centroidsTracks, ff_offset, ff_gain);
         n = length(centroidsTracks.getTrackedCellIds);
         
         subsetIndex = counter:(counter + n - 1);
-        singleCellTraces(subsetIndex,1:size(traces,2)) = traces;
+        singleCellTraces(subsetIndex,:) = traces;
         cellAnnotation(subsetIndex,1) = repmat({selectedGroup}, n, 1);
         cellAnnotation(subsetIndex,2) = repmat({selectedPosition}, n, 1);
-        trackedCells = centroidsTracks.getTrackedCellIds;
-        for j =1:length(subsetIndex)
-            cellAnnotation(subsetIndex(j),3) = {trackedCells(j)};
-        end
+        cellAnnotation(subsetIndex,3) = {centroidsTracks.getTrackedCellIds};
         
         counter = counter + n;
     end
-    fprintf('\n');
     singleCellTraces = singleCellTraces(1:(counter-1),:);
     cellAnnotation = cellAnnotation(1:(counter-1),:);
+    
 end

@@ -30,6 +30,7 @@ classdef p53CinemaManual_object_imageViewer < handle
         currentFrame = 1;
         pixelRowCol;
         pixelxy;
+        imageResizeFactor;
         
         selectedCell;
         
@@ -48,9 +49,11 @@ classdef p53CinemaManual_object_imageViewer < handle
             obj.master = master;
             %% get image info from first image
             %
-            myinfo = imfinfo(fullfile(master.obj_fileManager.rawdatapath,master.obj_fileManager.currentImageFilenames{1}));
-            obj.image_width = myinfo.Width;
-            obj.image_height = myinfo.Height;
+            IM = imread(fullfile(master.obj_fileManager.rawdatapath,master.obj_fileManager.currentImageFilenames{1}));
+            obj.imageResizeFactor = 1;
+            IM = imresize(IM, obj.imageResizeFactor);
+            obj.image_width = size(IM,2);
+            obj.image_height = size(IM,1);
             obj.image_widthChar = obj.image_width/master.ppChar(1);
             obj.image_heightChar = obj.image_height/master.ppChar(2);
             %% Preload images
@@ -63,18 +66,22 @@ classdef p53CinemaManual_object_imageViewer < handle
                 for i=1:master.obj_fileManager.numImages
                     master.obj_fileManager.setProgressBar(i,master.obj_fileManager.numImages,'Loading status');
                     % Load image
-                    referenceImage = obj.readImage(i);
-                    obj.imageBuffer(:,:,i) = uint8(adapthisteq(imnormalize(referenceImage)) * 255);
+                    referenceImage = imresize(obj.readImage(i), obj.imageResizeFactor);
+                    %obj.imageBuffer(:,:,i) = uint8(adapthisteq(imnormalize(referenceImage)) * 255);
                     %obj.imageBuffer(:,:,i) = uint8(imnormalize(imbackground(referenceImage, 10, 100)) * 255);
+                    %obj.imageBuffer(:,:,i) = uint8(imbackground(referenceImage, 10, 100));
+                    obj.imageBuffer(:,:,i) = uint8(imnormalize(referenceImage) * 255);
                     
                     % Preprocess and find local maxima
-                    timepoint = master.obj_fileManager.currentImageTimepoints(i);
-                    if(~strcmp(master.obj_fileManager.maximaChannel, master.obj_fileManager.selectedChannel))
-                        referenceImageName = master.obj_fileManager.getFilename(master.obj_fileManager.selectedPosition, master.obj_fileManager.maximaChannel, master.obj_fileManager.currentImageTimepoints(i));
-                        referenceImage = imread(fullfile(master.obj_fileManager.rawdatapath, referenceImageName));
+                    if(obj.master.obj_fileManager.preprocessMode)
+                        timepoint = master.obj_fileManager.currentImageTimepoints(i);
+                        if(~strcmp(master.obj_fileManager.maximaChannel, master.obj_fileManager.selectedChannel))
+                            referenceImageName = master.obj_fileManager.getFilename(master.obj_fileManager.selectedPosition, master.obj_fileManager.maximaChannel, master.obj_fileManager.currentImageTimepoints(i));
+                            referenceImage = imread(fullfile(master.obj_fileManager.rawdatapath, referenceImageName));
+                        end
+                        localMaxima = getImageMaxima(referenceImage);
+                        obj.obj_cellTracker.centroidsLocalMaxima.insertCentroids(timepoint, localMaxima);
                     end
-                    localMaxima = getImageMaxima(referenceImage);
-                    obj.obj_cellTracker.centroidsLocalMaxima.insertCentroids(timepoint, localMaxima);
                 end
                 
                 %Get the range of the dataset
@@ -98,7 +105,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             myCurrentPoint = get(obj.gui_imageViewer,'CurrentPoint');
             handles = guidata(obj.gui_imageViewer);
             axesOrigin = get(handles.axesImageViewer,'Position');
-            myRelativePoint = myCurrentPoint - axesOrigin([2,1]);
+            myRelativePoint = myCurrentPoint - axesOrigin([1,2]);
             if any(myRelativePoint<0) || ...
                     myRelativePoint(1) > axesOrigin(3) || ...
                     myRelativePoint(2) > axesOrigin(4)
@@ -110,6 +117,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                 
                 x = myRelativePoint(1)/axesOrigin(3)*(myXLim(2)-myXLim(1))+myXLim(1);
                 y = (axesOrigin(4)-myRelativePoint(2))/axesOrigin(4)*(myYLim(2)-myYLim(1))+myYLim(1);
+
                 obj.pixelxy = [x,y];
                 obj.pixelxy = ceil(obj.pixelxy);
                 obj.pixelRowCol = fliplr(obj.pixelxy);
@@ -126,7 +134,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             myCurrentPoint = get(obj.gui_imageViewer,'CurrentPoint');
             handles = guidata(obj.gui_imageViewer);
             axesOrigin = get(handles.axesImageViewer,'Position');
-            myRelativePoint = myCurrentPoint - axesOrigin([2,1]);
+            myRelativePoint = myCurrentPoint - axesOrigin([1,2]);
             if any(myRelativePoint<0) || ...
                     myRelativePoint(1) > axesOrigin(3) || ...
                     myRelativePoint(2) > axesOrigin(4)

@@ -78,10 +78,12 @@ hy = hy - hheight;
 hbuttongroupTrackEvent = uibuttongroup('Visible','off','Units',get(f,'Units'),...
     'Position',[hx + hwidth + hmargin, hy, hwidth + hmargin_short, hheight * 2 + hmargin_short], 'Parent', f);
 % Create three radio buttons in the button group.
-u0 = uicontrol('Style','radiobutton','String','Division','Units',get(f,'Units'),...
-    'Position',[0.5, hheight, hwidth - 1, hheight],'parent',hbuttongroupTrackEvent,'HandleVisibility','on');
-u1 = uicontrol('Style','radiobutton','String','Death','Units',get(f,'Units'),...
-    'Position',[0.5, 0, hwidth - 1, hheight],'parent',hbuttongroupTrackEvent,'HandleVisibility','on','Visible', 'on');
+u0 = uicontrol('Style','pushbutton','String','Division','Units',get(f,'Units'),...
+    'Position',[0.5, hheight, hwidth - 1, hheight],'parent',hbuttongroupTrackEvent,'HandleVisibility','on',...
+    'Callback',{@u0Pushbutton_Callback});
+u1 = uicontrol('Style','pushbutton','String','Death','Units',get(f,'Units'),...
+    'Position',[0.5, 0, hwidth - 1, hheight],'parent',hbuttongroupTrackEvent,'HandleVisibility','on','Visible', 'on', ...
+    'Callback',{@u1Pushbutton_Callback});
 set(hbuttongroupTrackEvent,'Visible','on');
 
 
@@ -128,10 +130,22 @@ set(f,'Visible','on');
         centroidsDivisions = master.obj_imageViewer.obj_cellTracker.centroidsDivisions;
         centroidsDeath = master.obj_imageViewer.obj_cellTracker.centroidsDeath;
         
+        % A patchy solution: scale centroids given imageResizeFactor
+        for i=1:length(centroidsTracks.singleCells)
+            centroidsTracks.singleCells(i).point = centroidsTracks.singleCells(i).point / master.obj_imageViewer.imageResizeFactor;
+            centroidsDivisions.singleCells(i).point = centroidsDivisions.singleCells(i).point / master.obj_imageViewer.imageResizeFactor;
+            centroidsDeath.singleCells(i).point = centroidsDeath.singleCells(i).point / master.obj_imageViewer.imageResizeFactor;
+        end
+        
         uisave({'selectedGroup','selectedPosition','databaseFile','rawdatapath','centroidsTracks','centroidsDivisions','centroidsDeath'},...
-            fullfile(mainpath, sprintf('%_s%d_tracking.mat', selectedGroup, selectedPosition)));
-        mydata = master.data;
-        save(fullfile('C:\Users\kk128\Documents\MATLAB', sprintf('trackingdataobj_s%d.mat', selectedPosition)),'mydata');
+            fullfile(mainpath, sprintf('%s_s%d_tracking.mat', selectedGroup, selectedPosition)));
+        
+        % Bring back centroid positions to current scale
+        for i=1:length(centroidsTracks.singleCells)
+            centroidsTracks.singleCells(i).point = centroidsTracks.singleCells(i).point * master.obj_imageViewer.imageResizeFactor;
+            centroidsDivisions.singleCells(i).point = centroidsDivisions.singleCells(i).point * master.obj_imageViewer.imageResizeFactor;
+            centroidsDeath.singleCells(i).point = centroidsDeath.singleCells(i).point * master.obj_imageViewer.imageResizeFactor;
+        end
     end
 
     function pushbuttonLoadAnnotations_Callback(~,~)
@@ -149,14 +163,24 @@ set(f,'Visible','on');
                 subCentroids = table2array(myCentroids(myCentroids.timepoint == i, 3:4));
                 subValues = table2array(myCentroids(myCentroids.timepoint == i, 5));
                 subIndex = table2array(myCentroids(myCentroids.timepoint == i, 1));
-                master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).point(subIndex,:) = subCentroids;
+                master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).point(subIndex,:) = subCentroids * master.obj_imageViewer.imageResizeFactor;
                 master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).value(subIndex) = subValues;
             end
         else
             loadStruct = load(fullfile(sourcePath, annotationFile));
             master.obj_imageViewer.obj_cellTracker.centroidsTracks = loadStruct.centroidsTracks;
-            master.obj_imageViewer.obj_cellTracker.centroidsDivisions = loadStruct.centroidsDivisions;
-            master.obj_imageViewer.obj_cellTracker.centroidsDeath = loadStruct.centroidsDeath;
+            if(any(strcmp(fieldnames(loadStruct), 'centroidsDivisions')))
+                master.obj_imageViewer.obj_cellTracker.centroidsDivisions = loadStruct.centroidsDivisions;
+            end
+            if(any(strcmp(fieldnames(loadStruct), 'centroidsDeath')))
+                master.obj_imageViewer.obj_cellTracker.centroidsDeath = loadStruct.centroidsDeath;
+            end
+            % Make sure to rescale the centroids to fit current image size
+            for i=1:length(master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells)
+                master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).point = master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).point * master.obj_imageViewer.imageResizeFactor;
+                master.obj_imageViewer.obj_cellTracker.centroidsDivisions.singleCells(i).point = master.obj_imageViewer.obj_cellTracker.centroidsDivisions.singleCells(i).point * master.obj_imageViewer.imageResizeFactor;
+                master.obj_imageViewer.obj_cellTracker.centroidsDeath.singleCells(i).point = master.obj_imageViewer.obj_cellTracker.centroidsDeath.singleCells(i).point * master.obj_imageViewer.imageResizeFactor;
+            end
             
         end
         master.obj_imageViewer.selectedCell = 0;
@@ -172,7 +196,16 @@ set(f,'Visible','on');
             get(eventdata.NewValue,'String')]);
         disp(get(get(source,'SelectedObject'),'String'));
     end
-    
+
+    function u0Pushbutton_Callback(source, eventdata)
+        master.obj_imageViewer.obj_cellTracker.setDivisionEvent;
+        master.obj_imageViewer.setImage;
+    end
+
+    function u1Pushbutton_Callback(source, eventdata)
+        master.obj_imageViewer.obj_cellTracker.setDeathEvent;
+        master.obj_imageViewer.setImage;
+    end    
 %% Auxiliary functions
     function str = getCurrentPopupString(hh)
         %# getCurrentPopupString returns the currently selected string in the popupmenu with handle hh

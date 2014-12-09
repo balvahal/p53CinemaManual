@@ -30,16 +30,21 @@ end
 % mode"
 if(obj_cellT.master.obj_fileManager.preprocessMode)
     lookupRadius = obj_cellT.getDistanceRadius;
-    queryCentroid = obj_cellT.centroidsLocalMaxima.getClosestCentroid(currentTimepoint, currentRowCol, lookupRadius);
+    [queryCentroid,d] = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, currentRowCol, 1);
+    if(isempty(d))
+        queryCentroid = obj_cellT.centroidsLocalMaxima.getClosestCentroid(currentTimepoint, currentRowCol, lookupRadius);
+    end
+        
 else
-    queryCentroid = currentRowCol;
+    lookupRadius = obj_cellT.getDistanceRadius;
+    queryCentroid = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, currentRowCol, 2);
 end
 % If this is the first time the user clicks after starting a new track,
 % define the selected cell
 if(obj_cellT.firstClick)
     lookupRadius = obj_cellT.getDistanceRadius / 6; % 6 was chosen empircally when comparing a 30 pixel radius search area with a 5 pixel radius selection area
     [cellCentroid1, cell_id1] = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, queryCentroid, lookupRadius);
-    [cellCentroid2, cell_id2] = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, currentRowCol, lookupRadius);
+    [cellCentroid2, cell_id2] = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, currentRowCol, 2);
     if(~isempty(cell_id2))
         obj_cellT.master.obj_imageViewer.setSelectedCell(cell_id2);
         queryCentroid = cellCentroid2;
@@ -54,6 +59,9 @@ end
 
 %% Set the centroids in selected cell and time
 selectedCell = obj_cellT.master.obj_imageViewer.selectedCell;
+if(strcmp(altEvent, 'alt')) % Override predictions if user used left click
+    queryCentroid = currentRowCol;
+end
 obj_cellT.centroidsTracks.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
 % Move centroid if there was one in division or death events
 if(obj_cellT.centroidsDivisions.getValue(currentTimepoint, selectedCell))
@@ -64,17 +72,6 @@ if(obj_cellT.centroidsDeath.getValue(currentTimepoint, selectedCell))
 end
 
 obj_cellT.setAvailableCells;
-
-selectionType = altEvent;
-if(strcmp(selectionType, 'alt'))
-    annotationType = obj_cellT.cellFateEvent;
-    if(strcmp(annotationType, 'Division'))
-        obj_cellT.centroidsDivisions.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
-    end
-    if(strcmp(annotationType, 'Death'))
-        obj_cellT.centroidsDeath.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
-    end
-end
 
 obj_cellT.master.obj_imageViewer.setImage;
 drawnow;
