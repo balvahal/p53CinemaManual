@@ -49,18 +49,11 @@ classdef p53CinemaManual_object_imageViewer < handle
             obj.master = master;
             %% get image info from first image
             %
-<<<<<<< HEAD
             IM = imread(fullfile(master.obj_fileManager.rawdatapath,master.obj_fileManager.currentImageFilenames{1}));
             obj.imageResizeFactor = 1;
             IM = imresize(IM, obj.imageResizeFactor);
             obj.image_width = size(IM,2);
             obj.image_height = size(IM,1);
-=======
-            myinfo = imfinfo(fullfile(master.obj_fileManager.rawdatapath,master.obj_fileManager.currentImageFilenames{1}));
-            obj.imageResizeFactor = 1;
-            obj.image_width = round(myinfo.Width * obj.imageResizeFactor);
-            obj.image_height = round(myinfo.Height * obj.imageResizeFactor);
->>>>>>> origin/master
             obj.image_widthChar = obj.image_width/master.ppChar(1);
             obj.image_heightChar = obj.image_height/master.ppChar(2);
             %% Preload images
@@ -75,14 +68,8 @@ classdef p53CinemaManual_object_imageViewer < handle
                     % Load image
                     referenceImage = imresize(obj.readImage(i), obj.imageResizeFactor);
                     %obj.imageBuffer(:,:,i) = uint8(adapthisteq(imnormalize(referenceImage)) * 255);
-<<<<<<< HEAD
-                    %obj.imageBuffer(:,:,i) = uint8(imnormalize(imbackground(referenceImage, 10, 100)) * 255);
-                    %obj.imageBuffer(:,:,i) = uint8(imbackground(referenceImage, 10, 100));
-                    obj.imageBuffer(:,:,i) = uint8(imnormalize(referenceImage) * 255);
-=======
                     obj.imageBuffer(:,:,i) = uint8(imnormalize(imbackground(referenceImage, 10, 100)) * 255);
                     %obj.imageBuffer(:,:,i) = uint8(imnormalize(referenceImage) * 255);
->>>>>>> origin/master
                     
                     % Preprocess and find local maxima
                     if(obj.master.obj_fileManager.preprocessMode)
