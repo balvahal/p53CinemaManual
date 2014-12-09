@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 function [singleCellTraces, cellAnnotation, divisionMatrixDataset, filledSingleCellTraces, filledDivisionMatrixDataset, lineageTree] = getDatasetTraces_fillLineageInformation(database, rawdata_path,  trackingPath,ffpath,channel)
+=======
+function [singleCellTraces, cellAnnotation, divisionMatrixDataset, filledSingleCellTraces, filledDivisionMatrixDataset] = getDatasetTraces_fillLineageInformation(trackingPath,ffpath,channel)
+>>>>>>> origin/master
     trackingFiles = dir(trackingPath);
     trackingFiles = {trackingFiles(:).name};
     validFiles = regexp(trackingFiles, '\.mat', 'once');
@@ -12,7 +16,10 @@ function [singleCellTraces, cellAnnotation, divisionMatrixDataset, filledSingleC
     divisionMatrixDataset = -ones(maxCells, numTimepoints);
     filledDivisionMatrixDataset = -ones(maxCells, numTimepoints);
     filledSingleCellTraces = -ones(maxCells, numTimepoints);
+<<<<<<< HEAD
     lineageTree = -ones(maxCells, numTimepoints);
+=======
+>>>>>>> origin/master
     cellAnnotation = cell(maxCells, 3);
     
     % Prepare flatfield images
@@ -23,6 +30,7 @@ function [singleCellTraces, cellAnnotation, divisionMatrixDataset, filledSingleC
     end
     
     counter = 1;
+<<<<<<< HEAD
     maxUniqueCellIdentifier = 0;
     for i=1:length(trackingFiles)
         fprintf('%s: ', trackingFiles{i});
@@ -37,6 +45,13 @@ function [singleCellTraces, cellAnnotation, divisionMatrixDataset, filledSingleC
         divisionMatrix = getDivisionMatrix(centroidsTracks, centroidsDivisions);
         %traces = divisionMatrix;
 
+=======
+    for i=1:length(trackingFiles)
+        load(fullfile(trackingPath, trackingFiles{i}));
+        database = readtable(databaseFile, 'Delimiter', '\t');
+        traces = getSingleCellTracks2(rawdatapath, database, selectedGroup, selectedPosition, channel, centroidsTracks, ff_offset, ff_gain);
+        divisionMatrix = getDivisionMatrix(centroidsTracks, centroidsDivisions);
+>>>>>>> origin/master
         filledTraces = fillLineageInformation(traces, centroidsDivisions);
         filledDivisionMatrix = fillLineageInformation(divisionMatrix, centroidsDivisions);
         
@@ -47,7 +62,10 @@ function [singleCellTraces, cellAnnotation, divisionMatrixDataset, filledSingleC
         divisionMatrixDataset(subsetIndex,:) = divisionMatrix;
         filledDivisionMatrixDataset(subsetIndex,:) = filledDivisionMatrix;
         filledSingleCellTraces(subsetIndex,:) = filledTraces;
+<<<<<<< HEAD
         lineageTree(subsetIndex,:) = currentLineageTree;
+=======
+>>>>>>> origin/master
         
         cellAnnotation(subsetIndex,1) = repmat({selectedGroup}, n, 1);
         cellAnnotation(subsetIndex,2) = repmat({selectedPosition}, n, 1);
@@ -60,7 +78,11 @@ function [singleCellTraces, cellAnnotation, divisionMatrixDataset, filledSingleC
     singleCellTraces = singleCellTraces(1:(counter-1),:);
     divisionMatrixDataset = divisionMatrixDataset(1:(counter-1),:);
     filledDivisionMatrixDataset = filledDivisionMatrixDataset(1:(counter-1),:);
+<<<<<<< HEAD
     filledSingleCellTraces = filledSingleCellTraces(1:(counter-1),:);
     lineageTree = lineageTree(1:(counter-1),:);
+=======
+    filledSingleCellTraces = filledSingleCellTraces(1:(counter-1),:);    
+>>>>>>> origin/master
     cellAnnotation = cellAnnotation(1:(counter-1),:);
 end

@@ -1,8 +1,13 @@
 function LocalMaxima = getImageMaxima(IM)
 %IM = imnormalize(log(double(IM)));
+<<<<<<< HEAD
 IM = log(double(IM + 1));
 IM = medfilt2(IM, [4,4]);
 BlurredImage = double(imfilter(IM, fspecial('gaussian', 7, 2), 'replicate'));
+=======
+IM = medfilt2(IM, [4,4]);
+BlurredImage = double(imfilter(IM, fspecial('gaussian', 40, 4), 'replicate'));
+>>>>>>> origin/master
 %BlurredImage = imnormalize(log(double(BlurredImage)));
 
 %% Intensity based local maxima
@@ -28,7 +33,11 @@ LocalMaxima = bwmorph(LocalMaxima, 'shrink');
 nbin = 100;
 [y,x] = hist(BlurredImage(:), nbin);
 threshold = x(round(nbin * SEGMENTATION_TriangleMethod(y) * 1.15));
+<<<<<<< HEAD
 Objects = imfill(imerode(BlurredImage > threshold, strel('disk', 5)), 'holes');
+=======
+Objects = imfill(imopen(BlurredImage > threshold, strel('disk', 4)), 'holes');
+>>>>>>> origin/master
 
 EdgeImage = imdilate(edge(BlurredImage, 'canny'), strel('disk', 1));
 Objects = Objects | imfill(EdgeImage, 'holes');

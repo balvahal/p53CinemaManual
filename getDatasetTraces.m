@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 function [singleCellTraces, cellAnnotation, divisionMatrix] = getDatasetTraces(database, rawdata_path, trackingPath,ffpath,channel)
+=======
+function [singleCellTraces, cellAnnotation, divisionMatrix] = getDatasetTraces(trackingPath,ffpath,channel)
+>>>>>>> origin/master
     trackingFiles = dir(trackingPath);
     trackingFiles = {trackingFiles(:).name};
     validFiles = regexp(trackingFiles, '\.mat', 'once');
@@ -27,7 +31,12 @@ function [singleCellTraces, cellAnnotation, divisionMatrix] = getDatasetTraces(d
             progress = progress + 10;
         end
         load(fullfile(trackingPath, trackingFiles{i}));
+<<<<<<< HEAD
         traces = getSingleCellTracks2(rawdata_path, database, selectedGroup, selectedPosition, channel, centroidsTracks, ff_offset, ff_gain);
+=======
+        database = readtable(databaseFile, 'Delimiter', '\t');
+        traces = getSingleCellTracks2(rawdatapath, database, selectedGroup, selectedPosition, channel, centroidsTracks, ff_offset, ff_gain);
+>>>>>>> origin/master
         n = length(centroidsTracks.getTrackedCellIds);
         
         subsetIndex = counter:(counter + n - 1);
