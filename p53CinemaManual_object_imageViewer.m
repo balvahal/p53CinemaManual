@@ -68,8 +68,8 @@ classdef p53CinemaManual_object_imageViewer < handle
                     % Load image
                     referenceImage = imresize(obj.readImage(i), obj.imageResizeFactor);
                     %obj.imageBuffer(:,:,i) = uint8(adapthisteq(imnormalize(referenceImage)) * 255);
-                    obj.imageBuffer(:,:,i) = uint8(imnormalize(imbackground(referenceImage, 10, 100)) * 255);
-                    %obj.imageBuffer(:,:,i) = uint8(imnormalize(referenceImage) * 255);
+                    %obj.imageBuffer(:,:,i) = uint8(imnormalize(imbackground(referenceImage, 10, 100)) * 255);
+                    obj.imageBuffer(:,:,i) = uint8(imnormalize(referenceImage) * 255);
                     
                     % Preprocess and find local maxima
                     if(obj.master.obj_fileManager.preprocessMode)
