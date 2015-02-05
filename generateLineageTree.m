@@ -3,7 +3,8 @@ trackedCells = centroidsTracks.getTrackedCellIds;
 lineageTree = zeros(length(trackedCells), length(centroidsTracks.singleCells));
 for i=1:length(trackedCells)
     currentTrack = centroidsTracks.getCellTrack(trackedCells(i));
-    lineageTree(i, currentTrack(:,1) > 0) = trackedCells(i);
+    trackedPositions = find(currentTrack(:,1) > 0);
+    lineageTree(i, min(trackedPositions):max(trackedPositions)) = trackedCells(i);
 end
 for t=1:length(centroidsDivisions.singleCells)
     [divisions, dividing_cells] = centroidsDivisions.getCentroids(t);
