@@ -24,5 +24,5 @@ for i= 1:length(annotation.singleCells)
     centroids(subsetIndex,5) = divisionStatus;
     counter = max(subsetIndex) + 1;
 end
-centroids = array2table(centroids, 'VariableNames', {'cell_id', 'timepoint', 'centroid_col', 'centroid_row', 'division'});
+centroids = array2table(centroids, 'VariableNames', {'cell_id', 'centroid_col', 'centroid_row', 'timepoint', 'division'});
 end
