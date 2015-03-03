@@ -1,4 +1,4 @@
-function traces = getDatasetTraces_fillLineageInformation(database, rawdata_path, trackingPath, ffpath, channel)
+function measurements = getDatasetTraces_fillLineageInformation(database, rawdata_path, trackingPath, ffpath, channel)
     trackingFiles = dir(trackingPath);
     trackingFiles = {trackingFiles(:).name};
     validFiles = regexp(trackingFiles, '\.mat', 'once');
@@ -72,12 +72,12 @@ function traces = getDatasetTraces_fillLineageInformation(database, rawdata_path
     lineageTree = lineageTree(1:(counter-1),:);
     cellAnnotation = cellAnnotation(1:(counter-1),:);
     
-    traces.singleCellTraces = singleCellTraces;
-    traces.divisionMatrixDataset = divisionMatrixDataset;
-    traces.filledDivisionMatrixDataset = filledDivisionMatrixDataset;
-    traces.filledSingleCellTraces = filledSingleCellTraces;
-    traces.deathMatrix = deathMatrix;
-    traces.filledDeathMatrix = filledDeathMatrix;
-    traces.lineageTree = lineageTree;
-    traces.cellAnnotation = cellAnnotation;
+    measurements.singleCellTraces = singleCellTraces;
+    measurements.divisionMatrixDataset = divisionMatrixDataset;
+    measurements.filledDivisionMatrixDataset = filledDivisionMatrixDataset;
+    measurements.filledSingleCellTraces = filledSingleCellTraces;
+    measurements.deathMatrix = deathMatrix;
+    measurements.filledDeathMatrix = filledDeathMatrix;
+    measurements.lineageTree = lineageTree;
+    measurements.cellAnnotation = cellAnnotation;
 end
