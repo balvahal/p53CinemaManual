@@ -1,4 +1,4 @@
-function [singleCellTraces, cellAnnotation, divisionMatrixDataset, filledSingleCellTraces, filledDivisionMatrixDataset, lineageTree] = getDatasetTraces_fillLineageInformation(database, rawdata_path,  trackingPath,ffpath,channel)
+function traces = getDatasetTraces_fillLineageInformation(database, rawdata_path, trackingPath, ffpath, channel)
     trackingFiles = dir(trackingPath);
     trackingFiles = {trackingFiles(:).name};
     validFiles = regexp(trackingFiles, '\.mat', 'once');
@@ -10,8 +10,12 @@ function [singleCellTraces, cellAnnotation, divisionMatrixDataset, filledSingleC
     
     singleCellTraces = -ones(maxCells, numTimepoints);
     divisionMatrixDataset = -ones(maxCells, numTimepoints);
+    deathMatrixDataset = -ones(maxCells, numTimepoints);
+    
     filledDivisionMatrixDataset = -ones(maxCells, numTimepoints);
+    filledDeathMatrixDataset = -ones(maxCells, numTimepoints);    
     filledSingleCellTraces = -ones(maxCells, numTimepoints);
+    
     lineageTree = -ones(maxCells, numTimepoints);
     cellAnnotation = cell(maxCells, 3);
     
@@ -35,16 +39,19 @@ function [singleCellTraces, cellAnnotation, divisionMatrixDataset, filledSingleC
         maxUniqueCellIdentifier = max(currentLineageTree(:));
         
         divisionMatrix = getDivisionMatrix(centroidsTracks, centroidsDivisions);
-        %traces = divisionMatrix;
+        deathMatrix = getDivisionMatrix(centroidsTracks, centroidsDeath);
         filledTraces = fillLineageInformation(traces, centroidsDivisions);
         filledDivisionMatrix = fillLineageInformation(divisionMatrix, centroidsDivisions);
+        filledDeathMatrix = fillLineageInformation(deathMatrix, centroidsDivisions);
         
         n = length(centroidsTracks.getTrackedCellIds);
 
         subsetIndex = counter:(counter + n - 1);
         singleCellTraces(subsetIndex,:) = traces;
         divisionMatrixDataset(subsetIndex,:) = divisionMatrix;
+        deathMatrixDataset(subsetIndex,:) = deathMatrix;
         filledDivisionMatrixDataset(subsetIndex,:) = filledDivisionMatrix;
+        filledDeathMatrixDataset(subsetIndex,:) = filledDeathMatrix;
         filledSingleCellTraces(subsetIndex,:) = filledTraces;
         lineageTree(subsetIndex,:) = currentLineageTree;
         
@@ -60,7 +67,17 @@ function [singleCellTraces, cellAnnotation, divisionMatrixDataset, filledSingleC
     divisionMatrixDataset = divisionMatrixDataset(1:(counter-1),:);
     filledDivisionMatrixDataset = filledDivisionMatrixDataset(1:(counter-1),:);
     filledSingleCellTraces = filledSingleCellTraces(1:(counter-1),:);
+    deathMatrix = deathMatrix(1:(counter-1),:);
+    filledDeathMatrix = filledDeathMatrix(1:(counter-1),:);
     lineageTree = lineageTree(1:(counter-1),:);
-    filledSingleCellTraces = filledSingleCellTraces(1:(counter-1),:);    
     cellAnnotation = cellAnnotation(1:(counter-1),:);
+    
+    traces.singleCellTraces = singleCellTraces;
+    traces.divisionMatrixDataset = divisionMatrixDataset;
+    traces.filledDivisionMatrixDataset = filledDivisionMatrixDataset;
+    traces.filledSingleCellTraces = filledSingleCellTraces;
+    traces.deathMatrix = deathMatrix;
+    traces.filledDeathMatrix = filledDeathMatrix;
+    traces.lineageTree = lineageTree;
+    traces.cellAnnotation = cellAnnotation;
 end
