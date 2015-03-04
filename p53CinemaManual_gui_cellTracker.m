@@ -174,14 +174,14 @@ set(f,'Visible','on');
                     end
                     if(any(strcmp(myCentroids.Properties.VariableNames, 'division')))
                         subDivisions = logical(myCentroids.division(myCentroids.timepoint == i));
-                        if(~isempty(subDivisions))
-                            master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).point(subIndex(subDivisions),:) = subCentroids(subDivisions,:) * master.obj_imageViewer.imageResizeFactor;
+                        if(sum(subDivisions) > 0)
+                            master.obj_imageViewer.obj_cellTracker.centroidsDivisions.singleCells(i).point(subIndex(subDivisions),:) = subCentroids(subDivisions,:) * master.obj_imageViewer.imageResizeFactor;
                         end
                     end
                     if(any(strcmp(myCentroids.Properties.VariableNames, 'death')))
                         subDeath = logical(myCentroids.division(myCentroids.timepoint == i));
-                        if(~isempty(subDeath))
-                            master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).point(subIndex(subDeath),:) = subCentroids(subDeath,:) * master.obj_imageViewer.imageResizeFactor;
+                        if(sum(subDeath) > 0)
+                            master.obj_imageViewer.obj_cellTracker.centroidsDeath.singleCells(i).point(subIndex(subDeath),:) = subCentroids(subDeath,:) * master.obj_imageViewer.imageResizeFactor;
                         end
                     end
                 end
