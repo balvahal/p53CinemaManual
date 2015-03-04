@@ -159,21 +159,46 @@ set(f,'Visible','on');
             % table with the centroids and populate the centroidsTracks
             % object (a patch at this moment)
             myCentroids = readtable(fullfile(sourcePath, annotationFile), 'Delimiter', '\t');
-            for i=1:max(myCentroids.timepoint)
-                subCentroids = table2array(myCentroids(myCentroids.timepoint == i, 3:4));
-                subValues = table2array(myCentroids(myCentroids.timepoint == i, 5));
-                subIndex = table2array(myCentroids(myCentroids.timepoint == i, 1));
-                master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).point(subIndex,:) = subCentroids * master.obj_imageViewer.imageResizeFactor;
-                master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).value(subIndex) = subValues;
+            [validFields, fieldLocation] = ismember({'centroid_col', 'centroid_row'}, myCentroids.Properties.VariableNames);
+            if(sum(validFields) < 2)
+                fprintf('Failed to import centroids. There should be a field names centroid_col and one named centroid_row\n');
+            else
+                for i=1:min(max(myCentroids.timepoint), length(master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells))
+                    subCentroids = table2array(myCentroids(myCentroids.timepoint == i, fieldLocation));
+                    subIndex = double(myCentroids.cell_id(myCentroids.timepoint == i));
+                    master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).point(subIndex,:) = subCentroids * master.obj_imageViewer.imageResizeFactor;
+                    
+                    if(any(strcmp(myCentroids.Properties.VariableNames, 'value')))
+                        subValues = myCentroids.value(myCentroids.timepoint == i);
+                        master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).value(subIndex) = subValues;
+                    end
+                    if(any(strcmp(myCentroids.Properties.VariableNames, 'division')))
+                        subDivisions = logical(myCentroids.division(myCentroids.timepoint == i));
+                        if(~isempty(subDivisions))
+                            master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).point(subIndex(subDivisions),:) = subCentroids(subDivisions,:) * master.obj_imageViewer.imageResizeFactor;
+                        end
+                    end
+                    if(any(strcmp(myCentroids.Properties.VariableNames, 'death')))
+                        subDeath = logical(myCentroids.division(myCentroids.timepoint == i));
+                        if(~isempty(subDeath))
+                            master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(i).point(subIndex(subDeath),:) = subCentroids(subDeath,:) * master.obj_imageViewer.imageResizeFactor;
+                        end
+                    end
+                end
             end
         else
             loadStruct = load(fullfile(sourcePath, annotationFile));
-            master.obj_imageViewer.obj_cellTracker.centroidsTracks = loadStruct.centroidsTracks;
-            if(any(strcmp(fieldnames(loadStruct), 'centroidsDivisions')))
-                master.obj_imageViewer.obj_cellTracker.centroidsDivisions = loadStruct.centroidsDivisions;
-            end
-            if(any(strcmp(fieldnames(loadStruct), 'centroidsDeath')))
-                master.obj_imageViewer.obj_cellTracker.centroidsDeath = loadStruct.centroidsDeath;
+            for t=1:min(length(loadStruct.centroidsTracks.singleCells), length(master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells))
+                master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(t).point = loadStruct.centroidsTracks.singleCells(t).point;
+                master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(t).value = loadStruct.centroidsTracks.singleCells(t).value;
+                if(any(strcmp(fieldnames(loadStruct), 'centroidsDivisions')))
+                    master.obj_imageViewer.obj_cellTracker.centroidsDivisions.singleCells(t).point = loadStruct.centroidsDivisions.singleCells(t).point;
+                    master.obj_imageViewer.obj_cellTracker.centroidsDivisions.singleCells(t).value = loadStruct.centroidsDivisions.singleCells(t).value;
+                end
+                if(any(strcmp(fieldnames(loadStruct), 'centroidsDeath')))
+                    master.obj_imageViewer.obj_cellTracker.centroidsDivisions.singleCells(t).point = loadStruct.centroidsDivisions.singleCells(t).point;
+                    master.obj_imageViewer.obj_cellTracker.centroidsDivisions.singleCells(t).value = loadStruct.centroidsDivisions.singleCells(t).value;
+                end
             end
             % Make sure to rescale the centroids to fit current image size
             for i=1:length(master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells)
