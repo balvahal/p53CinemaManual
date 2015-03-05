@@ -67,8 +67,8 @@ function measurements = getDatasetTraces_fillLineageInformation(database, rawdat
     divisionMatrixDataset = divisionMatrixDataset(1:(counter-1),:);
     filledDivisionMatrixDataset = filledDivisionMatrixDataset(1:(counter-1),:);
     filledSingleCellTraces = filledSingleCellTraces(1:(counter-1),:);
-    deathMatrix = deathMatrix(1:(counter-1),:);
-    filledDeathMatrix = filledDeathMatrix(1:(counter-1),:);
+    deathMatrixDataset = deathMatrixDataset(1:(counter-1),:);
+    filledDeathMatrixDataset = filledDeathMatrixDataset(1:(counter-1),:);
     lineageTree = lineageTree(1:(counter-1),:);
     cellAnnotation = cellAnnotation(1:(counter-1),:);
     
@@ -76,8 +76,8 @@ function measurements = getDatasetTraces_fillLineageInformation(database, rawdat
     measurements.divisionMatrixDataset = divisionMatrixDataset;
     measurements.filledDivisionMatrixDataset = filledDivisionMatrixDataset;
     measurements.filledSingleCellTraces = filledSingleCellTraces;
-    measurements.deathMatrix = deathMatrix;
-    measurements.filledDeathMatrix = filledDeathMatrix;
+    measurements.deathMatrix = deathMatrixDataset;
+    measurements.filledDeathMatrix = filledDeathMatrixDataset;
     measurements.lineageTree = lineageTree;
     measurements.cellAnnotation = cellAnnotation;
 end
