@@ -33,6 +33,7 @@ classdef p53CinemaManual_object_imageViewer < handle
         imageResizeFactor;
         
         selectedCell;
+        potentialMergeCell;
         
         contrastHistogram;
         
@@ -91,6 +92,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                 master.obj_fileManager.setProgressBar(0,master.obj_fileManager.numImages,'Loading status');
             end
             obj.selectedCell = 0;
+            obj.potentialMergeCell = 0;
             obj.setFrame(1);
             
             
@@ -251,9 +253,7 @@ classdef p53CinemaManual_object_imageViewer < handle
         end
         
         function deleteSelectedCellTrack(obj)
-            obj.obj_cellTracker.centroidsTracks.deleteTrack(obj.selectedCell);
-            obj.obj_cellTracker.centroidsDivisions.deleteTrack(obj.selectedCell);
-            obj.obj_cellTracker.centroidsDeath.deleteTrack(obj.selectedCell);
+            obj.obj_cellTracker.deleteCellData(obj.selectedCell);
             obj.setSelectedCell(0);
             obj.obj_cellTracker.setAvailableCells;
             obj.obj_cellTracker.stopTracking;
@@ -273,36 +273,63 @@ classdef p53CinemaManual_object_imageViewer < handle
             
             handles = guidata(obj.gui_imageViewer);
             handlesZoomMap = guidata(obj.gui_zoomMap);
-            set(handles.sourceImage,'CData',obj.master.obj_imageViewer.currentImage);
-            set(handlesZoomMap.sourceImage,'CData',obj.master.obj_imageViewer.currentImage);
+            set(handles.sourceImage,'CData',obj.currentImage);
+            set(handlesZoomMap.sourceImage,'CData',obj.currentImage);
             sliderStep = get(handles.hsliderExploreStack,'SliderStep');
-            set(handles.hsliderExploreStack,'Value',sliderStep(1)*(obj.master.obj_imageViewer.currentFrame-1));
+            set(handles.hsliderExploreStack,'Value',sliderStep(1)*(obj.currentFrame-1));
             
-            cellFateEventCentroids = vertcat(obj.master.obj_imageViewer.obj_cellTracker.centroidsDivisions.getCentroids(obj.master.obj_imageViewer.currentTimepoint), ...
-                obj.master.obj_imageViewer.obj_cellTracker.centroidsDeath.getCentroids(obj.master.obj_imageViewer.currentTimepoint));
+            % Set division event patch
+            cellFateEventCentroids = vertcat(obj.obj_cellTracker.centroidsDivisions.getCentroids(obj.currentTimepoint), ...
+                obj.obj_cellTracker.centroidsDeath.getCentroids(obj.currentTimepoint));
             set(handles.cellFateEventPatch, 'XData', cellFateEventCentroids(:,2), 'YData', cellFateEventCentroids(:,1));
             
-            trackedCentroids = obj.master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroids(obj.master.obj_imageViewer.currentTimepoint);
-            set(handles.trackedCellsPatch, 'XData', trackedCentroids(:,2), 'YData', trackedCentroids(:,1));
             
-            if(obj.master.obj_imageViewer.selectedCell)
-                selectedCentroid = obj.master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroid(obj.master.obj_imageViewer.currentTimepoint, obj.master.obj_imageViewer.selectedCell);
+            if(obj.selectedCell)
+                % Set selected cell patch
+                selectedCentroid = obj.obj_cellTracker.centroidsTracks.getCentroid(obj.currentTimepoint, obj.selectedCell);
                 set(handles.selectedCellPatch, 'XData', selectedCentroid(:,2), 'YData', selectedCentroid(:,1));
+                dividingCell = any(obj.obj_cellTracker.centroidsDivisions.getCentroid(obj.currentTimepoint, obj.selectedCell) > 0);
+                deathCell = any(obj.obj_cellTracker.centroidsDeath.getCentroid(obj.currentTimepoint, obj.selectedCell) > 0);
+                 
+                if(~dividingCell && ~deathCell)
+                    [neighborCentroid, neighborCell, distance] = obj.obj_cellTracker.centroidsTracks.getCentroidsInRange(obj.currentTimepoint, selectedCentroid, 3);
+                    targetNeighbor = find(neighborCell ~= obj.selectedCell);
+                    
+                    if(~isempty(targetNeighbor))
+                        closestNeighbor = find(distance(targetNeighbor) == min(distance(targetNeighbor)), 1, 'first');
+                        neighborCentroid = neighborCentroid(targetNeighbor(closestNeighbor),:); 
+                        neighborCell = neighborCell(targetNeighbor(closestNeighbor));
+                        
+                        set(handles.mergeEventPatch, 'XData', [neighborCentroid(:,2), selectedCentroid(:,2)], 'YData', [neighborCentroid(:,1), selectedCentroid(:,1)]);
+                        % Set potential link and activate merge button
+                        obj.obj_cellTracker.setEnableMerge('on');
+                        obj.potentialMergeCell = neighborCell;
+                    else
+                        % Set potential link to 0 and inactivate merge button
+                        set(handles.mergeEventPatch, 'XData', [], 'YData', []);
+                        obj.obj_cellTracker.setEnableMerge('off');
+                        obj.potentialMergeCell = 0;
+                    end
+                end
             else
                 set(handles.selectedCellPatch, 'XData', [], 'YData', []);
             end
+            
+            % Set tracked centroids patch
+            trackedCentroids = obj.obj_cellTracker.centroidsTracks.getCentroids(obj.currentTimepoint);
+            set(handles.trackedCellsPatch, 'XData', trackedCentroids(:,2), 'YData', trackedCentroids(:,1));
             
             if(~obj.master.obj_fileManager.preprocessMode)
                 return;
             end
             
-            lookupRadius = obj.master.obj_imageViewer.obj_cellTracker.getDistanceRadius;
-            currentPoint = obj.master.obj_imageViewer.pixelxy;
+            lookupRadius = obj.obj_cellTracker.getDistanceRadius;
+            currentPoint = obj.pixelxy;
             if(~isempty(currentPoint))
-                highlightedCentroids = obj.master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getCentroidsInRange(obj.master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
+                highlightedCentroids = obj.obj_cellTracker.centroidsLocalMaxima.getCentroidsInRange(obj.currentTimepoint, fliplr(currentPoint), lookupRadius);
                 set(handles.cellsInRangePatch, 'XData', highlightedCentroids(:,2), 'YData', highlightedCentroids(:,1));
                 
-                closestCentroid = obj.master.obj_imageViewer.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(obj.master.obj_imageViewer.currentTimepoint, fliplr(currentPoint), lookupRadius);
+                closestCentroid = obj.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(obj.currentTimepoint, fliplr(currentPoint), lookupRadius);
                 set(handles.closestCellPatch, 'XData', closestCentroid(:,2), 'YData', closestCentroid(:,1));
             end
         end

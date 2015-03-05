@@ -6,7 +6,7 @@ function [f] = p53CinemaManual_gui_cellTracker(master)
 set(0,'units','characters');
 Char_SS = get(0,'screensize');
 fwidth = 450/master.ppChar(1);
-fheight = 250/master.ppChar(2);
+fheight = 350/master.ppChar(2);
 fx = Char_SS(3) - (Char_SS(3)*.1 + fwidth);
 fy = Char_SS(4) - (Char_SS(4)*.1 + fheight*2.75);
 f = figure('Visible','off','Units','characters','MenuBar','none',...
@@ -86,6 +86,22 @@ u1 = uicontrol('Style','pushbutton','String','Death','Units',get(f,'Units'),...
     'Callback',{@u1Pushbutton_Callback});
 set(hbuttongroupTrackEvent,'Visible','on');
 
+hy = hy - hmargin - hheight;
+htextMergeSplit = uicontrol('Style','text','Units','characters',...
+    'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
+    'String','Merge/Split','Position',[hx, hy, hwidth, hheight],...
+    'parent',f);
+hy = hy - hheight;
+hbuttongroupMergeSplit = uibuttongroup('Visible','off','Units',get(f,'Units'),...
+    'Position',[hx + hwidth + hmargin, hy, hwidth + hmargin_short, hheight * 2 + hmargin_short], 'Parent', f);
+% Create three radio buttons in the button group.
+hmergePushbutton = uicontrol('Style','pushbutton','String','Merge','Units',get(f,'Units'),...
+    'Position',[0.5, hheight, hwidth - 1, hheight],'parent',hbuttongroupMergeSplit,'HandleVisibility','on',...
+    'Enable', 'off', 'Callback',{@mergePushbutton_Callback});
+hsplitPushbutton = uicontrol('Style','pushbutton','String','Split','Units',get(f,'Units'),...
+    'Position',[0.5, 0, hwidth - 1, hheight],'parent',hbuttongroupMergeSplit,'HandleVisibility','on','Visible', 'on', ...
+    'Enable', 'off', 'Callback',{@splitPushbutton_Callback});
+set(hbuttongroupMergeSplit,'Visible','on');
 
 handles.htogglebuttonTrackingMode = htogglebuttonTrackingMode;
 handles.hpushbuttonPause = hpushbuttonPause;
@@ -99,6 +115,8 @@ handles.heditDistanceRadius = heditDistanceRadius;
 handles.hbuttongroupTrackEvent = hbuttongroupTrackEvent;
 handles.u0 = u0;
 handles.u1 = u1;
+handles.hmergePushbutton = hmergePushbutton;
+handles.hsplitPushbutton = hsplitPushbutton;
 guidata(f, handles);
 
 %%
@@ -230,7 +248,32 @@ set(f,'Visible','on');
     function u1Pushbutton_Callback(source, eventdata)
         master.obj_imageViewer.obj_cellTracker.setDeathEvent;
         master.obj_imageViewer.setImage;
-    end    
+    end
+
+    function mergePushbutton_Callback(source, eventdata)
+        currentTimepoint = master.obj_imageViewer.currentTimepoint;
+        selectedCell = master.obj_imageViewer.selectedCell;
+        potentialMergeCell = master.obj_imageViewer.potentialMergeCell;
+        
+        % Determine merge directionality
+        centroidsTracks = master.obj_imageViewer.obj_cellTracker.centroidsTracks;
+        mergingCellTrack = centroidsTracks.getCellTrack(potentialMergeCell);
+        if(sum(mergingCellTrack(1:currentTimepoint,1) > 0) > sum(mergingCellTrack(currentTimepoint:end,1) > 0))
+            replaceTimepoints = 1:currentTimepoint;
+        else
+            replaceTimepoints = currentTimepoint:size(mergingCellTrack,1);
+        end
+        for i=replaceTimepoints
+            master.obj_imageViewer.obj_cellTracker.centroidsTracks.setCentroid(i, selectedCell, master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroid(i, potentialMergeCell), master.obj_imageViewer.obj_cellTracker.centroidsTracks.getValue(i, potentialMergeCell));
+            master.obj_imageViewer.obj_cellTracker.centroidsDivisions.setCentroid(i, selectedCell, master.obj_imageViewer.obj_cellTracker.centroidsDivisions.getCentroid(i, potentialMergeCell), master.obj_imageViewer.obj_cellTracker.centroidsTracks.getValue(i, potentialMergeCell));
+            master.obj_imageViewer.obj_cellTracker.centroidsDeath.setCentroid(i, selectedCell, master.obj_imageViewer.obj_cellTracker.centroidsDeath.getCentroid(i, potentialMergeCell), master.obj_imageViewer.obj_cellTracker.centroidsTracks.getValue(i, potentialMergeCell));
+        end
+        
+        master.obj_imageViewer.obj_cellTracker.deleteCellData(potentialMergeCell);
+        master.obj_imageViewer.obj_cellTracker.setEnableMerge('off');
+        master.obj_imageViewer.potentialMergeCell = 0;
+        master.obj_imageViewer.setImage;
+    end
 %% Auxiliary functions
     function str = getCurrentPopupString(hh)
         %# getCurrentPopupString returns the currently selected string in the popupmenu with handle hh

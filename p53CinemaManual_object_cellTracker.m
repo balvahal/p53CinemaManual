@@ -11,7 +11,7 @@ classdef p53CinemaManual_object_cellTracker < handle
         isTracking;
         isPaused;
         firstClick;
-                
+                        
         centroidsLocalMaxima;
         centroidsTracks;
         centroidsDivisions;
@@ -87,6 +87,24 @@ classdef p53CinemaManual_object_cellTracker < handle
         
         function triggerTracking(obj, altEvent)
             p53CinemaManual_method_cellTracker_triggerTracking(obj,altEvent);
+        end
+        
+        function setEnableMerge(obj, status)
+            h = guidata(obj.gui_cellTracker);
+            set(h.hmergePushbutton, 'Enable', status);
+        end
+        
+        function setEnableSplit(obj)
+            h = guidata(obj.gui_cellTracker);
+            set(h.hmergePushbutton, 'Enable', status);
+        end
+        
+        function deleteCellData(obj, cell_id)
+            for i=1:length(obj.centroidsTracks.singleCells)
+                obj.centroidsTracks.setCentroid(i, cell_id, [0,0], 0);
+                obj.centroidsDivisions.setCentroid(i, cell_id, [0,0], 0);
+                obj.centroidsDeath.setCentroid(i, cell_id, [0,0], 0);
+            end
         end
                 
         %% Delete function
