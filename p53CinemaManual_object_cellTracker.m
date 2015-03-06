@@ -94,16 +94,28 @@ classdef p53CinemaManual_object_cellTracker < handle
             set(h.hmergePushbutton, 'Enable', status);
         end
         
-        function setEnableSplit(obj)
+        function setEnableSplit(obj, status)
             h = guidata(obj.gui_cellTracker);
-            set(h.hmergePushbutton, 'Enable', status);
+            set(h.hsplitPushbutton, 'Enable', status);
         end
         
         function deleteCellData(obj, cell_id)
-            for i=1:length(obj.centroidsTracks.singleCells)
+            obj.deleteCellTimepoints(cell_id, 1:length(obj.centroidsTracks.singleCells));
+        end
+        
+        function deleteCellTimepoints(obj, cell_id, timepoints)
+            for i=timepoints
                 obj.centroidsTracks.setCentroid(i, cell_id, [0,0], 0);
                 obj.centroidsDivisions.setCentroid(i, cell_id, [0,0], 0);
                 obj.centroidsDeath.setCentroid(i, cell_id, [0,0], 0);
+            end
+        end
+        
+        function replaceCellTimepoints(obj, sourceCell, targetCell, timepoints)
+            for i=timepoints
+                obj.centroidsTracks.setCentroid(i, targetCell, obj.centroidsTracks.getCentroid(i, sourceCell), obj.centroidsTracks.getValue(i, sourceCell));
+                obj.centroidsDivisions.setCentroid(i, targetCell, obj.centroidsDivisions.getCentroid(i, sourceCell), obj.centroidsDivisions.getValue(i, sourceCell));
+                obj.centroidsDeath.setCentroid(i, targetCell, obj.centroidsDeath.getCentroid(i, sourceCell), obj.centroidsDivisions.getValue(i, sourceCell));
             end
         end
                 

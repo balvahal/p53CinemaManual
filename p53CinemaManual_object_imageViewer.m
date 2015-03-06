@@ -290,7 +290,16 @@ classdef p53CinemaManual_object_imageViewer < handle
                 set(handles.selectedCellPatch, 'XData', selectedCentroid(:,2), 'YData', selectedCentroid(:,1));
                 dividingCell = any(obj.obj_cellTracker.centroidsDivisions.getCentroid(obj.currentTimepoint, obj.selectedCell) > 0);
                 deathCell = any(obj.obj_cellTracker.centroidsDeath.getCentroid(obj.currentTimepoint, obj.selectedCell) > 0);
-                 
+                
+                currentTrack = obj.obj_cellTracker.centroidsTracks.getCellTrack(obj.selectedCell);
+                currentTrackLength = sum(currentTrack(:,1) > 0);
+                if(currentTrackLength >= 3 && any(selectedCentroid > 0));
+                    obj.obj_cellTracker.setEnableSplit('on');
+                else
+                    obj.obj_cellTracker.setEnableSplit('off');
+                end
+                
+                % Try to find potential neighbors to merge to selected cell
                 if(~dividingCell && ~deathCell)
                     [neighborCentroid, neighborCell, distance] = obj.obj_cellTracker.centroidsTracks.getCentroidsInRange(obj.currentTimepoint, selectedCentroid, 3);
                     targetNeighbor = find(neighborCell ~= obj.selectedCell);

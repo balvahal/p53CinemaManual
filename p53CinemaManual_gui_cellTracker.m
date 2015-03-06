@@ -263,17 +263,27 @@ set(f,'Visible','on');
         else
             replaceTimepoints = currentTimepoint:size(mergingCellTrack,1);
         end
-        for i=replaceTimepoints
-            master.obj_imageViewer.obj_cellTracker.centroidsTracks.setCentroid(i, selectedCell, master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroid(i, potentialMergeCell), master.obj_imageViewer.obj_cellTracker.centroidsTracks.getValue(i, potentialMergeCell));
-            master.obj_imageViewer.obj_cellTracker.centroidsDivisions.setCentroid(i, selectedCell, master.obj_imageViewer.obj_cellTracker.centroidsDivisions.getCentroid(i, potentialMergeCell), master.obj_imageViewer.obj_cellTracker.centroidsTracks.getValue(i, potentialMergeCell));
-            master.obj_imageViewer.obj_cellTracker.centroidsDeath.setCentroid(i, selectedCell, master.obj_imageViewer.obj_cellTracker.centroidsDeath.getCentroid(i, potentialMergeCell), master.obj_imageViewer.obj_cellTracker.centroidsTracks.getValue(i, potentialMergeCell));
-        end
         
+        master.obj_imageViewer.obj_cellTracker.replaceCellTimepoints(potentialMergeCell, selectedCell, replaceTimepoints);
         master.obj_imageViewer.obj_cellTracker.deleteCellData(potentialMergeCell);
         master.obj_imageViewer.obj_cellTracker.setEnableMerge('off');
         master.obj_imageViewer.potentialMergeCell = 0;
         master.obj_imageViewer.setImage;
+        master.obj_imageViewer.obj_cellTracker.setAvailableCells;
     end
+
+    function splitPushbutton_Callback(source, eventdata)
+        currentTimepoint = master.obj_imageViewer.currentTimepoint;
+        selectedCell = master.obj_imageViewer.selectedCell;
+        maxTimepoint = length(master.obj_imageViewer.obj_cellTracker.centroidsDivisions.singleCells);
+
+        newCell = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getAvailableCellId;
+        master.obj_imageViewer.obj_cellTracker.replaceCellTimepoints(selectedCell, newCell, (currentTimepoint+1):maxTimepoint);
+        master.obj_imageViewer.obj_cellTracker.deleteCellTimepoints(selectedCell, (currentTimepoint+1):maxTimepoint);
+        master.obj_imageViewer.obj_cellTracker.setEnableSplit('off');
+        master.obj_imageViewer.obj_cellTracker.setAvailableCells;
+    end
+
 %% Auxiliary functions
     function str = getCurrentPopupString(hh)
         %# getCurrentPopupString returns the currently selected string in the popupmenu with handle hh
