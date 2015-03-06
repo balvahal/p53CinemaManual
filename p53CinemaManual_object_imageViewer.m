@@ -309,10 +309,15 @@ classdef p53CinemaManual_object_imageViewer < handle
                         neighborCentroid = neighborCentroid(targetNeighbor(closestNeighbor),:); 
                         neighborCell = neighborCell(targetNeighbor(closestNeighbor));
                         
-                        set(handles.mergeEventPatch, 'XData', [neighborCentroid(:,2), selectedCentroid(:,2)], 'YData', [neighborCentroid(:,1), selectedCentroid(:,1)]);
-                        % Set potential link and activate merge button
-                        obj.obj_cellTracker.setEnableMerge('on');
-                        obj.potentialMergeCell = neighborCell;
+                        dividingCell = any(obj.obj_cellTracker.centroidsDivisions.getCentroid(obj.currentTimepoint, neighborCell) > 0);
+                        deathCell = any(obj.obj_cellTracker.centroidsDeath.getCentroid(obj.currentTimepoint, neighborCell) > 0);
+
+                        if(~dividingCell && ~deathCell)
+                            set(handles.mergeEventPatch, 'XData', [neighborCentroid(:,2), selectedCentroid(:,2)], 'YData', [neighborCentroid(:,1), selectedCentroid(:,1)]);
+                            % Set potential link and activate merge button
+                            obj.obj_cellTracker.setEnableMerge('on');
+                            obj.potentialMergeCell = neighborCell;
+                        end
                     else
                         % Set potential link to 0 and inactivate merge button
                         set(handles.mergeEventPatch, 'XData', [], 'YData', []);
