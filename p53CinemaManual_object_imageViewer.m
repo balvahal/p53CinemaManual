@@ -292,6 +292,8 @@ classdef p53CinemaManual_object_imageViewer < handle
                 deathCell = any(obj.obj_cellTracker.centroidsDeath.getCentroid(obj.currentTimepoint, obj.selectedCell) > 0);
                 
                 currentTrack = obj.obj_cellTracker.centroidsTracks.getCellTrack(obj.selectedCell);
+                set(handles.currentCellTrace, 'xdata', currentTrack(currentTrack(:,2) > 0,2), 'ydata', currentTrack(currentTrack(:,2) > 0,1));
+                
                 currentTrackLength = sum(currentTrack(:,1) > 0);
                 if(currentTrackLength >= 3 && any(selectedCentroid > 0));
                     obj.obj_cellTracker.setEnableSplit('on');
@@ -317,16 +319,20 @@ classdef p53CinemaManual_object_imageViewer < handle
                             % Set potential link and activate merge button
                             obj.obj_cellTracker.setEnableMerge('on');
                             obj.potentialMergeCell = neighborCell;
+                            neighborTrack = obj.obj_cellTracker.centroidsTracks.getCellTrack(neighborCell);
+                            set(handles.neighborCellTrace, 'xdata', neighborTrack(neighborTrack(:,2) > 0,2), 'ydata', neighborTrack(neighborTrack(:,2) > 0,1));
                         end
                     else
                         % Set potential link to 0 and inactivate merge button
                         set(handles.mergeEventPatch, 'XData', [], 'YData', []);
                         obj.obj_cellTracker.setEnableMerge('off');
                         obj.potentialMergeCell = 0;
+                        set(handles.neighborCellTrace, 'xdata', [], 'ydata', []);
                     end
                 end
             else
                 set(handles.selectedCellPatch, 'XData', [], 'YData', []);
+                set(handles.currentCellTrace, 'xdata', [], 'ydata', []);
             end
             
             % Set tracked centroids patch
