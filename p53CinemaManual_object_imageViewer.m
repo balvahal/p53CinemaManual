@@ -301,6 +301,11 @@ classdef p53CinemaManual_object_imageViewer < handle
                     obj.obj_cellTracker.setEnableSplit('off');
                 end
                 
+                % Reset potential merge prompts
+                set(handles.mergeEventPatch, 'XData', [], 'YData', []);
+                obj.obj_cellTracker.setEnableMerge('off');
+                obj.potentialMergeCell = 0;
+                set(handles.neighborCellTrace, 'xdata', [], 'ydata', []);
                 % Try to find potential neighbors to merge to selected cell
                 if(~dividingCell && ~deathCell)
                     [neighborCentroid, neighborCell, distance] = obj.obj_cellTracker.centroidsTracks.getCentroidsInRange(obj.currentTimepoint, selectedCentroid, 3);
@@ -320,19 +325,11 @@ classdef p53CinemaManual_object_imageViewer < handle
                             obj.obj_cellTracker.setEnableMerge('on');
                             obj.potentialMergeCell = neighborCell;
                             neighborTrack = obj.obj_cellTracker.centroidsTracks.getCellTrack(neighborCell);
-                            set(handles.neighborCellTrace, 'xdata', neighborTrack(neighborTrack(:,2) > 0,2), 'ydata', neighborTrack(neighborTrack(:,2) > 0,1));
+                            %set(handles.neighborCellTrace, 'xdata', neighborTrack(neighborTrack(:,2) > 0,2), 'ydata', neighborTrack(neighborTrack(:,2) > 0,1));
+                            set(handles.neighborCellTrace, 'xdata', [], 'ydata', []);
                         end
-                    else
-                        % Set potential link to 0 and inactivate merge button
-                        set(handles.mergeEventPatch, 'XData', [], 'YData', []);
-                        obj.obj_cellTracker.setEnableMerge('off');
-                        obj.potentialMergeCell = 0;
-                        set(handles.neighborCellTrace, 'xdata', [], 'ydata', []);
                     end
                 end
-            else
-                set(handles.selectedCellPatch, 'XData', [], 'YData', []);
-                set(handles.currentCellTrace, 'xdata', [], 'ydata', []);
             end
             
             % Set tracked centroids patch
