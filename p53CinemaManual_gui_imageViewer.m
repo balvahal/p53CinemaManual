@@ -1,6 +1,6 @@
 %% p53CinemaManual_gui_imageViewer
 % a simple gui to pause, stop, and resume a running MDA
-function [f] = p53CinemaManual_gui_imageViewer(master)
+function [f] = p53CinemaManual_gui_imageViewer(master, maxHeight)
 %% Create the figure
 % % The size of the figure was chosen to fit within a 1920x1200 pixel
 % % monitor. 
@@ -35,7 +35,7 @@ function [f] = p53CinemaManual_gui_imageViewer(master)
 % hx = (fwidth-hwidthaxes - 80/master.ppChar(1))/2;
 % hy = (fheight-hheightaxes + 30/master.ppChar(2))/2;
 
-maxHeight = 1200 - 5*master.ppChar(2);
+%maxHeight = 1200 - 5*master.ppChar(2);
 
 hheightaxes = min(master.obj_imageViewer.image_height, maxHeight);
 hwidthaxes = hheightaxes * master.obj_imageViewer.image_width / master.obj_imageViewer.image_height;

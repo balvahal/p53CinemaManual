@@ -51,7 +51,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             %% get image info from first image
             %
             IM = imread(fullfile(master.obj_fileManager.rawdatapath,master.obj_fileManager.currentImageFilenames{1}));
-            obj.imageResizeFactor = 1;
+            obj.imageResizeFactor = obj.master.obj_fileManager.imageResizeFactor;
             IM = imresize(IM, obj.imageResizeFactor);
             obj.image_width = size(IM,2);
             obj.image_height = size(IM,1);
@@ -81,7 +81,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                             referenceImage = imbackground(imread(fullfile(master.obj_fileManager.rawdatapath, referenceImageName)), 10, 100);
                             referenceImage = imresize(referenceImage, obj.imageResizeFactor);
                         end
-                        localMaxima = getImageMaxima(referenceImage);
+                        localMaxima = getImageMaxima(referenceImage, obj.master.obj_fileManager.cellSize);
                         obj.obj_cellTracker.centroidsLocalMaxima.insertCentroids(timepoint, localMaxima);
                     end
                 end
@@ -197,7 +197,7 @@ classdef p53CinemaManual_object_imageViewer < handle
         function obj = launchImageViewer(obj)
             %% Launch the gui
             %
-            obj.gui_imageViewer = p53CinemaManual_gui_imageViewer(obj.master);
+            obj.gui_imageViewer = p53CinemaManual_gui_imageViewer(obj.master, obj.master.obj_fileManager.maxHeight);
             obj.gui_contrast = p53CinemaManual_gui_contrast(obj.master);
             obj.gui_zoomMap = p53CinemaManual_gui_zoomMap(obj.master);
         end

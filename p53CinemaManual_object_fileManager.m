@@ -19,9 +19,14 @@ classdef p53CinemaManual_object_fileManager < handle
         currentImageTimepoints;
         numImages;
         maxTimepoint;
+        timepointRange;
         
         preallocateMode;
         preprocessMode;
+        
+        imageResizeFactor;
+        cellSize;
+        maxHeight;
     end
     events
         
@@ -60,12 +65,31 @@ classdef p53CinemaManual_object_fileManager < handle
         function setPreallocateMode(obj, value)
             obj.preallocateMode = value;
         end
+        function setImageResize(obj, value)
+            obj.imageResizeFactor = value;
+        end
+        function setCellSize(obj, value)
+            obj.cellSize = value;
+        end
+        function setMaxHeight(obj, value)
+            obj.maxHeight = value;
+        end
         
         function setProgressBar(obj, value, maxValue, message)
             handles = guidata(obj.master.obj_fileManager.gui_fileManager);
             set(handles.hprogressbarhandleLoadingBar, 'Maximum', maxValue);
             set(handles.hprogressbarhandleLoadingBar, 'Value', value);
             set(handles.htextLoadingBar, 'String', message);
+        end
+        
+        function setTimepointRange(obj, from, to, by)
+            from = str2double(from);
+            to = str2double(to);
+            by = str2double(by);
+            from = floor(max(1, from));
+            to = floor(min(max(obj.database.timepoint), to));
+            by = ceil(by);
+            obj.timepointRange = [from, to, by];
         end
         
         %% Generate image sequence
@@ -75,15 +99,13 @@ classdef p53CinemaManual_object_fileManager < handle
             else
                 channel_filter = strcmp(obj.database.channel_name, obj.selectedChannel);
             end
-            relevantImageIndex = strcmp(obj.database.group_label, obj.selectedGroup) & channel_filter & obj.database.position_number == obj.selectedPosition;
+            timepoint_filter = ismember(obj.database.timepoint, obj.timepointRange(1):obj.timepointRange(3):obj.timepointRange(2));
+            relevantImageIndex = strcmp(obj.database.group_label, obj.selectedGroup) & channel_filter & timepoint_filter & obj.database.position_number == obj.selectedPosition;
             
             obj.currentImageFilenames = obj.database.filename(relevantImageIndex);
             obj.currentImageTimepoints = obj.database.timepoint(relevantImageIndex);
             [~, orderIndex] = sort(obj.currentImageTimepoints);
-            
-            %orderIndex = orderIndex(1:10);
-            %obj.maxTimepoint = max(obj.currentImageTimepoints(orderIndex));
-            
+                        
             obj.currentImageTimepoints = obj.currentImageTimepoints(orderIndex);
             obj.currentImageFilenames = obj.currentImageFilenames(orderIndex);
             obj.maxTimepoint = max(obj.database.timepoint(strcmp(obj.database.group_label, obj.selectedGroup) & obj.database.position_number == obj.selectedPosition));
