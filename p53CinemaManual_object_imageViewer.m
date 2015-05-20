@@ -64,25 +64,28 @@ classdef p53CinemaManual_object_imageViewer < handle
             if master.obj_fileManager.preallocateMode
                 master.obj_fileManager.setProgressBar(1,master.obj_fileManager.numImages,'Loading status');
                 obj.imageBuffer = uint16(zeros(obj.image_height, obj.image_width, master.obj_fileManager.numImages));
+                tic
                 for i=1:master.obj_fileManager.numImages
                     master.obj_fileManager.setProgressBar(i,master.obj_fileManager.numImages,'Loading status');
                     % Load image
                     referenceImage = imresize(obj.readImage(i), obj.imageResizeFactor);
                     %obj.imageBuffer(:,:,i) = uint8(adapthisteq(imnormalize(referenceImage)) * 255);
-                    %obj.imageBuffer(:,:,i) = uint8(imnormalize(imbackground(referenceImage, 10, 100)) * 255);
-                    obj.imageBuffer(:,:,i) = uint8(imnormalize(referenceImage) * 255);
+                    obj.imageBuffer(:,:,i) = uint8(imnormalize(imbackground(referenceImage, 10, 100)) * 255);
+                    %obj.imageBuffer(:,:,i) = uint8(imnormalize(referenceImage) * 255);
                     
                     % Preprocess and find local maxima
                     if(obj.master.obj_fileManager.preprocessMode)
                         timepoint = master.obj_fileManager.currentImageTimepoints(i);
                         if(~strcmp(master.obj_fileManager.maximaChannel, master.obj_fileManager.selectedChannel))
                             referenceImageName = master.obj_fileManager.getFilename(master.obj_fileManager.selectedPosition, master.obj_fileManager.maximaChannel, master.obj_fileManager.currentImageTimepoints(i));
-                            referenceImage = imresize(imread(fullfile(master.obj_fileManager.rawdatapath, referenceImageName)), obj.imageResizeFactor);
+                            referenceImage = imbackground(imread(fullfile(master.obj_fileManager.rawdatapath, referenceImageName)), 10, 100);
+                            referenceImage = imresize(referenceImage, obj.imageResizeFactor);
                         end
                         localMaxima = getImageMaxima(referenceImage);
                         obj.obj_cellTracker.centroidsLocalMaxima.insertCentroids(timepoint, localMaxima);
                     end
                 end
+                toc
                 
                 %Get the range of the dataset
 %                 quantileRange = quantile(double(obj.imageBuffer(:)), [0.01, 0.99]);
@@ -262,7 +265,8 @@ classdef p53CinemaManual_object_imageViewer < handle
         
         %% Image manipulation
         function IM = readImage(obj, index)
-            IM = imread(fullfile(obj.master.obj_fileManager.rawdatapath,obj.master.obj_fileManager.currentImageFilenames{index}));
+            fname = fullfile(obj.master.obj_fileManager.rawdatapath,obj.master.obj_fileManager.currentImageFilenames{index});
+            IM = imread(fname);
             %IM = uint8(bitshift(IM, -4));
         end
         

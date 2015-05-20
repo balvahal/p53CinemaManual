@@ -1,4 +1,4 @@
-function [singleCellTraces, cellAnnotation, divisionMatrixDataset, filledSingleCellTraces, filledDivisionMatrixDataset] = getDatasetTraces_fillLineageInformation_withSegmentation(database, rawdata_path, tracking_path, segment_path, measurementChannel, segmentationChannel, measurementParameter)
+function measurements = getDatasetTraces_fillLineageInformation_withSegmentation(database, rawdata_path, tracking_path, segment_path, measurementChannel, segmentationChannel, measurementParameter)
     trackingFiles = dir(tracking_path);
     trackingFiles = {trackingFiles(:).name};
     validFiles = regexp(trackingFiles, '\.mat', 'once');
@@ -39,9 +39,9 @@ function [singleCellTraces, cellAnnotation, divisionMatrixDataset, filledSingleC
         end
         counter = counter + n;
     end
-    singleCellTraces = singleCellTraces(1:(counter-1),:);
-    divisionMatrixDataset = divisionMatrixDataset(1:(counter-1),:);
-    filledDivisionMatrixDataset = filledDivisionMatrixDataset(1:(counter-1),:);
-    filledSingleCellTraces = filledSingleCellTraces(1:(counter-1),:);    
-    cellAnnotation = cellAnnotation(1:(counter-1),:);
+    measurements.singleCellTraces = singleCellTraces(1:(counter-1),:);
+    measurements.divisionMatrixDataset = divisionMatrixDataset(1:(counter-1),:);
+    measurements.filledDivisionMatrixDataset = filledDivisionMatrixDataset(1:(counter-1),:);
+    measurements.filledSingleCellTraces = filledSingleCellTraces(1:(counter-1),:);    
+    measurements.cellAnnotation = cellAnnotation(1:(counter-1),:);
 end
