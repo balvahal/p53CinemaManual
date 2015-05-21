@@ -60,7 +60,7 @@ hx = 0; hy = 5;
 %hheight = master.obj_imageViewer.image_height/master.ppChar(2);
 %hx = (fwidth-hwidth)/2;
 %hy = (fheight-hheight-100/master.ppChar(2))/2+100/master.ppChar(2);
-haxesImageViewer = axes('Units','characters','DrawMode','fast',...
+haxesImageViewer = axes('Units','characters','DrawMode','fast','XTick',[], 'YTick', [],...
     'Position',[hx hy hwidthaxes  hheightaxes ],'YDir','reverse','Visible','on',...
     'XLim',[1-0.5,master.obj_imageViewer.image_width+0.5],'YLim',[1-0.5,master.obj_imageViewer.image_height+0.5]); %when displaying images the center of the pixels are located at the position on the axis. Therefore, the limits must account for the half pixel border.
 %% Create an axes
@@ -138,11 +138,26 @@ hpushbuttonFirstImage = uicontrol('Style','pushbutton','Units','characters',...
     'String','First Image','Position',[hx hy hwidth hheight],...
     'Callback',{@pushbuttonFirstImage_Callback});
 
-hx = fwidth - hwidth;
+hx = hwidth;
 hpushbuttonLastImage = uicontrol('Style','pushbutton','Units','characters',...
     'FontSize',10,'FontName','Arial','BackgroundColor',[60 179 113]/255,...
     'String','Last Image','Position',[hx hy hwidth hheight],...
     'Callback',{@pushbuttonLastImage_Callback});
+
+hx = fwidth - 5.5*hwidth;
+htextFrameNumber = uicontrol('Style','text','Units','characters',...
+    'FontSize',10,'FontName','Arial','HorizontalAlignment','center',...
+    'String','Frame 1','Position',[hx, hy, hwidth* 2, hheight],...
+    'parent',f);
+hx = fwidth - 2.5*hwidth;
+hpopupViewerChannel = uicontrol('Style','popupmenu','Units','characters',...
+    'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
+    'String','Select channel','Position',[hx, hy, hwidth * 1.5, hheight],...
+    'Enable', 'on', 'parent',f, 'Callback',{@popupViewerChannel_Callback});
+fileManagerHandles = guidata(master.obj_fileManager.gui_fileManager);
+set(hpopupViewerChannel, 'String', get(fileManagerHandles.hpopupPimaryChannel, 'String'));
+set(hpopupViewerChannel, 'Value', get(fileManagerHandles.hpopupPimaryChannel, 'Value'));
+
 %%
 % store the uicontrol handles in the figure handles via guidata()
 handles.axesImageViewer = haxesImageViewer;
@@ -161,6 +176,9 @@ handles.selectedCellPatch = selectedCellPatch;
 handles.cellsInRangePatch = cellsInRangePatch;
 handles.closestCellPatch = closestCellPatch;
 handles.sourceImage = sourceImage;
+handles.hpopupViewerChannel = hpopupViewerChannel;
+handles.htextFrameNumber = htextFrameNumber;
+
 guidata(f,handles);
 %%
 % make the gui visible
@@ -287,5 +305,10 @@ set(f,'Visible','on');
 %
     function pushbuttonLastImage_Callback(~,~)
         master.obj_imageViewer.setFrame(length(master.obj_fileManager.currentImageFilenames));
+    end
+%%
+%
+    function popupViewerChannel_Callback(~,~)
+        master.obj_imageViewer.setFrame(master.obj_imageViewer.currentFrame);
     end
 end

@@ -180,6 +180,7 @@ htextLoadingBar = uicontrol('Style','text','Units','characters',...
     'String','Loading status','Position',[hx, hy, hwidth, hheight],...
     'parent',f);
 
+handles.hpopupPimaryChannel = hpopupPimaryChannel;
 handles.hprogressbarLoadingBar = hprogressbarLoadingBar;
 handles.hprogressbarhandleLoadingBar = hprogressbarhandleLoadingBar;
 handles.htextLoadingBar = htextLoadingBar;

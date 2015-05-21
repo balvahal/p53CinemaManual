@@ -96,7 +96,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             end
             obj.selectedCell = 0;
             obj.potentialMergeCell = 0;
-            obj.setFrame(1);
+            %obj.setFrame(1);
             
             
         end
@@ -187,7 +187,7 @@ classdef p53CinemaManual_object_imageViewer < handle
         function obj = updateContrastHistogram(obj)
             obj.findImageHistogram;
             handles = guidata(obj.gui_contrast);
-            plot(handles.axesContrast,obj.contrastHistogram);
+            plot(handles.axesContrast,log(obj.contrastHistogram+1));
         end
         %% launchImageViewer
         % A indiosyncrasy of using an object wrapper for guis is that the
@@ -200,6 +200,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             obj.gui_imageViewer = p53CinemaManual_gui_imageViewer(obj.master, obj.master.obj_fileManager.maxHeight);
             obj.gui_contrast = p53CinemaManual_gui_contrast(obj.master);
             obj.gui_zoomMap = p53CinemaManual_gui_zoomMap(obj.master);
+            obj.setFrame(1);
         end
         
         %% Frame switching functions
@@ -207,14 +208,28 @@ classdef p53CinemaManual_object_imageViewer < handle
             previousFrame = obj.currentFrame;
             frame = min(max(frame,1), obj.master.obj_fileManager.numImages);
             directionality = sign(frame - previousFrame);
+            
             obj.currentFrame = frame;
-            if(obj.master.obj_fileManager.preallocateMode)
+            obj.currentTimepoint = obj.master.obj_fileManager.currentImageTimepoints(frame);
+            
+            imageViewerHandles = guidata(obj.gui_imageViewer);
+            fileManagerHandles = guidata(obj.master.obj_fileManager.gui_fileManager);
+            
+            set(imageViewerHandles.htextFrameNumber, 'String', ['Timepoint:', num2str(obj.currentTimepoint), '/', num2str(obj.master.obj_fileManager.maxTimepoint)]);
+            
+            if(obj.master.obj_fileManager.preallocateMode && get(fileManagerHandles.hpopupPimaryChannel, 'Value') == get(imageViewerHandles.hpopupViewerChannel, 'Value'))
                 obj.currentImage = obj.imageBuffer(:,:,frame);
             else
-                obj.currentImage = uint8(bitshift(obj.readImage(frame), -4));
-                %obj.currentImage = uint8(imnormalize(imbackground(obj.readImage(frame), 10, 100)) * 255);
+                viewerChannel = getCurrentPopupString(imageViewerHandles.hpopupViewerChannel);
+                filename = obj.master.obj_fileManager.getFilename(obj.master.obj_fileManager.selectedPosition, viewerChannel, obj.currentTimepoint);
+                if(~isempty(filename))
+                    IM = imread(fullfile(obj.master.obj_fileManager.rawdatapath, filename));
+                    %IM = uint8(imbackground(imnormalize_quantile(IM, 0.9) * 255, 10, 100));
+                    IM = uint8(imnormalize_quantile(IM, 0.9) * 255);
+                    obj.currentImage = IM;
+                end
             end
-            obj.currentTimepoint = obj.master.obj_fileManager.currentImageTimepoints(frame);
+            %obj.updateContrastHistogram;
             
             % Predictive tracking
             if(obj.master.obj_fileManager.preprocessMode && obj.obj_cellTracker.isTracking && ~obj.obj_cellTracker.centroidsTracks.getValue(obj.currentTimepoint, obj.selectedCell))
@@ -271,10 +286,6 @@ classdef p53CinemaManual_object_imageViewer < handle
         end
         
         function setImage(obj)
-            if(isempty(obj.gui_imageViewer))
-                return;
-            end
-            
             handles = guidata(obj.gui_imageViewer);
             handlesZoomMap = guidata(obj.gui_zoomMap);
             set(handles.sourceImage,'CData',obj.currentImage);
@@ -432,7 +443,6 @@ classdef p53CinemaManual_object_imageViewer < handle
         %%
         %
         function obj = zoomPan(obj)
-            %%
             % Adjust the imageViewer limits to reflect the zoomMapRect
             % position
             handles = guidata(obj.gui_zoomMap);
@@ -450,5 +460,24 @@ classdef p53CinemaManual_object_imageViewer < handle
             delete(obj.gui_imageViewer);
             delete(obj.gui_zoomMap);
         end
+        %%
+        function str = getCurrentPopupString(hh)
+            %# getCurrentPopupString returns the currently selected string in the popupmenu with handle hh
+            
+            %# could test input here
+            if ~ishandle(hh) || strcmp(get(hh,'Type'),'popupmenu')
+                error('getCurrentPopupString needs a handle to a popupmenu as input')
+            end
+            
+            %# get the string - do it the readable way
+            list = get(hh,'String');
+            val = get(hh,'Value');
+            if iscell(list)
+                str = list{val};
+            else
+                str = list(val,:);
+            end
+        end
+
     end
 end
