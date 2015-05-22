@@ -223,7 +223,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                 viewerChannel = getCurrentPopupString(imageViewerHandles.hpopupViewerChannel);
                 filename = obj.master.obj_fileManager.getFilename(obj.master.obj_fileManager.selectedPosition, viewerChannel, obj.currentTimepoint);
                 if(~isempty(filename))
-                    IM = imread(fullfile(obj.master.obj_fileManager.rawdatapath, filename));
+                    IM = imresize(imread(fullfile(obj.master.obj_fileManager.rawdatapath, filename)), obj.imageResizeFactor);
                     %IM = uint8(imbackground(imnormalize_quantile(IM, 0.9) * 255, 10, 100));
                     IM = uint8(imnormalize_quantile(IM, 0.9) * 255);
                     obj.currentImage = IM;
