@@ -23,7 +23,7 @@ function measurements = getDatasetTraces_fillLineageInformation_withSegmentation
         filledTraces = fillLineageInformation(traces, centroidsDivisions);
         filledDivisionMatrix = fillLineageInformation(divisionMatrix, centroidsDivisions);
         
-        n = counter:(counter+size(traces,1)-1);
+        n = size(traces,1);
 
         subsetIndex = counter:(counter + n - 1);
         singleCellTraces(subsetIndex,:) = traces;
