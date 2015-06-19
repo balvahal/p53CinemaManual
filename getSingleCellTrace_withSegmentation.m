@@ -23,6 +23,8 @@ for i=1:numTimepoints
     end
     % Get current centroids
     [currentCentroids, validCells] = centroids.getCentroids(i);
+    [~, validCells] = ismember(validCells, trackedCells);
+    
     if(isempty(segmentFile) || isempty(validCells))
         continue;
     end

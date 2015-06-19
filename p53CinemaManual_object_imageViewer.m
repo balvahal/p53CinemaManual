@@ -69,6 +69,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                     master.obj_fileManager.setProgressBar(i,master.obj_fileManager.numImages,'Loading status');
                     % Load image
                     referenceImage = imresize(obj.readImage(i), obj.imageResizeFactor);
+                    referenceImage = medfilt2(referenceImage, [3,3]);
                     %obj.imageBuffer(:,:,i) = uint8(adapthisteq(imnormalize(referenceImage)) * 255);
                     obj.imageBuffer(:,:,i) = uint8(imnormalize(imbackground(referenceImage, 10, 100)) * 255);
                     %obj.imageBuffer(:,:,i) = uint8(imnormalize(referenceImage) * 255);
@@ -78,7 +79,9 @@ classdef p53CinemaManual_object_imageViewer < handle
                         timepoint = master.obj_fileManager.currentImageTimepoints(i);
                         if(~strcmp(master.obj_fileManager.maximaChannel, master.obj_fileManager.selectedChannel))
                             referenceImageName = master.obj_fileManager.getFilename(master.obj_fileManager.selectedPosition, master.obj_fileManager.maximaChannel, master.obj_fileManager.currentImageTimepoints(i));
-                            referenceImage = imbackground(imread(fullfile(master.obj_fileManager.rawdatapath, referenceImageName)), 10, 100);
+                            referenceImage = imread(fullfile(master.obj_fileManager.rawdatapath, referenceImageName));
+                            referenceImage = medfilt2(referenceImage, [3,3]);
+                            referenceImage = imbackground(referenceImage, 10, 100);
                             referenceImage = imresize(referenceImage, obj.imageResizeFactor);
                         end
                         localMaxima = getImageMaxima(referenceImage, obj.master.obj_fileManager.cellSize);
@@ -224,8 +227,9 @@ classdef p53CinemaManual_object_imageViewer < handle
                 filename = obj.master.obj_fileManager.getFilename(obj.master.obj_fileManager.selectedPosition, viewerChannel, obj.currentTimepoint);
                 if(~isempty(filename))
                     IM = imresize(imread(fullfile(obj.master.obj_fileManager.rawdatapath, filename)), obj.imageResizeFactor);
-                    %IM = uint8(imbackground(imnormalize_quantile(IM, 0.9) * 255, 10, 100));
-                    IM = uint8(imnormalize_quantile(IM, 0.9) * 255);
+                    IM = medfilt2(IM, [3,3]);
+                    IM = uint8(imbackground(imnormalize_quantile(IM, 1) * 255, 10, 25));
+                    %IM = uint8(imnormalize_quantile(IM, 1) * 255);
                     obj.currentImage = IM;
                 end
             end

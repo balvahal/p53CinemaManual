@@ -44,7 +44,7 @@ function measurements = getDatasetTraces_fillLineageInformation(database, rawdat
         filledDivisionMatrix = fillLineageInformation(divisionMatrix, centroidsDivisions);
         filledDeathMatrix = fillLineageInformation(deathMatrix, centroidsDivisions);
         
-        n = length(centroidsTracks.getTrackedCellIds);
+        n = size(traces,1);
 
         subsetIndex = counter:(counter + n - 1);
         singleCellTraces(subsetIndex,:) = traces;

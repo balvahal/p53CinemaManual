@@ -15,7 +15,7 @@ function measurements = getDatasetTraces_fillLineageInformation_withSegmentation
     cellAnnotation = cell(maxCells, 3);
     
     counter = 1;
-    for i=1:length(trackingFiles)
+    for i=24:length(trackingFiles)
         fprintf('%s: ', trackingFiles{i});
         load(fullfile(tracking_path, trackingFiles{i}));
         traces = getSingleCellTrace_withSegmentation(rawdata_path, segment_path, database, selectedGroup, selectedPosition, measurementChannel, segmentationChannel, centroidsTracks, measurementParameter);
@@ -23,7 +23,7 @@ function measurements = getDatasetTraces_fillLineageInformation_withSegmentation
         filledTraces = fillLineageInformation(traces, centroidsDivisions);
         filledDivisionMatrix = fillLineageInformation(divisionMatrix, centroidsDivisions);
         
-        n = length(centroidsTracks.getTrackedCellIds);
+        n = size(traces,2);
 
         subsetIndex = counter:(counter + n - 1);
         singleCellTraces(subsetIndex,:) = traces;
