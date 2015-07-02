@@ -181,6 +181,9 @@ set(f,'Visible','on');
             if(sum(validFields) < 2)
                 fprintf('Failed to import centroids. There should be a field names centroid_col and one named centroid_row\n');
             else
+                for i=1:length(master.obj_imageViewer.obj_cellTracker.centroidsTracks.getTrackedCellIds)
+                    master.obj_imageViewer.obj_cellTracker.deleteCellData(i);
+                end
                 for i=1:min(max(myCentroids.timepoint), length(master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells))
                     subCentroids = table2array(myCentroids(myCentroids.timepoint == i, fieldLocation));
                     subIndex = double(myCentroids.cell_id(myCentroids.timepoint == i));
