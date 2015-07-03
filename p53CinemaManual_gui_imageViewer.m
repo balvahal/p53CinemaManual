@@ -149,7 +149,7 @@ htextFrameNumber = uicontrol('Style','text','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','center',...
     'String','Frame 1','Position',[hx, hy, hwidth* 2, hheight],...
     'parent',f);
-hx = fwidth - 2.5*hwidth;
+hx = fwidth - 3*hwidth;
 hpopupViewerChannel = uicontrol('Style','popupmenu','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','Select channel','Position',[hx, hy, hwidth * 1.5, hheight],...
@@ -157,6 +157,11 @@ hpopupViewerChannel = uicontrol('Style','popupmenu','Units','characters',...
 fileManagerHandles = guidata(master.obj_fileManager.gui_fileManager);
 set(hpopupViewerChannel, 'String', get(fileManagerHandles.hpopupPimaryChannel, 'String'));
 set(hpopupViewerChannel, 'Value', get(fileManagerHandles.hpopupPimaryChannel, 'Value'));
+hx = fwidth - 1.5*hwidth;
+hcheckboxPreprocessFrame = uicontrol('Style','checkbox','Units','characters',...
+    'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
+    'String','Preprocess','Position',[hx, hy, hwidth*1.5, hheight],...
+    'Value',0,'parent',f, 'Callback',{@checkboxPreprocessFrame_Callback});
 
 %%
 % store the uicontrol handles in the figure handles via guidata()
@@ -178,6 +183,7 @@ handles.closestCellPatch = closestCellPatch;
 handles.sourceImage = sourceImage;
 handles.hpopupViewerChannel = hpopupViewerChannel;
 handles.htextFrameNumber = htextFrameNumber;
+handles.hcheckboxPreprocessFrame = hcheckboxPreprocessFrame;
 
 guidata(f,handles);
 %%
@@ -309,6 +315,12 @@ set(f,'Visible','on');
 %%
 %
     function popupViewerChannel_Callback(~,~)
+        master.obj_imageViewer.setFrame(master.obj_imageViewer.currentFrame);
+    end
+
+%%
+%
+    function checkboxPreprocessFrame_Callback(~,~)
         master.obj_imageViewer.setFrame(master.obj_imageViewer.currentFrame);
     end
 end

@@ -227,8 +227,11 @@ classdef p53CinemaManual_object_imageViewer < handle
                 filename = obj.master.obj_fileManager.getFilename(obj.master.obj_fileManager.selectedPosition, viewerChannel, obj.currentTimepoint);
                 if(~isempty(filename))
                     IM = imresize(imread(fullfile(obj.master.obj_fileManager.rawdatapath, filename)), obj.imageResizeFactor);
-                    IM = medfilt2(IM, [3,3]);
-                    IM = uint8(imbackground(imnormalize_quantile(IM, 1) * 255, 10, 25));
+                    IM = imnormalize_quantile(IM, 1) * 255;
+                    if(get(imageViewerHandles.hcheckboxPreprocessFrame, 'Value'))
+                        IM = medfilt2(IM, [3,3]);
+                        IM = uint8(imbackground(IM, 10, 100));
+                    end
                     %IM = uint8(imnormalize_quantile(IM, 1) * 255);
                     obj.currentImage = IM;
                 end
