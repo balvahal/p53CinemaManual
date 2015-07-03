@@ -70,11 +70,41 @@ end
 if(obj_cellT.centroidsDeath.getValue(currentTimepoint, selectedCell))
     obj_cellT.centroidsDeath.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
 end
-
 obj_cellT.setAvailableCells;
+
+% Try to propagate track until there is ambiguity
+master = obj_cellT.master;
+lookupRadius = obj_cellT.getDistanceRadius;
+selectedCell = master.obj_imageViewer.selectedCell;
+for i=min((master.obj_imageViewer.currentFrame+1), length(master.obj_fileManager.currentImageTimepoints)):length(master.obj_fileManager.currentImageTimepoints)
+    currentTimepoint = master.obj_fileManager.currentImageTimepoints(i);
+    previousTimepoint = master.obj_fileManager.currentImageTimepoints(i-1);
+    previousCentroid = obj_cellT.centroidsTracks.getCentroid(previousTimepoint, selectedCell);
+    currentCentroid = obj_cellT.centroidsTracks.getCentroid(currentTimepoint, selectedCell);
+    if(currentCentroid(1) == 0)
+        [predictedCentroids, ~, distance] = obj_cellT.centroidsLocalMaxima.getCentroidsInRange(currentTimepoint, previousCentroid, lookupRadius);
+        if(length(distance) == 1)
+            obj_cellT.centroidsTracks.setCentroid(currentTimepoint, selectedCell, predictedCentroids, 0);
+        elseif(~isempty(distance))
+            [sortedDistance, ordering] = sort(distance);
+            if(diff(sortedDistance(1:2)) > lookupRadius / 2)
+                obj_cellT.centroidsTracks.setCentroid(currentTimepoint, selectedCell, predictedCentroids(ordering(1),:), 0);
+            else
+                break;
+            end
+        else
+            break;
+        end
+    else
+        break
+    end
+    master.obj_imageViewer.setFrame(i);
+    obj_cellT.master.obj_imageViewer.setImage;
+    drawnow;
+end
+master.obj_imageViewer.setFrame(i);
 
 obj_cellT.master.obj_imageViewer.setImage;
 drawnow;
-frameSkip = obj_cellT.getFrameSkip;
-obj_cellT.master.obj_imageViewer.nextFrame;
+%obj_cellT.master.obj_imageViewer.nextFrame;
 end

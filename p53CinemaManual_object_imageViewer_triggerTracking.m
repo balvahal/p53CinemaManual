@@ -45,8 +45,8 @@ if(master.obj_imageViewer.obj_cellTracker.firstClick)
     end
     master.obj_imageViewer.obj_cellTracker.firstClick = 0;
 end
-
 master.obj_imageViewer.obj_cellTracker.centroidsTracks.setCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, queryCentroid, 1);
+
 if(strcmp(AnnotationEvent, 'division'))
     master.obj_imageViewer.obj_cellTracker.centroidsDivisions.setCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, queryCentroid, 1);
 elseif(strcmp(AnnotationEvent, 'death'))
@@ -54,8 +54,27 @@ elseif(strcmp(AnnotationEvent, 'death'))
 end
 master.obj_imageViewer.obj_cellTracker.setAvailableCells;
 
+% Try to propagate track until there is ambiguity
+lookupRadius = master.obj_imageViewer.obj_cellTracker.getDistanceRadius / 6;
+selectedCell = master.obj_imageViewer.selectedCell;
+for i=(master.obj_imageViewer.currentFrame+1):length(master.obj_fileManager.currentImageTimepoints)
+    currentTimepoint = master.obj_fileManager.currentImageTimepoints(i);
+    currentCentroid = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroid(currentTimepoint-1, selectedCell);
+    futureCentroid = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroid(currentTimepoint, selectedCell);
+    if(futureCentroid(1) == 0)
+        [predictedCentroids, ~, distance] = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroidsInRange(currentTimepoint, currentCentroid, lookupRadius);
+        if(length(distance) == 1)
+            master.obj_imageViewer.obj_cellTracker.centroidsTracks.setCentroid(currentTimepoint, selectedCell, predictedCentroids, 0);
+        else
+            break;
+        end
+    else
+        break
+    end
+end
+master.obj_imageViewer.setFrame(i);
+
 master.obj_imageViewer.setImage;
 drawnow;
-frameSkip = master.obj_imageViewer.obj_cellTracker.getFrameSkip;
-master.obj_imageViewer.nextFrame;
+%master.obj_imageViewer.nextFrame;
 end
