@@ -11,11 +11,12 @@ classdef p53CinemaManual_object_cellTracker < handle
         isTracking;
         isPaused;
         firstClick;
-                        
+        trackPropagateMode;
+        
         centroidsLocalMaxima;
         centroidsTracks;
         centroidsDivisions;
-        centroidsDeath;        
+        centroidsDeath;
     end
     events
         
@@ -33,6 +34,7 @@ classdef p53CinemaManual_object_cellTracker < handle
             obj.isTracking = 0;
             obj.isPaused = 0;
             obj.firstClick = 1;
+            obj.trackPropagateMode = 'SingleFramePropagate';
         end
 
         function setAvailableCells(obj)

@@ -72,39 +72,55 @@ if(obj_cellT.centroidsDeath.getValue(currentTimepoint, selectedCell))
 end
 obj_cellT.setAvailableCells;
 
+obj_cellT.master.obj_imageViewer.setImage;
+drawnow;
+
 % Try to propagate track until there is ambiguity
+if(strcmp(obj_cellT.trackPropagateMode, 'SingleFramePropagate'))
+    obj_cellT.master.obj_imageViewer.nextFrame;
+    return;
+end
+
 master = obj_cellT.master;
 lookupRadius = obj_cellT.getDistanceRadius;
 selectedCell = master.obj_imageViewer.selectedCell;
-for i=min((master.obj_imageViewer.currentFrame+1), length(master.obj_fileManager.currentImageTimepoints)):length(master.obj_fileManager.currentImageTimepoints)
-    currentTimepoint = master.obj_fileManager.currentImageTimepoints(i);
-    previousTimepoint = master.obj_fileManager.currentImageTimepoints(i-1);
-    previousCentroid = obj_cellT.centroidsTracks.getCentroid(previousTimepoint, selectedCell);
-    currentCentroid = obj_cellT.centroidsTracks.getCentroid(currentTimepoint, selectedCell);
-    if(currentCentroid(1) == 0)
-        [predictedCentroids, ~, distance] = obj_cellT.centroidsLocalMaxima.getCentroidsInRange(currentTimepoint, previousCentroid, lookupRadius);
-        if(length(distance) == 1)
-            obj_cellT.centroidsTracks.setCentroid(currentTimepoint, selectedCell, predictedCentroids, 0);
-        elseif(~isempty(distance))
-            [sortedDistance, ordering] = sort(distance);
-            if(diff(sortedDistance(1:2)) > lookupRadius / 2)
-                obj_cellT.centroidsTracks.setCentroid(currentTimepoint, selectedCell, predictedCentroids(ordering(1),:), 0);
+
+if(strcmp(obj_cellT.trackPropagateMode, 'ForwardPropagate'))
+    frameOrdering = master.obj_imageViewer.currentFrame:length(master.obj_fileManager.currentImageTimepoints);
+else
+    frameOrdering = fliplr(1:master.obj_imageViewer.currentFrame);
+end
+
+if(length(frameOrdering) > 1)
+    for j=2:length(frameOrdering);
+        currentTimepoint = master.obj_fileManager.currentImageTimepoints(frameOrdering(j));
+        previousTimepoint = master.obj_fileManager.currentImageTimepoints(frameOrdering(j-1));
+        previousCentroid = obj_cellT.centroidsTracks.getCentroid(previousTimepoint, selectedCell);
+        currentCentroid = obj_cellT.centroidsTracks.getCentroid(currentTimepoint, selectedCell);
+        if(currentCentroid(1) == 0)
+            [predictedCentroids, ~, distance] = obj_cellT.centroidsLocalMaxima.getCentroidsInRange(currentTimepoint, previousCentroid, lookupRadius);
+            if(length(distance) == 1)
+                obj_cellT.centroidsTracks.setCentroid(currentTimepoint, selectedCell, predictedCentroids, 0);
+            elseif(~isempty(distance))
+                [sortedDistance, ordering] = sort(distance);
+                if(diff(sortedDistance(1:2)) > lookupRadius / 2)
+                    obj_cellT.centroidsTracks.setCentroid(currentTimepoint, selectedCell, predictedCentroids(ordering(1),:), 0);
+                else
+                    break;
+                end
             else
                 break;
             end
         else
-            break;
+            break
         end
-    else
-        break
+        master.obj_imageViewer.setFrame(frameOrdering(j));
+        obj_cellT.master.obj_imageViewer.setImage;
+        drawnow;
     end
-    master.obj_imageViewer.setFrame(i);
-    obj_cellT.master.obj_imageViewer.setImage;
-    drawnow;
+    master.obj_imageViewer.setFrame(frameOrdering(j));
 end
-master.obj_imageViewer.setFrame(i);
 
 obj_cellT.master.obj_imageViewer.setImage;
 drawnow;
-%obj_cellT.master.obj_imageViewer.nextFrame;
 end
