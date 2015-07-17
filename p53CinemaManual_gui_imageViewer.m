@@ -248,6 +248,7 @@ set(f,'Visible','on');
                 else
                     master.obj_imageViewer.deleteSelectedCellTrack();
                 end
+                master.obj_imageViewer.setImage;
         end
     end
 

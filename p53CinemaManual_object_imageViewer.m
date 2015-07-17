@@ -305,7 +305,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                 obj.obj_cellTracker.centroidsDeath.getCentroids(obj.currentTimepoint));
             set(handles.cellFateEventPatch, 'XData', cellFateEventCentroids(:,2), 'YData', cellFateEventCentroids(:,1));
             
-            
+            set(handles.currentCellTrace, 'xdata', [], 'ydata', []);            
             if(obj.selectedCell)
                 % Set selected cell patch
                 selectedCentroid = obj.obj_cellTracker.centroidsTracks.getCentroid(obj.currentTimepoint, obj.selectedCell);
@@ -315,6 +315,11 @@ classdef p53CinemaManual_object_imageViewer < handle
                 
                 currentTrack = obj.obj_cellTracker.centroidsTracks.getCellTrack(obj.selectedCell);
                 set(handles.currentCellTrace, 'xdata', currentTrack(currentTrack(:,2) > 0,2), 'ydata', currentTrack(currentTrack(:,2) > 0,1));
+                if(sum(obj.obj_cellTracker.centroidsTracks.getCentroid(obj.currentTimepoint, obj.selectedCell) == 0) > 0)
+                    set(handles.currentCellTrace, 'color', 'green');
+                else
+                    set(handles.currentCellTrace, 'color', 'red');
+                end
                 
                 currentTrackLength = sum(currentTrack(:,1) > 0);
                 if(currentTrackLength >= 3 && any(selectedCentroid > 0));

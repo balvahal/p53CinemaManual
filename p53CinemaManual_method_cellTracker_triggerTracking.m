@@ -104,7 +104,10 @@ if(length(frameOrdering) > 1)
             elseif(~isempty(distance))
                 [sortedDistance, ordering] = sort(distance);
                 if(diff(sortedDistance(1:2)) > lookupRadius / 2)
-                    obj_cellT.centroidsTracks.setCentroid(currentTimepoint, selectedCell, predictedCentroids(ordering(1),:), 0);
+                    reciprocalCentroid = obj_cellT.centroidsLocalMaxima.getClosestCentroid(previousTimepoint, predictedCentroids(ordering(1),:), lookupRadius);
+                    if(sum(reciprocalCentroid == currentCentroid) == 2)
+                        obj_cellT.centroidsTracks.setCentroid(currentTimepoint, selectedCell, predictedCentroids(ordering(1),:), 0);
+                    end
                 else
                     break;
                 end
