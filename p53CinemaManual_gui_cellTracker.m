@@ -218,7 +218,7 @@ set(f,'Visible','on');
                         end
                     end
                     if(any(strcmp(myCentroids.Properties.VariableNames, 'death')))
-                        subDeath = logical(myCentroids.division(myCentroids.timepoint == i));
+                        subDeath = logical(myCentroids.death(myCentroids.timepoint == i));
                         if(sum(subDeath) > 0)
                             master.obj_imageViewer.obj_cellTracker.centroidsDeath.singleCells(i).point(subIndex(subDeath),:) = subCentroids(subDeath,:) * master.obj_imageViewer.imageResizeFactor;
                         end
@@ -235,8 +235,8 @@ set(f,'Visible','on');
                     master.obj_imageViewer.obj_cellTracker.centroidsDivisions.singleCells(t).value = loadStruct.centroidsDivisions.singleCells(t).value;
                 end
                 if(any(strcmp(fieldnames(loadStruct), 'centroidsDeath')))
-                    master.obj_imageViewer.obj_cellTracker.centroidsDivisions.singleCells(t).point = loadStruct.centroidsDivisions.singleCells(t).point;
-                    master.obj_imageViewer.obj_cellTracker.centroidsDivisions.singleCells(t).value = loadStruct.centroidsDivisions.singleCells(t).value;
+                    master.obj_imageViewer.obj_cellTracker.centroidsDeath.singleCells(t).point = loadStruct.centroidsDeath.singleCells(t).point;
+                    master.obj_imageViewer.obj_cellTracker.centroidsDeath.singleCells(t).value = loadStruct.centroidsDeath.singleCells(t).value;
                 end
             end
             % Make sure to rescale the centroids to fit current image size
