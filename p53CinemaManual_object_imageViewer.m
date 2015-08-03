@@ -259,7 +259,12 @@ classdef p53CinemaManual_object_imageViewer < handle
                     end
                 end
             end
-            
+            if(obj.selectedCell > 0)
+                currentCentroid = obj.obj_cellTracker.centroidsTracks.getCentroid(obj.currentTimepoint, obj.selectedCell);
+                if(currentCentroid(1) > 0)
+                    obj.zoomRecenter(currentCentroid);
+                end
+            end
             obj.setImage;
         end
         
@@ -464,6 +469,30 @@ classdef p53CinemaManual_object_imageViewer < handle
             newYLim = [myVertices(1,2)-0.5,myVertices(3,2)+0.5];
             set(handles2.axesImageViewer,'XLim',newXLim);
             set(handles2.axesImageViewer,'YLim',newYLim);
+        end
+        %%
+        %
+        function obj = zoomRecenter(obj, centroid)
+            % The centroid received should be in the [centroid_row,
+            % centroid_col] format
+            % Check that the centroid does not go out of the boundaries of
+            % the image given the zoom.
+            newHalfWidth = obj.image_width*obj.zoomArray(obj.zoomIndex)/2;
+            newHalfHeight = obj.image_height*obj.zoomArray(obj.zoomIndex)/2;
+            centroid(2) = max(centroid(2), newHalfWidth);
+            centroid(2) = min(centroid(2), obj.image_width-newHalfWidth);
+            centroid(1) = max(centroid(1), newHalfHeight);
+            centroid(1) = min(centroid(1), obj.image_height-newHalfHeight);
+            
+            % Define new vertices
+            handles = guidata(obj.gui_zoomMap);
+            newVertices = [centroid(2) - newHalfWidth, centroid(1) - newHalfHeight; ...
+                centroid(2) + newHalfWidth-1, centroid(1) - newHalfHeight; ...
+                centroid(2) + newHalfWidth-1, centroid(1) + newHalfHeight-1; ...
+                centroid(2) - newHalfWidth, centroid(1) + newHalfHeight-1];
+            set(handles.zoomMapRect,'Vertices', newVertices);
+            guidata(obj.gui_zoomMap, handles);
+            obj.zoomPan;
         end
         %% Delete function
         function delete(obj)
