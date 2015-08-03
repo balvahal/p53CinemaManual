@@ -289,7 +289,17 @@ classdef p53CinemaManual_object_imageViewer < handle
             obj.obj_cellTracker.stopTracking;
             obj.setImage;
         end
+
+        function deleteSelectedCellForward(obj)
+            obj.obj_cellTracker.deleteCellTimepoints(obj.selectedCell, obj.currentTimepoint:max(obj.master.obj_fileManager.currentImageTimepoints));
+            obj.setImage;
+        end
         
+        function deleteSelectedCellBackwards(obj)
+            obj.obj_cellTracker.deleteCellTimepoints(obj.selectedCell, min(obj.master.obj_fileManager.currentImageTimepoints):obj.currentTimepoint);
+            obj.setImage;
+        end
+       
         %% Image manipulation
         function IM = readImage(obj, index)
             fname = fullfile(obj.master.obj_fileManager.rawdatapath,obj.master.obj_fileManager.currentImageFilenames{index});

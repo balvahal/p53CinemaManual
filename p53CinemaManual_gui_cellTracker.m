@@ -78,6 +78,25 @@ heditExclusionRadius = uicontrol('Style','edit','Units','characters',...
     'String','5','Position',[hx + hmargin + hwidth, hy, hwidth, hheight],...
     'Enable', 'on', 'parent',f);
 
+%% Layout delete functions
+hy = hy - hmargin - hheight;
+htextDeleteTracks = uicontrol('Style','text','Units','characters',...
+    'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
+    'String','Delete','Position',[hx, hy, hwidth, hheight],...
+    'parent',f);
+hy = hy - hheight;
+hbuttongroupDeleteFunctions = uibuttongroup('Visible','off','Units',get(f,'Units'),...
+    'Position',[hx + hwidth + hmargin, hy, hwidth + hmargin_short, hheight * 2 + hmargin_short], 'Parent', f);
+% Create three radio buttons in the button group.
+hDeleteForwardPushbutton = uicontrol('Style','pushbutton','String','Delete forward','Units',get(f,'Units'),...
+    'Position',[0.5, hheight, hwidth - 1, hheight],'parent',hbuttongroupDeleteFunctions,'HandleVisibility','on',...
+    'Callback',{@DeleteForwardPushbutton_Callback});
+hDeleteBackwardsPushbutton = uicontrol('Style','pushbutton','String','Delete backwards','Units',get(f,'Units'),...
+    'Position',[0.5, 0, hwidth - 1, hheight],'parent',hbuttongroupDeleteFunctions,'HandleVisibility','on','Visible', 'on', ...
+    'Callback',{@DeleteBackwardsPushbutton_Callback});
+set(hbuttongroupDeleteFunctions,'Visible','on');
+
+
 %% Layout: special events
 
 hy = hy - hmargin - hheight;
@@ -259,6 +278,14 @@ set(f,'Visible','on');
             get(eventdata.OldValue,'String'),'  ', ...
             get(eventdata.NewValue,'String')]);
         disp(get(get(source,'SelectedObject'),'String'));
+    end
+
+    function DeleteForwardPushbutton_Callback(~,~)
+        master.obj_imageViewer.deleteSelectedCellForward;
+    end
+
+    function DeleteBackwardsPushbutton_Callback(~,~)
+        master.obj_imageViewer.deleteSelectedCellBackwards;
     end
 
     function u0Pushbutton_Callback(source, eventdata)
