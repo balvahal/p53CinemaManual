@@ -35,8 +35,11 @@ hsliderMax = uicontrol('Style','slider','Units','characters',...
     'Min',0,'Max',1,'BackgroundColor',[255 215 0]/255,...
     'Value',1,'SliderStep',[sliderStep sliderStep],'Position',[hx hy hwidth hheight],...
     'Callback',{@sliderMax_Callback});
-hListener = handle.listener(hsliderMax,'ActionEvent',@sliderMax_Callback);
-setappdata(hsliderMax,'sliderListener',hListener);
+try    % R2013b and older
+    addlistener(hsliderMax,'ActionEvent',@sliderMax_Callback);
+catch  % R2014a and newer
+    addlistener(hsliderMax,'ContinuousValueChange',@sliderMax_Callback);
+end
 
 hx = (fwidth-hwidth)/2;
 hy = 30/master.ppChar(2);
@@ -46,8 +49,11 @@ hsliderMin= uicontrol('Style','slider','Units','characters',...
     'Min',0,'Max',1,'BackgroundColor',[40 215 100]/255,...
     'Value',0,'SliderStep',[sliderStep sliderStep],'Position',[hx hy hwidth hheight],...
     'Callback',{@sliderMin_Callback});
-hListener = handle.listener(hsliderMin,'ActionEvent',@sliderMin_Callback);
-setappdata(hsliderMin,'sliderListener',hListener);
+try    % R2013b and older
+    addlistener(hsliderMin,'ActionEvent',@sliderMin_Callback);
+catch  % R2014a and newer
+    addlistener(hsliderMin,'ContinuousValueChange',@sliderMin_Callback);
+end
 
 %%
 % store the uicontrol handles in the figure handles via guidata()
