@@ -33,11 +33,11 @@ Objects = imfill(imerode(BlurredImage > threshold, strel('disk', 5)), 'holes');
 
 EdgeImage = imdilate(edge(BlurredImage, 'canny'), strel('disk', 1));
 Objects = Objects | imfill(EdgeImage, 'holes');
-Object = imerode(Objects, strel('disk', 2));
+Objects = imerode(Objects, strel('disk', 2));
 %LocalMaxima = bwmorph(imregionalmax(bwdist(~Objects)), 'shrink', 'Inf');
 
 LocalMaxima = LocalMaxima .* Objects;
-%LocalMaxima = imregionalmax(bwdist(~Objects));
+%LocalMaxima = imregionalmax(imfilter(bwdist(~Objects), fspecial('gaussian', blurRadius, 4), 'replicate'));
 LocalMaxima = bwmorph(LocalMaxima, 'shrink', 'inf');
 
 [y,x] = ind2sub(size(IM), find(LocalMaxima));

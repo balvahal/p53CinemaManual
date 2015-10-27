@@ -57,6 +57,11 @@ hpopupSelectedCell = uicontrol('Style','popupmenu','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','-- Select cell --','Position',[hx, hy, hwidth, hheight],...
     'Enable','off','Callback',{@popupSelectedCell_Callback}, 'parent',f);
+hcheckboxAutoCenter = uicontrol('Style','checkbox','Units','characters',...
+    'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
+    'String','Auto-center','Value',1,'Position',[hx + hmargin + hwidth, hy, hwidth, hheight],...
+    'Callback', {@checkboxAutoCenter_Callback},'parent',f);
+
 
 %% Layout: Interaction options
 hy = hy - hheight - hmargin;
@@ -76,7 +81,7 @@ htextExclusionRadius = uicontrol('Style','text','Units','characters',...
 heditExclusionRadius = uicontrol('Style','edit','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','5','Position',[hx + hmargin + hwidth, hy, hwidth, hheight],...
-    'Enable', 'on', 'parent',f);
+    'Enable', 'off', 'parent',f);
 
 %% Layout delete functions
 hy = hy - hmargin - hheight;
@@ -141,6 +146,7 @@ handles.hradiobuttonBackwardsPropagate = hradiobuttonBackwardsPropagate;
 handles.hpusbuttonLoadAnnotations = hpusbuttonLoadAnnotations;
 handles.hpusbuttonSaveAnnotations = hpusbuttonSaveAnnotations;
 handles.hpopupSelectedCell = hpopupSelectedCell;
+handles.hcheckboxAutoCenter = hcheckboxAutoCenter;
 handles.heditExclusionRadius = heditExclusionRadius;
 handles.htextExclusionRadius = htextExclusionRadius;
 handles.htextDistanceRadius = htextDistanceRadius;
@@ -171,6 +177,10 @@ set(f,'Visible','on');
     function popupSelectedCell_Callback(~,~)
         selectedCell = str2double(getCurrentPopupString(hpopupSelectedCell));
         master.obj_imageViewer.setSelectedCell(selectedCell);
+        master.obj_imageViewer.setImage;
+    end
+
+    function checkboxAutoCenter_Callback(~,~)
         master.obj_imageViewer.setImage;
     end
 

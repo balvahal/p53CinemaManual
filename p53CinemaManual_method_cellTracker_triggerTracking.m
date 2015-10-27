@@ -121,6 +121,7 @@ if(length(frameOrdering) > 1)
         obj_cellT.master.obj_imageViewer.setImage;
         drawnow;
     end
+    master.obj_imageViewer.setFrame(frameOrdering(j-1));
     master.obj_imageViewer.setFrame(frameOrdering(j));
 end
 

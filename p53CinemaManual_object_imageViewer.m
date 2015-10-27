@@ -48,6 +48,7 @@ classdef p53CinemaManual_object_imageViewer < handle
         %
         function obj = p53CinemaManual_object_imageViewer(master)
             obj.master = master;
+            fileManagerHandles = guidata(obj.master.obj_fileManager.gui_fileManager);
             %% get image info from first image
             %
             IM = imread(fullfile(master.obj_fileManager.rawdatapath,master.obj_fileManager.currentImageFilenames{1}));
@@ -70,9 +71,11 @@ classdef p53CinemaManual_object_imageViewer < handle
                     % Load image
                     referenceImage = imresize(obj.readImage(i), obj.imageResizeFactor);
                     referenceImage = medfilt2(referenceImage, [3,3]);
-                    %obj.imageBuffer(:,:,i) = uint8(adapthisteq(imnormalize(referenceImage)) * 255);
-                    obj.imageBuffer(:,:,i) = uint8(imnormalize(imbackground(referenceImage, 10, 100)) * 255);
-                    %obj.imageBuffer(:,:,i) = uint8(imnormalize(referenceImage) * 255);
+                    if(get(fileManagerHandles.hcheckboxPrimaryBackground, 'Value'))
+                        obj.imageBuffer(:,:,i) = uint8(imnormalize(imbackground(referenceImage, 10, 100)) * 255);
+                    else
+                        obj.imageBuffer(:,:,i) = uint8(imnormalize(referenceImage) * 255);
+                    end
                     
                     % Preprocess and find local maxima
                     if(obj.master.obj_fileManager.preprocessMode)
@@ -259,12 +262,6 @@ classdef p53CinemaManual_object_imageViewer < handle
                     end
                 end
             end
-            if(obj.selectedCell > 0)
-                currentCentroid = obj.obj_cellTracker.centroidsTracks.getCentroid(obj.currentTimepoint, obj.selectedCell);
-                if(currentCentroid(1) > 0)
-                    obj.zoomRecenter(currentCentroid);
-                end
-            end
             obj.setImage;
         end
         
@@ -310,6 +307,8 @@ classdef p53CinemaManual_object_imageViewer < handle
         function setImage(obj)
             handles = guidata(obj.gui_imageViewer);
             handlesZoomMap = guidata(obj.gui_zoomMap);
+            cellTrackerHandles = guidata(obj.obj_cellTracker.gui_cellTracker);
+
             set(handles.sourceImage,'CData',obj.currentImage);
             set(handlesZoomMap.sourceImage,'CData',obj.currentImage);
             sliderStep = get(handles.hsliderExploreStack,'SliderStep');
@@ -325,6 +324,10 @@ classdef p53CinemaManual_object_imageViewer < handle
                 % Set selected cell patch
                 selectedCentroid = obj.obj_cellTracker.centroidsTracks.getCentroid(obj.currentTimepoint, obj.selectedCell);
                 set(handles.selectedCellPatch, 'XData', selectedCentroid(:,2), 'YData', selectedCentroid(:,1));
+                if(selectedCentroid(1) > 0 && get(cellTrackerHandles.hcheckboxAutoCenter, 'Value'))
+                    obj.zoomRecenter(selectedCentroid);
+                end
+                
                 dividingCell = any(obj.obj_cellTracker.centroidsDivisions.getCentroid(obj.currentTimepoint, obj.selectedCell) > 0);
                 deathCell = any(obj.obj_cellTracker.centroidsDeath.getCentroid(obj.currentTimepoint, obj.selectedCell) > 0);
                 
@@ -375,8 +378,14 @@ classdef p53CinemaManual_object_imageViewer < handle
             end
             
             % Set tracked centroids patch
-            trackedCentroids = obj.obj_cellTracker.centroidsTracks.getCentroids(obj.currentTimepoint);
+            [trackedCentroids, currentFrameCentroids] = obj.obj_cellTracker.centroidsTracks.getCentroids(obj.currentTimepoint);
             set(handles.trackedCellsPatch, 'XData', trackedCentroids(:,2), 'YData', trackedCentroids(:,1));
+            
+            % Set the completed centroids patch
+            [~, firstFrameCentroids] = obj.obj_cellTracker.centroidsTracks.getCentroids(min(obj.master.obj_fileManager.currentImageTimepoints));
+            [~, lastFrameCentroids] = obj.obj_cellTracker.centroidsTracks.getCentroids(max(obj.master.obj_fileManager.currentImageTimepoints));
+            completedCells = ismember(currentFrameCentroids, intersect(firstFrameCentroids, lastFrameCentroids));
+            set(handles.completeCellsPatch, 'XData', trackedCentroids(completedCells,2), 'YData', trackedCentroids(completedCells,1));
             
             if(~obj.master.obj_fileManager.preprocessMode)
                 return;
