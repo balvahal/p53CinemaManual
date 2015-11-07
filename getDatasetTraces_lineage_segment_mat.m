@@ -20,8 +20,8 @@ function measurements = getDatasetTraces_lineage_segment_mat(database, rawdata_p
         load(fullfile(tracking_path, trackingFiles{i}));
         traces = getSingleCellTrace_withSegmentation_matFormat(rawdata_path, segment_path, database, selectedGroup, selectedPosition, measurementChannel, segmentationChannel, centroidsTracks, measurementParameter);
         divisionMatrix = getDivisionMatrix(centroidsTracks, centroidsDivisions);
-        filledTraces = fillLineageInformation(traces, centroidsDivisions);
-        filledDivisionMatrix = fillLineageInformation(divisionMatrix, centroidsDivisions);
+        filledTraces = fillLineageInformation(traces, centroidsTracks, centroidsDivisions);
+        filledDivisionMatrix = fillLineageInformation(divisionMatrix, centroidsTracks, centroidsDivisions);
         
         n = size(traces,1);
 

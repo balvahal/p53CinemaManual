@@ -1,4 +1,4 @@
-function measurements = getDatasetTraces_fillLineageInformation(database, rawdata_path, trackingPath, ffpath, channel)
+function measurements = appendDatasetTraces_fillLineageInformation(database, rawdata_path, trackingPath, ffpath, channel, previousMeasurements)
     trackingFiles = dir(trackingPath);
     trackingFiles = {trackingFiles(:).name};
     validFiles = regexp(trackingFiles, '\.mat', 'once');
@@ -6,7 +6,7 @@ function measurements = getDatasetTraces_fillLineageInformation(database, rawdat
     
     load(fullfile(trackingPath, trackingFiles{1}));
     numTimepoints = length(centroidsTracks.singleCells);
-    maxCells = 10000;
+    maxCells = 20000;
     
     singleCellTraces = -ones(maxCells, numTimepoints);
     divisionMatrixDataset = -ones(maxCells, numTimepoints);
@@ -21,6 +21,18 @@ function measurements = getDatasetTraces_fillLineageInformation(database, rawdat
     lineageTree = -ones(maxCells, numTimepoints);
     cellAnnotation = cell(maxCells, 3);
     
+    filledRows = size(previousMeasurements.singleCellTraces,1);
+    singleCellTraces(1:filledRows,:) = previousMeasurements.singleCellTraces;
+    divisionMatrixDataset(1:filledRows,:) = previousMeasurements.divisionMatrixDataset;
+    deathMatrixDataset(1:filledRows,:) = previousMeasurements.deathMatrix;
+    centroid_col(1:filledRows,:) = previousMeasurements.centroid_col;
+    centroid_row(1:filledRows,:) = previousMeasurements.centroid_row;
+    filledDivisionMatrixDataset(1:filledRows,:) = previousMeasurements.filledDivisionMatrixDataset;
+    filledDeathMatrixDataset(1:filledRows,:) = previousMeasurements.filledDeathMatrix;
+    filledSingleCellTraces(1:filledRows,:) = previousMeasurements.filledSingleCellTraces;
+    lineageTree(1:filledRows,:) = previousMeasurements.lineageTree;
+    cellAnnotation(1:filledRows,:) = previousMeasurements.cellAnnotation;
+    
     % Prepare flatfield images
     if(~isempty(ffpath) && ~strcmp(ffpath, ''))
         [ff_offset, ff_gain] = flatfield_readFlatfieldImages(ffpath, channel);
@@ -28,8 +40,8 @@ function measurements = getDatasetTraces_fillLineageInformation(database, rawdat
         ff_offset = 0; ff_gain = 0;
     end
     
-    counter = 1;
-    maxUniqueCellIdentifier = 0;
+    counter = filledRows + 1;
+    maxUniqueCellIdentifier = max(lineageTree(:,1));
     for i=1:length(trackingFiles)
         fprintf('%s: ', trackingFiles{i});
         load(fullfile(trackingPath, trackingFiles{i}));
