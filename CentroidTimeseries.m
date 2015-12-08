@@ -15,7 +15,8 @@ classdef CentroidTimeseries < handle
         end
         
         function setCentroid(obj, time, cell_id, centroid, value)
-            obj.singleCells(time).point(cell_id,:) = centroid;
+            obj.singleCells(time).point(cell_id,1) = max(1,centroid(1));
+            obj.singleCells(time).point(cell_id,2) = max(1,centroid(2));
             obj.singleCells(time).value(cell_id) = value;
         end
         

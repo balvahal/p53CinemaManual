@@ -1,4 +1,4 @@
-function singleCellTracks = getSingleCellTrace_withSegmentation(rawdatapath, segmentationpath, database, group, position, measurementChannel, segmentationChannel, centroids, measurementParameter)
+function singleCellTracks = getSingleCellTrace_withSegmentation_foci(rawdatapath, segmentationpath, database, group, position, measurementChannel, segmentationChannel, centroids)
 trackedCells = centroids.getTrackedCellIds;
 numTracks = length(trackedCells);
 numTimepoints = length(centroids.singleCells);
@@ -29,24 +29,24 @@ for i=1:numTimepoints
         continue;
     end
     % Read image and object files
-    if(~isempty(measurementFile))
-        IntensityImage = double(imread(fullfile(rawdatapath, measurementFile)));
-        IntensityImage = imbackground(IntensityImage, 10, 100);
-    else
-        IntensityImage = [];
-    end
     if(~isempty(segmentFile))
         %segmentFile = regexprep(segmentFile, '\.tiff', '_segment.TIF', 'ignoreCase');
         segmentFile = regexprep(segmentFile, '_w\d_*.*?_([st])', '_$1');
         %segmentFile = regexprep(segmentFile, '\..*', '.PNG');
         Objects = double(imread(fullfile(segmentationpath, segmentFile)));
     end
+    if(~isempty(measurementFile))
+        IntensityImage = double(imread(fullfile(rawdatapath, measurementFile)));
+        IntensityImage = imbackground(IntensityImage, 10, 50);
+    else
+        IntensityImage = [];
+    end
 
     scalingFactor = 1;
     currentCentroids(:,1) = min(currentCentroids(:,1) * scalingFactor, size(Objects,1));
     currentCentroids(:,2) = min(currentCentroids(:,2) * scalingFactor, size(Objects,2));
     
-    measurements = regionprops_withKnownCentroids(Objects, IntensityImage, currentCentroids, measurementParameter);
+    measurements = regionprops_withKnownCentroids_fun(Objects, IntensityImage, currentCentroids, @std);
     singleCellTracks(validCells, i) = measurements(:,2);
     
     % Repeated values (divisions, for instance)

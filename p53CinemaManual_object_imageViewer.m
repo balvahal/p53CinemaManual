@@ -70,8 +70,9 @@ classdef p53CinemaManual_object_imageViewer < handle
                     master.obj_fileManager.setProgressBar(i,master.obj_fileManager.numImages,'Loading status');
                     % Load image
                     referenceImage = imresize(obj.readImage(i), obj.imageResizeFactor);
-                    referenceImage = medfilt2(referenceImage, [3,3]);
+                    
                     if(get(fileManagerHandles.hcheckboxPrimaryBackground, 'Value'))
+                        referenceImage = medfilt2(referenceImage, [3,3]);
                         obj.imageBuffer(:,:,i) = uint8(imnormalize(imbackground(referenceImage, 10, 100)) * 255);
                     else
                         obj.imageBuffer(:,:,i) = uint8(imnormalize(referenceImage) * 255);
