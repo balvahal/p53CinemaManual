@@ -258,6 +258,14 @@ set(f,'Visible','on');
                     master.obj_imageViewer.deleteSelectedCellTrack();
                 end
                 master.obj_imageViewer.setImage;
+            case 'space'
+                master.obj_imageViewer.obj_cellTracker.setDivisionEvent;
+                master.obj_imageViewer.setImage;
+            case 'control'
+                master.obj_imageViewer.obj_cellTracker.setDeathEvent;
+                master.obj_imageViewer.setImage;
+            case 'tab'
+                master.obj_imageViewer.obj_cellTracker.firstClick = 1;
         end
     end
 
