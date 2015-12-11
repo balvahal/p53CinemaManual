@@ -315,9 +315,16 @@ classdef p53CinemaManual_object_imageViewer < handle
             sliderStep = get(handles.hsliderExploreStack,'SliderStep');
             set(handles.hsliderExploreStack,'Value',sliderStep(1)*(obj.currentFrame-1));
             
+            % Set tracked centroids patch
+            [trackedCentroids, currentFrameCentroids] = obj.obj_cellTracker.centroidsTracks.getCentroids(obj.currentTimepoint);
+            set(handles.trackedCellsPatch, 'XData', trackedCentroids(:,2), 'YData', trackedCentroids(:,1));
+           
             % Set division event patch
-            cellFateEventCentroids = vertcat(obj.obj_cellTracker.centroidsDivisions.getCentroids(obj.currentTimepoint), ...
-                obj.obj_cellTracker.centroidsDeath.getCentroids(obj.currentTimepoint));
+            [~, dividingCells] = obj.obj_cellTracker.centroidsDivisions.getCentroids(obj.currentTimepoint);
+            [~, dyingCells] = obj.obj_cellTracker.centroidsDeath.getCentroids(obj.currentTimepoint);
+            cellFateEventCentroids = trackedCentroids(ismember(currentFrameCentroids, horzcat(dividingCells, dyingCells)),:);
+            %cellFateEventCentroids = vertcat(obj.obj_cellTracker.centroidsDivisions.getCentroids(obj.currentTimepoint), ...
+            %    obj.obj_cellTracker.centroidsDeath.getCentroids(obj.currentTimepoint));
             set(handles.cellFateEventPatch, 'XData', cellFateEventCentroids(:,2), 'YData', cellFateEventCentroids(:,1));
             
             set(handles.currentCellTrace, 'xdata', [], 'ydata', []);            
@@ -377,11 +384,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                     end
                 end
             end
-            
-            % Set tracked centroids patch
-            [trackedCentroids, currentFrameCentroids] = obj.obj_cellTracker.centroidsTracks.getCentroids(obj.currentTimepoint);
-            set(handles.trackedCellsPatch, 'XData', trackedCentroids(:,2), 'YData', trackedCentroids(:,1));
-            
+                        
             % Set the completed centroids patch
             [~, firstFrameCentroids] = obj.obj_cellTracker.centroidsTracks.getCentroids(min(obj.master.obj_fileManager.currentImageTimepoints));
             [~, lastFrameCentroids] = obj.obj_cellTracker.centroidsTracks.getCentroids(max(obj.master.obj_fileManager.currentImageTimepoints));
