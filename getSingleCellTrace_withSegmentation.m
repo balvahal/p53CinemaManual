@@ -13,6 +13,9 @@ for i=1:numTimepoints
     % Get measurement and segmentation files
     if(~isempty(measurementChannel))
         measurementFile = getDatabaseFile2(database, group, measurementChannel, position, i);
+        if(isempty(measurementFile))
+            continue;
+        end
     else
         measurementFile = [];
     end
@@ -31,6 +34,7 @@ for i=1:numTimepoints
     % Read image and object files
     if(~isempty(measurementFile))
         IntensityImage = double(imread(fullfile(rawdatapath, measurementFile)));
+        IntensityImage = medfilt2(IntensityImage, [2,2]);
         IntensityImage = imbackground(IntensityImage, 10, 100);
     else
         IntensityImage = [];

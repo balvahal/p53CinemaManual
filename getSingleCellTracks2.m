@@ -18,6 +18,7 @@ function singleCellTracks = getSingleCellTracks2(rawdatapath, database, group, p
         end
         YFP = double(imread(fullfile(rawdatapath, filename)));
         %YFP_background = YFP;
+        YFP = medfilt2(YFP, [2,2]);
         YFP_background = imbackground(YFP, 10, 100);
         %YFP_background = imfilter(YFP_background, fspecial('gaussian', 30, 4));
         scalingFactor = 1;
