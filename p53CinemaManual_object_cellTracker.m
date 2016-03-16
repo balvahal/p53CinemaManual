@@ -13,6 +13,7 @@ classdef p53CinemaManual_object_cellTracker < handle
         firstClick;
         trackingDirection;
         trackingStyle;
+        trackingDelay;
         
         centroidsLocalMaxima;
         centroidsTracks;
@@ -37,6 +38,7 @@ classdef p53CinemaManual_object_cellTracker < handle
             obj.firstClick = 1;
             obj.trackingStyle = 'SingleFramePropagate';
             obj.trackingDirection = 'Forward';
+            obj.trackingDelay = 0;
         end
 
         function setAvailableCells(obj)

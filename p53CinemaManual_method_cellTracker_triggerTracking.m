@@ -123,6 +123,7 @@ if(length(frameOrdering) > 1)
         end
         master.obj_imageViewer.setFrame(frameOrdering(j));
         obj_cellT.master.obj_imageViewer.setImage;
+        pause(obj_cellT.trackingDelay);
         drawnow;
     end
     master.obj_imageViewer.setFrame(frameOrdering(j-1));
