@@ -76,8 +76,12 @@ obj_cellT.master.obj_imageViewer.setImage;
 drawnow;
 
 % Try to propagate track until there is ambiguity
-if(strcmp(obj_cellT.trackPropagateMode, 'SingleFramePropagate'))
-    obj_cellT.master.obj_imageViewer.nextFrame;
+if(strcmp(obj_cellT.trackingStyle, 'SingleFramePropagate'))
+    if(strcmp(obj_cellT.trackingDirection, 'Forward'))
+        obj_cellT.master.obj_imageViewer.nextFrame;
+    else
+        obj_cellT.master.obj_imageViewer.previousFrame;
+    end
     return;
 end
 
@@ -85,7 +89,7 @@ master = obj_cellT.master;
 lookupRadius = obj_cellT.getDistanceRadius;
 selectedCell = master.obj_imageViewer.selectedCell;
 
-if(strcmp(obj_cellT.trackPropagateMode, 'ForwardPropagate'))
+if(strcmp(obj_cellT.trackingDirection, 'Forward'))
     frameOrdering = master.obj_imageViewer.currentFrame:length(master.obj_fileManager.currentImageTimepoints);
 else
     frameOrdering = fliplr(1:master.obj_imageViewer.currentFrame);
