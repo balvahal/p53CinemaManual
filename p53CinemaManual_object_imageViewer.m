@@ -68,6 +68,13 @@ classdef p53CinemaManual_object_imageViewer < handle
             referenceImage = medfilt2(referenceImage, [2,2]);
             normalizationFactor = double(max(referenceImage(:)));
             
+            % Check if the preprocessing mode is 'Prediction'. If so,
+            % import corresponding mat file in the prediction folder
+            predictionMode = getCurrentPopupString(fileManagerHandles.hpopupPredictionMode);
+            if(strcmp(predictionMode, 'Prediction'))
+                load(fullfile('Prediction', sprintf('wellsss_s%d.mat', obj.master.obj_fileManager.selectedPosition)));
+            end
+            
             if master.obj_fileManager.preallocateMode
                 master.obj_fileManager.setProgressBar(1,master.obj_fileManager.numImages,'Loading status');
                 obj.imageBuffer = uint16(zeros(obj.image_height, obj.image_width, master.obj_fileManager.numImages));
@@ -95,7 +102,17 @@ classdef p53CinemaManual_object_imageViewer < handle
                             referenceImage = imbackground(referenceImage, 10, 100);
                             referenceImage = imresize(referenceImage, obj.imageResizeFactor);
                         end
-                        localMaxima = getImageMaxima(referenceImage, obj.master.obj_fileManager.cellSize);
+                        
+                        % Get preprocess mode
+                        switch predictionMode
+                            case 'Intensity'
+                                localMaxima = getImageMaxima_Intensity(referenceImage, obj.master.obj_fileManager.cellSize);
+                            case 'Shape'
+                                localMaxima = getImageMaxima_Shape(referenceImage, obj.master.obj_fileManager.cellSize);
+                            case 'Prediction'
+                                localMaxima = fliplr(round(wellsss{timepoint}(:,1:2)));
+                        end
+                        
                         obj.obj_cellTracker.centroidsLocalMaxima.insertCentroids(timepoint, localMaxima);
                     end
                 end

@@ -152,6 +152,18 @@ hpushbuttonLastImage = uicontrol('Style','pushbutton','Units','characters',...
     'String','Last Image','Position',[hx hy hwidth hheight],...
     'Callback',{@pushbuttonLastImage_Callback});
 
+hx = hwidth*2.25;
+htextMarkerSize = uicontrol('Style','text','Units','characters',...
+    'FontSize',10,'FontName','Arial',...
+    'String','Marker size','Position',[hx hy hwidth*1.5 hheight]);
+hx = hwidth*3.75;
+hpopupMarkerSize = uicontrol('Style','popupmenu','Units','characters',...
+    'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
+    'String','Select channel','Position',[hx, hy, hwidth*1.5, hheight],...
+    'Enable', 'on', 'parent',f, 'Callback',{@popupMarkerSize_Callback});
+set(hpopupMarkerSize, 'String', {'Large', 'Medium', 'Small'});
+set(hpopupMarkerSize, 'Value', 1);
+
 hx = fwidth - 5.5*hwidth;
 htextFrameNumber = uicontrol('Style','text','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','center',...
@@ -330,6 +342,21 @@ set(f,'Visible','on');
     function pushbuttonLastImage_Callback(~,~)
         master.obj_imageViewer.setFrame(length(master.obj_fileManager.currentImageFilenames));
     end
+
+%%
+%
+    function popupMarkerSize_Callback(~,~)
+        markerSizeMap = [20, 10, 5; 10, 5, 3; 8, 3, 2];
+        sizeOption = get(hpopupMarkerSize, 'Value');
+        set(cellFateEventPatch, 'MarkerSize', markerSizeMap(sizeOption, 1));
+        set(mergeEventPatch, 'MarkerSize', markerSizeMap(sizeOption, 1));
+        set(trackedCellsPatch, 'MarkerSize', markerSizeMap(sizeOption, 2));
+        set(completeCellsPatch, 'MarkerSize', markerSizeMap(sizeOption, 2));
+        set(selectedCellPatch, 'MarkerSize', markerSizeMap(sizeOption, 2));
+        set(closestCellPatch, 'MarkerSize', markerSizeMap(sizeOption, 3));
+        
+    end
+
 %%
 %
     function popupViewerChannel_Callback(~,~)

@@ -168,6 +168,12 @@ heditMaxHeight = uicontrol('Style','edit','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','1200','Position',[hx + hmargin + hwidth, hy, hwidth * 0.5, hheight],...
     'parent',f);
+hpopupPredictionMode = uicontrol('Style','popupmenu','Units','characters',...
+    'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
+    'String','Prediction mode','Position',[hx + hmargin + 1.75*hwidth, hy, hwidth, hheight],...
+    'Enable', 'off', 'parent',f);
+set(hpopupPredictionMode, 'String', {'Intensity', 'Shape', 'Prediction'});
+set(hpopupPredictionMode, 'Value', 1);
 
 
 %% Layout: Load button
@@ -186,6 +192,7 @@ htextLoadingBar = uicontrol('Style','text','Units','characters',...
     'parent',f);
 
 handles.hpopupPimaryChannel = hpopupPimaryChannel;
+handles.hpopupPredictionMode = hpopupPredictionMode;
 handles.hcheckboxPrimaryBackground = hcheckboxPrimaryBackground;
 handles.hprogressbarLoadingBar = hprogressbarLoadingBar;
 handles.hprogressbarhandleLoadingBar = hprogressbarhandleLoadingBar;
@@ -265,6 +272,7 @@ set(f,'Visible','on');
     function checkboxPreprocess_Callback(~,~)
         if(get(hcheckboxPreprocess, 'Value'))
             set(hcheckboxPreallocate, 'Value', 1);
+            set(hpopupPredictionMode, 'Enable', 'on');
         end
     end
 %% Populate position and channel
