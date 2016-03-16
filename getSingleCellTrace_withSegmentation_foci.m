@@ -13,6 +13,9 @@ for i=1:numTimepoints
     % Get measurement and segmentation files
     if(~isempty(measurementChannel))
         measurementFile = getDatabaseFile2(database, group, measurementChannel, position, i);
+        if(isempty(measurementFile))
+            continue;
+        end
     else
         measurementFile = [];
     end
