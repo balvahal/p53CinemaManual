@@ -58,10 +58,16 @@ classdef p53CinemaManual_object_imageViewer < handle
             obj.image_height = size(IM,1);
             obj.image_widthChar = obj.image_width/master.ppChar(1);
             obj.image_heightChar = obj.image_height/master.ppChar(2);
+            obj.obj_cellTracker = p53CinemaManual_object_cellTracker(master);
             %% Preload images
             %
             
-            obj.obj_cellTracker = p53CinemaManual_object_cellTracker(master);
+            % Read an image in the center of the sequence to determine
+            % normalization factor
+            referenceImage = imresize(obj.readImage(round(master.obj_fileManager.numImages / 2)), obj.imageResizeFactor);
+            referenceImage = medfilt2(referenceImage, [2,2]);
+            normalizationFactor = double(max(referenceImage(:)));
+            
             if master.obj_fileManager.preallocateMode
                 master.obj_fileManager.setProgressBar(1,master.obj_fileManager.numImages,'Loading status');
                 obj.imageBuffer = uint16(zeros(obj.image_height, obj.image_width, master.obj_fileManager.numImages));
@@ -70,10 +76,11 @@ classdef p53CinemaManual_object_imageViewer < handle
                     master.obj_fileManager.setProgressBar(i,master.obj_fileManager.numImages,'Loading status');
                     % Load image
                     referenceImage = imresize(obj.readImage(i), obj.imageResizeFactor);
+                    referenceImage = double(referenceImage) / normalizationFactor;
                     
                     if(get(fileManagerHandles.hcheckboxPrimaryBackground, 'Value'))
                         referenceImage = medfilt2(referenceImage, [2,2]);
-                        obj.imageBuffer(:,:,i) = uint8(imnormalize(imbackground(referenceImage, 10, 100)) * 255);
+                        obj.imageBuffer(:,:,i) = uint8(imbackground(referenceImage, 10, 100) * 255);
                     else
                         obj.imageBuffer(:,:,i) = uint8(imnormalize(referenceImage) * 255);
                     end
