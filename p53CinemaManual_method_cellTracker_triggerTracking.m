@@ -54,7 +54,7 @@ if(obj_cellT.firstClick)
     else
         obj_cellT.master.obj_imageViewer.setSelectedCell(obj_cellT.centroidsTracks.getAvailableCellId);
     end
-    obj_cellT.firstClick = 0;
+    
 end
 
 %% Set the centroids in selected cell and time
@@ -63,6 +63,10 @@ if(strcmp(altEvent, 'alt')) % Override predictions if user used left click
     queryCentroid = currentRowCol;
 end
 obj_cellT.centroidsTracks.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
+if(obj_cellT.firstClick)
+    obj_cellT.initializeKalman(obj_cellT.master.obj_imageViewer.currentFrame);
+    obj_cellT.firstClick = 0;
+end
 % Move centroid if there was one in division or death events
 if(obj_cellT.centroidsDivisions.getValue(currentTimepoint, selectedCell))
     obj_cellT.centroidsDivisions.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);

@@ -268,6 +268,8 @@ classdef p53CinemaManual_object_imageViewer < handle
             
             % Predictive tracking
             if(obj.master.obj_fileManager.preprocessMode && obj.obj_cellTracker.isTracking && ~obj.obj_cellTracker.centroidsTracks.getValue(obj.currentTimepoint, obj.selectedCell))
+%                 predictedCentroid = obj.obj_cellTracker.predictNextCell(previousFrame, 'Kalman');
+%                 obj.obj_cellTracker.centroidsTracks.setCentroid(obj.currentTimepoint, obj.selectedCell, predictedCentroid, 0);
                 d1 = Inf; d2 = Inf;
                 if(obj.currentFrame > 1)
                     referenceTimepoint = obj.master.obj_fileManager.currentImageTimepoints(frame-1);
