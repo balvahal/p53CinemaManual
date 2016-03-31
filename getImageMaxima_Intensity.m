@@ -10,7 +10,7 @@ EdgeImage = imdilate(edge(BlurredImage, 'canny'), strel('disk', 1));
 Objects = Objects | imfill(EdgeImage, 'holes');
 Objects = imerode(Objects, strel('disk', 2));
 
-%BlurredImage(~Objects) = 0;
+BlurredImage(~Objects) = 0;
 LocalMaxima = imregionalmax(BlurredImage);
 LocalMaxima = bwmorph(LocalMaxima, 'shrink', 'inf');
 

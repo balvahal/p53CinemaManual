@@ -346,7 +346,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             % Set division event patch
             [~, dividingCells] = obj.obj_cellTracker.centroidsDivisions.getCentroids(obj.currentTimepoint);
             [~, dyingCells] = obj.obj_cellTracker.centroidsDeath.getCentroids(obj.currentTimepoint);
-            cellFateEventCentroids = trackedCentroids(ismember(currentFrameCentroids, horzcat(dividingCells, dyingCells)),:);
+            cellFateEventCentroids = trackedCentroids(ismember(currentFrameCentroids, horzcat(dividingCells', dyingCells')),:);
             %cellFateEventCentroids = vertcat(obj.obj_cellTracker.centroidsDivisions.getCentroids(obj.currentTimepoint), ...
             %    obj.obj_cellTracker.centroidsDeath.getCentroids(obj.currentTimepoint));
             set(handles.cellFateEventPatch, 'XData', cellFateEventCentroids(:,2), 'YData', cellFateEventCentroids(:,1));

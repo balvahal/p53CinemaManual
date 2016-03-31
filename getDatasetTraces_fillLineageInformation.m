@@ -35,6 +35,7 @@ function measurements = getDatasetTraces_fillLineageInformation(database, rawdat
         load(fullfile(trackingPath, trackingFiles{i}));
 
         traces = getSingleCellTracks2(rawdata_path, database, selectedGroup, selectedPosition, channel, centroidsTracks, ff_offset, ff_gain);
+        filledTraces = fillLineageInformation(traces, centroidsTracks, centroidsDivisions);
         
         currentLineageTree = generateLineageTree(centroidsTracks, centroidsDivisions);
         currentLineageTree(currentLineageTree > 0) = currentLineageTree(currentLineageTree > 0) + maxUniqueCellIdentifier;
@@ -42,14 +43,17 @@ function measurements = getDatasetTraces_fillLineageInformation(database, rawdat
         
         divisionMatrix = getDivisionMatrix(centroidsTracks, centroidsDivisions);
         deathMatrix = getDivisionMatrix(centroidsTracks, centroidsDeath);
-        filledTraces = fillLineageInformation(traces, centroidsTracks, centroidsDivisions);
         filledDivisionMatrix = fillLineageInformation(divisionMatrix, centroidsTracks, centroidsDivisions);
         filledDeathMatrix = fillLineageInformation(deathMatrix, centroidsTracks, centroidsDivisions);
         [centroid_col_matrix, centroid_row_matrix] = getCentroidMatrices(centroidsTracks);
         centroid_col_matrix = fillLineageInformation(centroid_col_matrix, centroidsTracks, centroidsDivisions);
         centroid_row_matrix = fillLineageInformation(centroid_row_matrix, centroidsTracks, centroidsDivisions);
         
-        n = size(traces,1);
+        n = size(divisionMatrix,1);
+        
+        % Dont measure traces
+%         traces = zeros(n,numTimepoints);
+%         filledTraces = fillLineageInformation(traces, centroidsTracks, centroidsDivisions);
 
         subsetIndex = counter:(counter + n - 1);
         singleCellTraces(subsetIndex,:) = traces;
