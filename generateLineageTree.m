@@ -7,9 +7,11 @@ for i=1:length(trackedCells)
     lineageTree(i, min(trackedPositions):max(trackedPositions)) = trackedCells(i);
 end
 for t=1:length(centroidsDivisions.singleCells)
-    [divisions, dividing_cells] = centroidsDivisions.getCentroids(t);
-    [~,dividing_cells] = ismember(dividing_cells,trackedCells);
-    if(~isempty(divisions))
+    [~, dividing_cells] = centroidsDivisions.getCentroids(t);
+    [~, dividing_cells] = ismember(dividing_cells,trackedCells);
+    [divisions, currentCellId] = centroidsTracks.getCentroids(t);
+    divisions = round(divisions(ismember(currentCellId,dividing_cells),:));
+    if(~isempty(dividing_cells))
         [~, uniqueRowId] = unique(divisions, 'rows');
         for i=1:length(uniqueRowId)
             involvedCells = find(divisions(:,1) == divisions(uniqueRowId(i),1) & divisions(:,2) == divisions(uniqueRowId(i),2));

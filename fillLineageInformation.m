@@ -1,7 +1,11 @@
 function filledTraces = fillLineageInformation(traces, centroidsTracks, centroidsDivisions)
     trackedCells = centroidsTracks.getTrackedCellIds;
     for t=1:length(centroidsDivisions.singleCells)
-        [divisions, dividing_cells] = centroidsDivisions.getCentroids(t);
+        [~, dividing_cells] = centroidsDivisions.getCentroids(t);
+        [~, dividing_cells] = ismember(dividing_cells,trackedCells);
+        [divisions, currentCellId] = centroidsTracks.getCentroids(t);
+        divisions = divisions(ismember(currentCellId,dividing_cells),:);
+        
         if(~isempty(divisions))
             [~, uniqueRowId] = unique(divisions, 'rows');
             for i=1:length(uniqueRowId)
