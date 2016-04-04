@@ -34,8 +34,8 @@ function measurements = getDatasetTraces_fillLineageInformation(database, rawdat
         fprintf('%s: ', trackingFiles{i});
         load(fullfile(trackingPath, trackingFiles{i}));
 
-%         traces = getSingleCellTracks2(rawdata_path, database, selectedGroup, selectedPosition, channel, centroidsTracks, ff_offset, ff_gain);
-%         filledTraces = fillLineageInformation(traces, centroidsTracks, centroidsDivisions);
+        traces = getSingleCellTracks2(rawdata_path, database, selectedGroup, selectedPosition, channel, centroidsTracks, ff_offset, ff_gain);
+        filledTraces = fillLineageInformation(traces, centroidsTracks, centroidsDivisions);
         
         currentLineageTree = generateLineageTree(centroidsTracks, centroidsDivisions);
         currentLineageTree(currentLineageTree > 0) = currentLineageTree(currentLineageTree > 0) + maxUniqueCellIdentifier;
@@ -52,8 +52,8 @@ function measurements = getDatasetTraces_fillLineageInformation(database, rawdat
         n = size(divisionMatrix,1);
         
         % Dont measure traces
-        traces = zeros(n,numTimepoints);
-        filledTraces = fillLineageInformation(traces, centroidsTracks, centroidsDivisions);
+%         traces = zeros(n,numTimepoints);
+%         filledTraces = fillLineageInformation(traces, centroidsTracks, centroidsDivisions);
 
         subsetIndex = counter:(counter + n - 1);
         singleCellTraces(subsetIndex,:) = traces;
