@@ -61,6 +61,8 @@ end
 selectedCell = obj_cellT.master.obj_imageViewer.selectedCell;
 if(strcmp(altEvent, 'alt')) % Override predictions if user used left click
     queryCentroid = currentRowCol;
+    newLocalMaxima = obj_cellT.centroidsLocalMaxima.getAvailableCellId;
+    obj_cellT.centroidsLocalMaxima.setCentroid(currentTimepoint, newLocalMaxima, queryCentroid, 0);
 end
 obj_cellT.centroidsTracks.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
 if(obj_cellT.firstClick)
