@@ -237,6 +237,9 @@ classdef p53CinemaManual_object_imageViewer < handle
         %% Frame switching functions
         function setFrame(obj, frame)
             previousFrame = obj.currentFrame;
+            previousTimepoint = obj.currentTimepoint;
+            previousImage = obj.currentImage;
+            
             frame = min(max(frame,1), obj.master.obj_fileManager.numImages);
             directionality = sign(frame - previousFrame);
             
@@ -267,9 +270,28 @@ classdef p53CinemaManual_object_imageViewer < handle
             %obj.updateContrastHistogram;
             
             % Predictive tracking
-            if(obj.master.obj_fileManager.preprocessMode && obj.obj_cellTracker.isTracking && ~obj.obj_cellTracker.centroidsTracks.getValue(obj.currentTimepoint, obj.selectedCell))
+            if(obj.master.obj_fileManager.preprocessMode && obj.obj_cellTracker.isTracking && obj.selectedCell && ~obj.obj_cellTracker.centroidsTracks.getValue(obj.currentTimepoint, obj.selectedCell))
+                previousCentroid = obj.obj_cellTracker.centroidsTracks.getCentroid(previousTimepoint, obj.selectedCell);
+                % Kalman filter
 %                 predictedCentroid = obj.obj_cellTracker.predictNextCell(previousFrame, 'Kalman');
 %                 obj.obj_cellTracker.centroidsTracks.setCentroid(obj.currentTimepoint, obj.selectedCell, predictedCentroid, 0);
+                
+                % Cross correlation function
+                % Centroids are in [row,col] or [y,x] order
+%                 if(previousCentroid(1) > 0)
+%                     queryWindow = 30; templateWindow = 100;
+%                     subsetIndex = [min(max(1, previousCentroid(1)-queryWindow/2), size(previousImage,1)-queryWindow), min(max(1, previousCentroid(2)-queryWindow/2), size(previousImage,2)-queryWindow)];
+%                     queryImage = previousImage(subsetIndex(1):(subsetIndex(1)+queryWindow-1), subsetIndex(2):(subsetIndex(2)+queryWindow-1));
+%                     subsetIndex = [min(max(1, previousCentroid(1)-templateWindow/2), size(previousImage,1)-templateWindow), min(max(1, previousCentroid(2)-templateWindow/2), size(previousImage,2)-templateWindow)];
+%                     templateImage = obj.currentImage(subsetIndex(1):(subsetIndex(1)+templateWindow-1), subsetIndex(2):(subsetIndex(2)+templateWindow-1));
+%                     crosscorrelation = normxcorr2(queryImage, templateImage);
+%                     [i,j] = ind2sub(size(crosscorrelation), find(crosscorrelation(:) == max(crosscorrelation(:)), 1, 'first'));
+%                     figure; subplot(1,3,1); imagesc(queryImage); subplot(1,3,2); imagesc(templateImage); subplot(1,3,3); imagesc(crosscorrelation);
+%                     j = j - (size(crosscorrelation,2)/2); i = i - (size(crosscorrelation,1)/2);
+%                     [prediction, ~, d] = obj.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(obj.currentTimepoint, round(previousCentroid+[i,j]), obj.obj_cellTracker.getDistanceRadius);
+%                     obj.obj_cellTracker.centroidsTracks.setCentroid(obj.currentTimepoint, obj.selectedCell, prediction, 0);
+%                 end
+                
                 d1 = Inf; d2 = Inf;
                 if(obj.currentFrame > 1)
                     referenceTimepoint = obj.master.obj_fileManager.currentImageTimepoints(frame-1);
