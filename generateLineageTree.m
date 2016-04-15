@@ -8,9 +8,9 @@ for i=1:length(trackedCells)
 end
 for t=1:length(centroidsDivisions.singleCells)
     [~, dividing_cells] = centroidsDivisions.getCentroids(t);
-    [~, dividing_cells] = ismember(dividing_cells,trackedCells);
     [divisions, currentCellId] = centroidsTracks.getCentroids(t);
     divisions = round(divisions(ismember(currentCellId,dividing_cells),:));
+    [~, dividing_cells] = ismember(dividing_cells,trackedCells);
     if(~isempty(dividing_cells))
         [~, uniqueRowId] = unique(divisions, 'rows');
         for i=1:length(uniqueRowId)
