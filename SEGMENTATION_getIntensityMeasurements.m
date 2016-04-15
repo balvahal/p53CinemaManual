@@ -49,5 +49,6 @@ for i=1:length(files)
 end
 output = output(1:(counter-1),:);
 output = array2table(output, 'VariableNames', horzcat({'group_number', 'position_number', 'timepoint','Area', 'Solidity'}, strcat('MeanIntensity_', measurementChannels)));
+output.group_label = uniqueGroups(output.group_number);
 fprintf('%d\n', progress);
 end
