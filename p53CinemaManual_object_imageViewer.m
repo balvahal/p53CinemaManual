@@ -376,7 +376,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             % Set sister cell path
             set(handles.sisterCellPatch, 'XData', [], 'YData', []);
             if(~isempty(dividingCells))
-                divisionCentroids = trackedCentroids(dividingCells,:);
+                divisionCentroids = trackedCentroids(ismember(currentFrameCentroids, dividingCells),:);
                 [uniqueDivisions, ~, indexes] = unique(divisionCentroids, 'rows');
                 centroidFreq = tabulate(indexes);
                 repeatedDivisions = uniqueDivisions(centroidFreq(centroidFreq(:,2) == 2,1),:);
