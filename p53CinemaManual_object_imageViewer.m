@@ -371,9 +371,19 @@ classdef p53CinemaManual_object_imageViewer < handle
             [~, dividingCells] = obj.obj_cellTracker.centroidsDivisions.getCentroids(obj.currentTimepoint);
             [~, dyingCells] = obj.obj_cellTracker.centroidsDeath.getCentroids(obj.currentTimepoint);
             cellFateEventCentroids = trackedCentroids(ismember(currentFrameCentroids, horzcat(dividingCells', dyingCells')),:);
-            %cellFateEventCentroids = vertcat(obj.obj_cellTracker.centroidsDivisions.getCentroids(obj.currentTimepoint), ...
-            %    obj.obj_cellTracker.centroidsDeath.getCentroids(obj.currentTimepoint));
             set(handles.cellFateEventPatch, 'XData', cellFateEventCentroids(:,2), 'YData', cellFateEventCentroids(:,1));
+            
+            % Set sister cell path
+            set(handles.sisterCellPatch, 'XData', [], 'YData', []);
+            if(~isempty(dividingCells))
+                divisionCentroids = trackedCentroids(dividingCells,:);
+                [uniqueDivisions, ~, indexes] = unique(divisionCentroids, 'rows');
+                centroidFreq = tabulate(indexes);
+                repeatedDivisions = uniqueDivisions(centroidFreq(centroidFreq(:,2) == 2,1),:);
+                if(~isempty(repeatedDivisions))
+                    set(handles.sisterCellPatch, 'XData', repeatedDivisions(:,2), 'YData', repeatedDivisions(:,1));
+                end
+            end
             
             set(handles.currentCellTrace, 'xdata', [], 'ydata', []);            
             if(obj.selectedCell)

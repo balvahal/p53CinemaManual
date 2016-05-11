@@ -84,7 +84,12 @@ neighborCellTrace = plot(haxesImageViewer,1,1, 'Color', [0.2,0.85,0.2], 'LineSmo
 
 cellFateEventPatch = patch('XData',[],'YData',[],...
     'EdgeColor','none','FaceColor','none','MarkerSize',20,...
-    'Marker','o','MarkerEdgeColor',[0.7,0.6,0],'MarkerFaceColor',[1,0.9,0],...
+    'Marker','o','MarkerEdgeColor',[0.7,0.6,0],'MarkerFaceColor','none',...
+    'Parent',haxesImageViewer,'LineSmoothing', 'off');
+
+sisterCellPatch = patch('XData',[],'YData',[],...
+    'EdgeColor','none','FaceColor','none','MarkerSize',20,...
+    'Marker','h','MarkerEdgeColor',[0.7,0.6,0],'MarkerFaceColor',[1,0.9,0],...
     'Parent',haxesImageViewer,'LineSmoothing', 'off');
 
 mergeEventPatch = patch('XData',[],'YData',[],...
@@ -195,6 +200,7 @@ handles.pushbuttonLastImage = hpushbuttonLastImage;
 handles.hsliderExploreStack = hsliderExploreStack;
 handles.cmapHighlight = cmapHighlight;
 handles.cellFateEventPatch = cellFateEventPatch;
+handles.sisterCellPatch = sisterCellPatch;
 handles.mergeEventPatch = mergeEventPatch;
 handles.trackedCellsPatch = trackedCellsPatch;
 handles.completeCellsPatch = completeCellsPatch;
@@ -349,6 +355,7 @@ set(f,'Visible','on');
         markerSizeMap = [20, 10, 5; 10, 5, 3; 8, 3, 2];
         sizeOption = get(hpopupMarkerSize, 'Value');
         set(cellFateEventPatch, 'MarkerSize', markerSizeMap(sizeOption, 1));
+        set(sisterCellPatch, 'MarkerSize', markerSizeMap(sizeOption, 1));
         set(mergeEventPatch, 'MarkerSize', markerSizeMap(sizeOption, 1));
         set(trackedCellsPatch, 'MarkerSize', markerSizeMap(sizeOption, 2));
         set(completeCellsPatch, 'MarkerSize', markerSizeMap(sizeOption, 2));
