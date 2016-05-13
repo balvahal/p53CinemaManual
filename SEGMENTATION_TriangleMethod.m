@@ -16,7 +16,7 @@
 %
 %%% Other Notes
 % 
-function [trithresh] = cellularGPS_TriangleMethod(I, outlierQuantile)
+function [trithresh] = SEGMENTATION_TriangleMethod(I, outlierQuantile)
 %% Approximate histogram as triangle
 %%%
 % Create the histogram

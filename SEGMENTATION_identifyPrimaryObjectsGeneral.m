@@ -79,7 +79,7 @@ edgeImage = imfill(edge(BlurredImage, 'canny'), 'holes');
 % props = regionprops(ObjectsLabeled, 'Solidity');
 % primarySegmentation = ismember(ObjectsLabeled, find([props.Solidity] >= p.Results.SolidityThreshold));
 
-Objects = imfill((OriginalImage > cellularGPS_TriangleMethod(OriginalImage, 1)), 'holes');
+Objects = imfill((OriginalImage > SEGMENTATION_TriangleMethod(OriginalImage, 1)), 'holes');
 Objects = Objects & ThresholdedImage | edgeImage;
 %Objects = Objects & ~imdilate(primarySegmentation,strel('disk',2)) & ThresholdedImage; 
 Objects = imopen(Objects, strel('disk',2));

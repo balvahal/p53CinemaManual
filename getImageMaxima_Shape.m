@@ -4,7 +4,7 @@ BlurredImage = double(imfilter(IM, fspecial('gaussian', blurRadius, 4), 'replica
 
 nbin = 100;
 [y,x] = hist(IM(:), nbin);
-threshold = x(round(nbin * SEGMENTATION_TriangleMethod(y)))  * 1.25;
+threshold = x(round(nbin * SEGMENTATION_TriangleMethod(y,1)))  * 1.25;
 Objects = imfill(imerode(IM > threshold, strel('disk', 5)), 'holes');
 
 EdgeImage = imdilate(edge(IM, 'canny'), strel('disk', 1));
