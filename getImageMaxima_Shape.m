@@ -3,8 +3,7 @@ function LocalMaxima = getImageMaxima_Shape(IM, blurRadius)
 BlurredImage = double(imfilter(IM, fspecial('gaussian', blurRadius, 4), 'replicate'));
 
 nbin = 100;
-[y,x] = hist(IM(:), nbin);
-threshold = x(round(nbin * SEGMENTATION_TriangleMethod(y,1)))  * 1.25;
+threshold = SEGMENTATION_TriangleMethod(BlurredImage,1)  * 1.25;
 Objects = imfill(imerode(IM > threshold, strel('disk', 5)), 'holes');
 
 EdgeImage = imdilate(edge(IM, 'canny'), strel('disk', 1));

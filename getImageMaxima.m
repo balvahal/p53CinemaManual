@@ -26,8 +26,7 @@ BlurredImage = double(imfilter(IM, fspecial('gaussian', blurRadius, 4), 'replica
 %% Shape based local maxima
 
 nbin = 100;
-[y,x] = hist(BlurredImage(:), nbin);
-threshold = x(round(nbin * SEGMENTATION_TriangleMethod(y,1)))  * 1.25;
+threshold = SEGMENTATION_TriangleMethod(y,1)  * 1.25;
 Objects = imfill(imerode(BlurredImage > threshold, strel('disk', 5)), 'holes');
 
 EdgeImage = imdilate(edge(BlurredImage, 'canny'), strel('disk', 1));
