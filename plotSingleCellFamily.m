@@ -25,7 +25,7 @@ outperm = fliplr(outperm);
 
 for j=1:length(familyMembers)
     p(2,j,1).select();
-    plotyy(timepoints, subTraces1(outperm(j),:), 'Color', [0.2, 0.65, 0.1]);
+    plot(timepoints, subTraces1(outperm(j),:), 'Color', [0.2, 0.65, 0.1]);
     divisionEvents = find(subDivisions(outperm(j),:));
     hold all;
     plot(timepoints(divisionEvents), subTraces1(outperm(j),divisionEvents), 'p', 'MarkerFaceColor', [0.9, 0.9, 0], 'Color', [0,0,0]);

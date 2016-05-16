@@ -10,9 +10,8 @@ function filledTraces = fillLineageInformation(traces, centroidsTracks, centroid
             [~, uniqueRowId] = unique(divisions, 'rows');
             for i=1:length(uniqueRowId)
                 involvedCells = find(divisions(:,1) == divisions(uniqueRowId(i),1) & divisions(:,2) == divisions(uniqueRowId(i),2));
-                [~, involvedCells] = ismember(dividing_cells(involvedCells), trackedCells);
                 if(length(involvedCells) == 2)
-                    traceInformation = traces(involvedCells,1:t);
+                    traceInformation = traces(dividing_cells(involvedCells),1:t);
                     [~, maxIndex] = max(sum(traceInformation,2));
                     maxIndex = maxIndex(1);
                     cellOptions = 1:2;

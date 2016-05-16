@@ -1,0 +1,62 @@
+<!DOCTYPE HTML>
+
+<html>
+<head>
+<title>Panel Documentation</title>
+<link rel="stylesheet" type="text/css" href="panel.css" />
+</head>
+
+<body>
+
+
+
+
+<div id="main">
+
+<div>
+<a href="index.html">Overview</a> | <a href="layout.html">Layout</a> | <a href="export.html">Export</a> | <u><a href="faq.html">FAQ</a></u>
+</div>
+
+
+<h1>Panel 2</h1>
+
+
+
+
+<h2>FAQ</h2>
+
+<dl>
+
+<dh>How do I get started / find help?</dh>
+
+<dd>At the Matlab prompt, <tt>help panel</tt>, <tt>help panel/panel</tt>, <tt>help panel/demo</tt> or <tt>doc panel</tt>.</dd>
+
+<dh>What's up with <tt>semilogx</tt>, <tt>semilogy</tt>, <tt>loglog</tt>, not producing log scales?</dh>
+
+<dd>If you call <tt>select()</tt> on a new panel, it creates an axis for you. To protect font styling, it sets its "NextPlot" property to "replacechildren" (the default for new axes is "replace"). The high-level plotting functions <tt>semilogx</tt>, <tt>semilogy</tt>, <tt>loglog</tt> will not work correctly after this. Therefore, to use these functions with Panel, call the plotting function first and then <tt>select()</tt> the axis it creates into the panel. An example is given below.
+<div class=snippet>
+>> figure; p = panel;
+>> semilogy(x,y,'r','linewidth',2.5);
+>> p.select(gca);
+</div>
+</dd>
+
+<!--
+<p class="note"><b><i>NOTE</b></i>
+It's possible this can be swept away - it's on the To-do list to look into it. What would be the effect on font management? Probably negligible...
+</p>
+-->
+
+<dh>My dashed/dotted lines look tiny and/or grey and/or solid in an exported image file. Why?</dh>
+
+<dd>This is a problem with the Matlab renderer, rather than with Panel itself. However, Panel can help - see <tt>demopanelI</tt> for details (or <tt>help panel/fixdash</tt>).</dd>
+
+</dl>
+
+
+</div>
+
+
+
+</body>
+</html>
