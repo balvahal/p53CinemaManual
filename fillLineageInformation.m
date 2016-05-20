@@ -3,7 +3,7 @@ function filledTraces = fillLineageInformation(traces, centroidsTracks, centroid
     for t=1:length(centroidsDivisions.singleCells)
         [~, dividing_cells] = centroidsDivisions.getCentroids(t);
         [divisions, currentCellId] = centroidsTracks.getCentroids(t);
-        divisions = divisions(ismember(currentCellId,dividing_cells),:);
+        divisions = round(divisions(ismember(currentCellId,dividing_cells),:));
         [~, dividing_cells] = ismember(dividing_cells,trackedCells);
         
         if(~isempty(divisions))
