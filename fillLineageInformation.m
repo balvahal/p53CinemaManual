@@ -16,7 +16,7 @@ function filledTraces = fillLineageInformation(traces, centroidsTracks, centroid
                     maxIndex = maxIndex(1);
                     cellOptions = 1:2;
                     receiverCell = cellOptions(cellOptions ~= maxIndex);
-                    traces(involvedCells(receiverCell),1:t) = traces(involvedCells(maxIndex),1:t);
+                    traces(dividing_cells(involvedCells(receiverCell)),1:t) = traces(dividing_cells(involvedCells(maxIndex)),1:t);
                 end
             end
         end
