@@ -6,6 +6,7 @@ dirCon = {dirCon(:).name};
 %[validFiles, dirDict] = getTokenDictionary(dirCon, '(.*)?t(\d+)xy(\d+)c(\d)\.tif');
 %[validFiles, dirDict] = getTokenDictionary(dirCon, '(.*)?xy(\d+)c(\d)t(\d+)\.tif');
 [validFiles, dirDict] = getTokenDictionary(dirCon, '(.+)_w\d([\w-]+).*_s(\d+)_t(\d+).*\.'); % For metamorph
+% [validFiles, dirDict] = getTokenDictionary(dirCon, '(\w) - (\d+)\(fld (\d+) wv w+ - (\w+) - time (\d+)'); % For inCell
 %[validFiles, dirDict] = getTokenDictionary(dirCon, '(.+)_w\d(\w+).*_s(\d+)_*t*(.*).*\.'); % For metamorph, when the time field does not necessarily exist
 %[validFiles, dirDict] = getTokenDictionary(dirCon, '(.+)_w\d(\w+).*_s(\d+)_t(\d+)_z(\d+)\.'); % For metamorph with z
 %[validFiles, dirDict] = getTokenDictionary(dirCon, '(.+)_w(\d)_s(\d+)_t\d+\.'); % For metamorph scan
@@ -18,6 +19,10 @@ dirDict = horzcat(dirCon', dirDict);
 %database = cell2table(dirDict, 'VariableNames', {'filename', 'group_label','channel_name', 'position_number', 'timepoint'}); %For NIS elements
 %database = cell2table(dirDict, 'VariableNames', {'filename', 'group_label', 'position_number','channel_name', 'timepoint'});
 database = cell2table(dirDict, 'VariableNames', {'filename', 'group_label', 'channel_name', 'position_number', 'timepoint'}); % For metamorph
+
+% database = cell2table(dirDict, 'VariableNames', {'filename', 'row', 'column', 'field', 'channel_name', 'timepoint'}); % For inCell
+%     database.group_label = repmat({'Exp'}, size(database, 1), 1);
+    
 %database = cell2table(dirDict, 'VariableNames', {'filename', 'group_label', 'channel_name', 'position_number', 'timepoint', 'z'}); % For metamorph with z
 %database = cell2table(dirDict, 'VariableNames', {'filename', 'group_label', 'channel_number', 'position_number'}); % For metamorph scan
 %database = cell2table(dirDict, 'VariableNames', {'filename', 'group_label', 'position_number', 'channel_name', 'timepoint'}); % For SMDA

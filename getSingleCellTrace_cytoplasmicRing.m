@@ -1,4 +1,4 @@
-function singleCellTracks = getSingleCellTrace_nuclearCytoplasmRatio(rawdatapath, segmentationpath, database, group, position, measurementChannel, segmentationChannel, centroids, measurementParameter)
+function singleCellTracks = getSingleCellTrace_cytoplasmicRing(rawdatapath, segmentationpath, database, group, position, measurementChannel, segmentationChannel, centroids)
 trackedCells = centroids.getTrackedCellIds;
 numTracks = length(trackedCells);
 numTimepoints = length(centroids.singleCells);
@@ -40,6 +40,7 @@ for i=1:numTimepoints
     if(isempty(validCells))
         continue;
     end
+    
     % Read image and object files
     IntensityImage = double(imread(fullfile(rawdatapath, measurementFile)));
     IntensityImage = medfilt2(IntensityImage, [2,2]);
@@ -59,7 +60,7 @@ for i=1:numTimepoints
             ringValue = mean(pixelValues);
             pixelValues = IntensityImage(Nuclei == currentObject);
             nucleiValue = mean(pixelValues);
-            singleCellTracks(validCells(c), i) = ringValue / nucleiValue;
+            singleCellTracks(validCells(c), i) = ringValue;
         end
     end
     
