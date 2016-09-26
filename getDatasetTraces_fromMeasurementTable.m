@@ -48,6 +48,7 @@ function measurements = getDatasetTraces_fromMeasurementTable(trackingPath, meas
         for t=1:numTimepoints
             % Get all tracked centroids
             [currentCentroids, currentCells] = centroidsTracks.getCentroids(t);
+            [~, currentCells] = ismember(currentCells, trackedCells); % This is vital to account for non-continuous cell ids
             subTable = preprocessedMeasurements(preprocessedMeasurements.timepoint == t,:);
             if(isempty(currentCentroids) || isempty(subTable))
                 continue;

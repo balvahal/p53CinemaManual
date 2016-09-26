@@ -46,6 +46,7 @@ function measurements = getDatasetTraces_wellsss(trackingPath, wellsss_path)
         for t=1:numTimepoints
             % Get all tracked centroids
             [currentCentroids, currentCells] = centroidsTracks.getCentroids(t);
+            [~, currentCells] = ismember(currentCells, trackedCells); % This is vital to account for non-continuous cell ids
             if(isempty(currentCentroids) || length(wellsss) < t)
                 continue;
             end

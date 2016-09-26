@@ -1,9 +1,9 @@
-function output = SEGMENTATION_getIntensityMeasurements_allPositions(database, rawDataPath, segmentDataPath, measurementChannels, segmentationChannel)
+function output = SEGMENTATION_getIntensityMeasurements_MeanIntegrated(database, rawDataPath, segmentDataPath, measurementChannels, segmentationChannel)
 files = find(strcmp(database.channel_name, segmentationChannel));
 uniqueGroups = unique(database.group_label);
 [~, group_number] = ismember(database.group_label, uniqueGroups);
 database.group_number = group_number;
-output = zeros(length(unique(database.position_number)) * length(unique(database.timepoint)) * 200, 7 + 2 * length(measurementChannels));
+output = zeros(length(unique(database.position_number)) * length(unique(database.timepoint)) * 200, 7 + 3 * length(measurementChannels));
 counter = 1;
 progress = 0;
 for i=1:length(files)
@@ -37,13 +37,15 @@ for i=1:length(files)
             if(~isempty(currentFilename))
                 IM = imread(fullfile(rawDataPath, currentFilename));
                 IM = imbackground(IM, 4, 50);
-                measurements_nuclei = regionprops(Nuclei, IM, 'MeanIntensity');
-                output(subsetIndex,7 + w) = [measurements_nuclei.MeanIntensity];
-                measurements_cytoplasm = regionprops(Cytoplasm, IM, 'MeanIntensity');
-                output(subsetIndex,7 + w + length(measurementChannels)) = [measurements_cytoplasm.MeanIntensity];
+                measurements_nuclei = regionprops(Nuclei, IM, 'PixelValues');
+                output(subsetIndex,7 + w) = cellfun(@mean, {measurements_nuclei.PixelValues});
+                output(subsetIndex,7 + w + length(measurementChannels)) = cellfun(@sum, {measurements_nuclei.PixelValues});
+                measurements_cytoplasm = regionprops(Cytoplasm, IM, 'PixelValues');
+                output(subsetIndex,7 + w + 2*length(measurementChannels)) = cellfun(@mean, {measurements_cytoplasm.PixelValues});
             else
                 output(subsetIndex,7+w) = -1;
                 output(subsetIndex,7 + w + length(measurementChannels)) = -1;
+                output(subsetIndex,7 + w + 2*length(measurementChannels)) = -1;
             end
         end
         measurementsArea = regionprops(logical(Nuclei), 'Area', 'Solidity', 'Centroid');
@@ -56,7 +58,7 @@ for i=1:length(files)
     end
 end
 output = output(1:(counter-1),:);
-output = array2table(output, 'VariableNames', horzcat({'group_number', 'position_number', 'timepoint','Area', 'Solidity', 'centroid_col', 'centroid_row'}, strcat('MeanIntensity_Nuclei_', measurementChannels), strcat('MeanIntensity_Cytoplasm_', measurementChannels)));
+output = array2table(output, 'VariableNames', horzcat({'group_number', 'position_number', 'timepoint','Area', 'Solidity', 'centroid_col', 'centroid_row'}, strcat('MeanIntensity_Nuclei_', measurementChannels), strcat('IntegratedIntensity_Nuclei_', measurementChannels), strcat('MeanIntensity_Cytoplasm_', measurementChannels)));
 output.group_label = uniqueGroups(output.group_number);
 fprintf('%d\n', progress);
 end

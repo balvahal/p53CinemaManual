@@ -6,7 +6,7 @@ function [f] = p53CinemaManual_gui_cellTracker(master)
 set(0,'units','characters');
 Char_SS = get(0,'screensize');
 fwidth = 450/master.ppChar(1);
-fheight = 350/master.ppChar(2);
+fheight = 430/master.ppChar(2);
 fx = Char_SS(3) - (Char_SS(3)*.1 + fwidth);
 fy = Char_SS(4) - (Char_SS(4)*.1 + fheight*2.75);
 f = figure('Visible','off','Units','characters','MenuBar','none',...

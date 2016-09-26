@@ -74,7 +74,8 @@ BlurredImage = imfilter(OriginalImage_normalized, fspecial('gaussian', round(Siz
 %% THRESHOLDING
 %
 ThresholdedImage = imfill(BlurredImage > MinimumThreshold, 'holes');
-edgeImage = imfill(edge(BlurredImage, 'canny'), 'holes');
+edgeImage = imfill(imdilate(edge(OriginalImage, 'canny'), strel('disk', 2)), 'holes');
+edgeImage = imerode(edgeImage, strel('disk', 2));
 % ObjectsLabeled = bwlabel(edgeImage);
 % props = regionprops(ObjectsLabeled, 'Solidity');
 % primarySegmentation = ismember(ObjectsLabeled, find([props.Solidity] >= p.Results.SolidityThreshold));
@@ -83,10 +84,11 @@ edgeImage = imfill(edge(BlurredImage, 'canny'), 'holes');
 % Objects = edgeImage;
 % Option 2: complement with intensity based thresholding
 Objects = imfill((OriginalImage > SEGMENTATION_TriangleMethod(OriginalImage, 1)), 'holes');
-Objects = Objects & ThresholdedImage | edgeImage;
+Objects = imfill(im2bw(OriginalImage, graythresh_dynamicRange(OriginalImage)), 'holes');
+Objects = (Objects & ThresholdedImage) | edgeImage;
 
 %Objects = Objects & ~imdilate(primarySegmentation,strel('disk',2)) & ThresholdedImage; 
-Objects = imopen(Objects, strel('disk',2));
+%Objects = imopen(Objects, strel('disk',2));
 primarySegmentation = zeros(size(Objects));
 
 % FIRST-TIER OBJECT: Keep round objects as they are to avoid
@@ -168,9 +170,9 @@ else
     ObjectsLabeled = bwlabel(primarySegmentation);
 end
 
-props = regionprops(ObjectsLabeled, 'Area');
-ObjectsLabeled = ObjectsLabeled .* ismember(ObjectsLabeled, find([props.Area] >= p.Results.AreaThreshold));
-ObjectsLabeled = bwlabel(ObjectsLabeled);
+%props = regionprops(ObjectsLabeled, 'Area');
+%ObjectsLabeled = ObjectsLabeled .* ismember(ObjectsLabeled, find([props.Area] >= p.Results.AreaThreshold));
+%ObjectsLabeled = bwlabel(ObjectsLabeled);
 Centroids = regionprops(ObjectsLabeled, 'Centroid');
 Centroids = reshape([Centroids.Centroid],2,length(Centroids))';
 end

@@ -2,40 +2,7 @@
 % a simple gui to pause, stop, and resume a running MDA
 function [f] = p53CinemaManual_gui_imageViewer(master, maxHeight)
 %% Create the figure
-% % The size of the figure was chosen to fit within a 1920x1200 pixel
-% % monitor. 
-% fwidth = (40+1344+80)/master.ppChar(1); %40 pixels for a border, 80 pixels for buttons
-% fheight = (40+1024+30)/master.ppChar(2); %40 pixels for a border, 30 pixels for the slider
-% %fwidth = 1.1*master.obj_imageViewer.image_width/master.ppChar(1);
-% %fheight = (1.1*master.obj_imageViewer.image_height + 100)/master.ppChar(2);
-% fx = 10/master.ppChar(1);
-% fy = 10/master.ppChar(2);
-% f = figure('Visible','off','Units','characters','MenuBar','none',...
-%     'Resize','off','Name','Image Viewer',...
-%     'Renderer','OpenGL','Position',[fx fy fwidth fheight],...
-%     'CloseRequestFcn',{@fCloseRequestFcn},...
-%     'KeyPressFcn',{@fKeyPressFcn},...
-%     'WindowButtonDownFcn',{@fWindowButtonDownFcn},...
-%     'WindowButtonMotionFcn',{@fHover},...
-%     'WindowScrollWheelFcn',{@fWindowScrollWheelFcn});
-% %% Create the axes that will show the image
-% % The size of the axes must share the same aspect ratio as source image,
-% % while maximizing the space on screen. The largest width to be accomadated
-% % is 1344. The largest height 1024. A short section of code will maximize
-% % one of these two directions and then scale the other accordingly.
-% if master.obj_imageViewer.image_width/master.obj_imageViewer.image_height > 1344/1024
-%     % then maximize the width
-%     hwidthaxes = 1344/master.ppChar(1);
-%     hheightaxes = 1344*master.obj_imageViewer.image_height/master.obj_imageViewer.image_width/master.ppChar(2);
-% else
-%     % then maximize the height
-%     hheightaxes  = 1024/master.ppChar(2);
-%     hwidthaxes  = 1024*master.obj_imageViewer.image_width/master.obj_imageViewer.image_height/master.ppChar(1);
-% end
-% hx = (fwidth-hwidthaxes - 80/master.ppChar(1))/2;
-% hy = (fheight-hheightaxes + 30/master.ppChar(2))/2;
-
-%maxHeight = 1200 - 5*master.ppChar(2);
+maxHeight = maxHeight - 10*master.ppChar(2);
 
 hheightaxes = min(master.obj_imageViewer.image_height, maxHeight);
 hwidthaxes = hheightaxes * master.obj_imageViewer.image_width / master.obj_imageViewer.image_height;
@@ -54,7 +21,9 @@ f = figure('Visible','off','Units','characters','MenuBar','none',...
     'WindowButtonMotionFcn',{@fHover},...
     'WindowScrollWheelFcn',{@fWindowScrollWheelFcn});
 
-hx = 0; hy = 5;
+figurePosition = get(gcf, 'Position');
+
+hx = 0; hy = figurePosition(4) - hheightaxes;
 
 %hwidth = master.obj_imageViewer.image_width/master.ppChar(1);
 %hheight = master.obj_imageViewer.image_height/master.ppChar(2);

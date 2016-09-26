@@ -66,7 +66,8 @@ classdef p53CinemaManual_object_imageViewer < handle
             % normalization factor
             referenceImage = imresize(obj.readImage(round(master.obj_fileManager.numImages / 2)), obj.imageResizeFactor);
             referenceImage = medfilt2(referenceImage, [2,2]);
-            normalizationFactor = double(max(referenceImage(:)));
+            referenceImage = imbackground(referenceImage, 10, 100);
+            normalizationFactor = double(quantile(referenceImage(:), 0.999));
             
             % Check if the preprocessing mode is 'Prediction'. If so,
             % import corresponding mat file in the prediction folder
@@ -83,11 +84,12 @@ classdef p53CinemaManual_object_imageViewer < handle
                     master.obj_fileManager.setProgressBar(i,master.obj_fileManager.numImages,'Loading status');
                     % Load image
                     referenceImage = imresize(obj.readImage(i), obj.imageResizeFactor);
-                    referenceImage = double(referenceImage) / normalizationFactor;
                     
                     if(get(fileManagerHandles.hcheckboxPrimaryBackground, 'Value'))
-                        referenceImage = medfilt2(referenceImage, [2,2]);
-                        obj.imageBuffer(:,:,i) = uint8(imbackground(referenceImage, 10, 100) * 255);
+                        referenceImage = imbackground(referenceImage, 10, 100);
+                        referenceImage = double(referenceImage) / normalizationFactor;
+                        %referenceImage = medfilt2(referenceImage, [2,2]);
+                        obj.imageBuffer(:,:,i) = uint8(referenceImage * 255);
                     else
                         obj.imageBuffer(:,:,i) = uint8(imnormalize(referenceImage) * 255);
                     end

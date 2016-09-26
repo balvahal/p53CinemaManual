@@ -6,9 +6,11 @@ function [] = getMaximumProjection_fromStack(filepath, channel)
     dirCon = dirCon(validFiles);
     for i = 1:length(dirCon)
         filename = dirCon{i};
-        IM = TiffStack(fullfile(filepath, filename));
-        maxProj = IM.maxProjection;
         outputFile = regexprep(filename, channel, [channel 'maxProj']);
-        imwrite(uint16(maxProj), fullfile(filepath, outputFile), 'tiff', 'compression', 'none');
+        if(~exist(fullfile(filepath, outputFile), 'file') && isempty(regexp(filename, 'maxProj')))
+            IM = TiffStack(fullfile(filepath, filename));
+            maxProj = IM.maxProjection;
+            imwrite(uint16(maxProj), fullfile(filepath, outputFile), 'tiff', 'compression', 'none');
+        end
     end
 end
