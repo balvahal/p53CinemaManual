@@ -43,6 +43,10 @@ heditRawDataPath = uicontrol('Style','edit','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','','Position',[hx + hmargin + hwidth, hy, hwidth * 1.5, hheight],...
     'Enable', 'off', 'parent',f);
+hpushbuttonRawDataPath = uicontrol('Style','pushbutton','Units','characters',...
+    'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
+    'String','Browse','Enable', 'off','Position',[hx + 2*hmargin + 2.5*hwidth, hy, hwidth * 0.75, hheight],...
+    'Callback',{@pushbuttonRawDataPath_Callback},'parent',f);
 
 hy = hy - hheight - hmargin_short;
 htextSegmentDataPath = uicontrol('Style','text','Units','characters',...
@@ -220,24 +224,34 @@ set(f,'Visible','on');
             database.group_label = cellfun(@num2str, num2cell(database.group_label), 'UniformOutput', 0);
         end
         if(~iscell(database.channel_name))
-            database.channel_name = cellfun(@num2str, num2cell(database.position_number), 'UniformOutput', 0);
+            database.channel_name = cellfun(@num2str, num2cell(database.channel_name), 'UniformOutput', 0);
         end
         
+        if(exist(fullfile(sourcePath, 'RAW_DATA'), 'dir'))
+            set(heditRawDataPath, 'String', fullfile(sourcePath, 'RAW_DATA'));
+            set(heditSegmentDataPath, 'String', fullfile(sourcePath, 'SEGMENT_DATA'));
+            master.obj_fileManager.setRawDataPath(get(heditRawDataPath, 'String'));
+            set(hpushbuttonLoadData, 'Enable', 'on');
+        end
+        set(hpushbuttonRawDataPath, 'Enable', 'on');
+        
         set(heditDatabasePath, 'String', fullfile(sourcePath, databaseFile));
-        set(heditRawDataPath, 'String', fullfile(sourcePath, 'RAW_DATA'));
-        set(heditSegmentDataPath, 'String', fullfile(sourcePath, 'SEGMENT_DATA'));
         master.obj_fileManager.setDatabase(database);
-        master.obj_fileManager.setRawDataPath(get(heditRawDataPath, 'String'));
         master.obj_fileManager.mainpath = sourcePath;
         master.obj_fileManager.databaseFilename = databaseFile;
-        
         availableGroups = unique(database.group_label);
         set(hpopupGroupLabel, 'String', availableGroups);
         set(hpopupGroupLabel, 'Enable', 'on');
         master.obj_fileManager.setSelectedGroup(getCurrentPopupString(hpopupGroupLabel));
         
         populatePositionChannel
-        
+    end
+
+    function pushbuttonRawDataPath_Callback(~,~)
+        rawdatapath = uigetdir(master.obj_fileManager.mainpath,'Select directory with raw images');
+        set(heditRawDataPath, 'String', rawdatapath);
+        master.obj_fileManager.setRawDataPath(rawdatapath);
+        set(hpushbuttonLoadData, 'Enable', 'on');
     end
 
     function popupGroupLabel_Callback(~,~)

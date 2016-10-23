@@ -39,6 +39,8 @@ classdef p53CinemaManual_object_imageViewer < handle
         
         zoomArray = [1, 0.8, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1];
         zoomIndex = 1;
+        display_resolution;
+        buffer_resolution;
     end
     events
         
@@ -76,9 +78,15 @@ classdef p53CinemaManual_object_imageViewer < handle
                 load(fullfile('Prediction', sprintf('wellsss_s%d.mat', obj.master.obj_fileManager.selectedPosition)));
             end
             
+            obj.buffer_resolution = 'uint8';
+            obj.display_resolution = 8;
+            
             if master.obj_fileManager.preallocateMode
                 master.obj_fileManager.setProgressBar(1,master.obj_fileManager.numImages,'Loading status');
-                obj.imageBuffer = uint16(zeros(obj.image_height, obj.image_width, master.obj_fileManager.numImages));
+                
+                obj.imageBuffer = cast(zeros(obj.image_height, obj.image_width, master.obj_fileManager.numImages), obj.buffer_resolution);
+                maxPossibleValue = 2^obj.display_resolution - 1;
+                
                 tic
                 for i=1:master.obj_fileManager.numImages
                     master.obj_fileManager.setProgressBar(i,master.obj_fileManager.numImages,'Loading status');
@@ -89,9 +97,9 @@ classdef p53CinemaManual_object_imageViewer < handle
                         referenceImage = imbackground(referenceImage, 10, 100);
                         referenceImage = double(referenceImage) / normalizationFactor;
                         %referenceImage = medfilt2(referenceImage, [2,2]);
-                        obj.imageBuffer(:,:,i) = uint8(referenceImage * 255);
+                        obj.imageBuffer(:,:,i) = cast(referenceImage * maxPossibleValue, obj.buffer_resolution);
                     else
-                        obj.imageBuffer(:,:,i) = uint8(imnormalize(referenceImage) * 255);
+                        obj.imageBuffer(:,:,i) = cast(imnormalize(referenceImage) * maxPossibleValue, obj.buffer_resolution);
                     end
                     
                     % Preprocess and find local maxima
@@ -190,6 +198,25 @@ classdef p53CinemaManual_object_imageViewer < handle
             end
             out = obj.pixelRowCol;
         end
+        
+        %% Autocontrast
+        %
+        function obj = autoContrast(obj)
+            maxPossibleValue = 2^obj.display_resolution - 1;
+            handles = guidata(obj.gui_contrast);
+            if(obj.master.obj_fileManager.preallocateMode)
+                randomSample = obj.imageBuffer(ceil(rand(1,10000) * (size(obj.imageBuffer,1) * size(obj.imageBuffer,2) - 1) + 1));
+                minValue = min(randomSample(randomSample > quantile(randomSample, 0.01)));
+                maxValue = max(randomSample(randomSample < quantile(randomSample(:), 0.9999)));
+            else
+                minValue = min(obj.currentImage);
+                maxValue = max(obj.currentImage);
+            end
+            set(handles.sliderMin,'Value', double(minValue)/maxPossibleValue);
+            set(handles.sliderMax,'Value', double(maxValue)/maxPossibleValue);
+            obj.newColormapFromContrastHistogram;
+        end
+
         %% resetContrast
         % Set the contrast to reflect the full uint8 range, i.e. 0-255.
         function obj = resetContrast(obj)
@@ -199,17 +226,20 @@ classdef p53CinemaManual_object_imageViewer < handle
         %% findImageHistogram
         % Assumes image is uint8 0-255.
         function obj = findImageHistogram(obj)
-            obj.contrastHistogram = hist(reshape(obj.currentImage,1,[]),-0.5:1:255.5);
+            maxPossibleValue = 2^obj.display_resolution - 1;
+            obj.contrastHistogram = hist(reshape(obj.currentImage,1,[]),-0.5:1:(maxPossibleValue + 0.5));
         end
         %% newColormapFromContrastHistogram
         % Assumes image is uint8 0-255.
         function obj = newColormapFromContrastHistogram(obj)
+            maxPossibleValue = 2^obj.display_resolution - 1;
+            
             handles = guidata(obj.gui_contrast);
             sstep = get(handles.sliderMin,'SliderStep');
             mymin = ceil(get(handles.sliderMin,'Value')/sstep(1));
             mymax = ceil(get(handles.sliderMax,'Value')/sstep(1));
             cmap = colormap(gray(mymax-mymin+1));
-            cmap = vertcat(zeros(mymin,3),cmap,ones(255-mymax,3));
+            cmap = vertcat(zeros(mymin,3),cmap,ones(maxPossibleValue-mymax,3));
             handles2 = guidata(obj.gui_imageViewer);
             colormap(handles2.axesImageViewer,cmap);
             handles3 = guidata(obj.gui_zoomMap);
@@ -233,6 +263,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             obj.gui_imageViewer = p53CinemaManual_gui_imageViewer(obj.master, obj.master.obj_fileManager.maxHeight);
             obj.gui_contrast = p53CinemaManual_gui_contrast(obj.master);
             obj.gui_zoomMap = p53CinemaManual_gui_zoomMap(obj.master);
+            obj.autoContrast;
             obj.setFrame(1);
         end
         
@@ -256,14 +287,16 @@ classdef p53CinemaManual_object_imageViewer < handle
             if(obj.master.obj_fileManager.preallocateMode && get(fileManagerHandles.hpopupPimaryChannel, 'Value') == get(imageViewerHandles.hpopupViewerChannel, 'Value'))
                 obj.currentImage = obj.imageBuffer(:,:,frame);
             else
+                maxPossibleValue = 2^obj.display_resolution - 1;
                 viewerChannel = getCurrentPopupString(imageViewerHandles.hpopupViewerChannel);
                 filename = obj.master.obj_fileManager.getFilename(obj.master.obj_fileManager.selectedPosition, viewerChannel, obj.currentTimepoint);
                 if(~isempty(filename))
                     IM = imresize(imread(fullfile(obj.master.obj_fileManager.rawdatapath, filename)), obj.imageResizeFactor);
-                    IM = imnormalize_quantile(IM, 1) * 255;
+                    IM = imnormalize_quantile(IM, 1) * maxPossibleValue;
                     if(get(imageViewerHandles.hcheckboxPreprocessFrame, 'Value'))
                         IM = medfilt2(IM, [3,3]);
-                        IM = uint8(imbackground(IM, 10, 100));
+                        IM = imbackground(IM, 10, 100);
+                        IM = cast(IM, obj.buffer_resolution);
                     end
                     %IM = uint8(imnormalize_quantile(IM, 1) * 255);
                     obj.currentImage = IM;
