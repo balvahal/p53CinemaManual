@@ -4,8 +4,11 @@ IM = double(IM);
 % FOR SMDA
 %IM = IM-double(scale12to16bit(offset));
 
-% FOR METAMORPH
-IM = scale12to16bit(IM);
+% FOR METAMORPH old files
+% IM = scale12to16bit(IM);
+% IM = IM-double(offset);
+
+% FOR METAMORPH new files
 IM = IM-double(offset);
 
 IM(IM<0) = 0;

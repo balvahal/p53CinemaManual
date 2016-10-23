@@ -33,7 +33,8 @@ for i=1:length(uniqueGroups);
         centroidNumber = zeros(length(files),1);
         parfor k=1:length(files)
             timepoint = database.timepoint(files(k));
-            outputFilename = regexprep(database.filename(files(k)), '_w\d_*.*?_([st])', '_$1');
+            outputFilename = regexprep(database.filename(files(k)), '\.', '_segment.');
+            
             if(~exist(fullfile(segmentDataPath,outputFilename{1}), 'file'))
                 try
                     IM = imread(fullfile(rawDataPath, database.filename{files(k)}));

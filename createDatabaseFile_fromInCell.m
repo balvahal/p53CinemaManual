@@ -12,11 +12,18 @@ database.group_label = repmat({'Exp'}, size(database, 1), 1);
 writetable(database, outputFilePath, 'Delimiter', '\t');
 database = readtable(outputFilePath, 'Delimiter', '\t');
 
-unique_rows = unique(database.row);
-unique_columns = unique(database.column);
-[~, row_number] = ismember(database.row, unique_rows);
-[~, col_number] = ismember(database.column, unique_columns);
-database.position_number = (row_number - 1) * length(unique_rows) + col_number;
+uniqueRows = unique(database.row);
+uniqueColumns = unique(database.column);
+uniqueFields = unique(database.field);
 
-writetable(database, outputFilePath, 'Delimiter', '\t');
+[~, row_number] = ismember(database.row, uniqueRows);
+[~, col_number] = ismember(database.row, uniqueColumns);
+[~, field_number] = ismember(database.row, uniqueFields);
+
+database.row_number = row_number;
+database.col_number = col_number;
+database.field_number = field_number;
+
+database.position_number = (database.row_number - 1) * length(uniqueColumns) * length(uniqueFields) + (database.col_number - 1) *  length(uniqueFields) + database.field_number;
+
 end

@@ -80,6 +80,10 @@ hcheckboxAutoCenter = uicontrol('Style','checkbox','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','Auto-center','Value',0,'Position',[hx + hmargin + hwidth, hy, hwidth, hheight],...
     'Callback', {@checkboxAutoCenter_Callback},'parent',f);
+hpushbuttonMakeMovie = uicontrol('Style','pushbutton','Units','characters',...
+    'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
+    'String','Make movie','Position',[hx + 2*hmargin + 2*hwidth, hy, hwidth, hheight],...
+    'Callback', {@pushbuttonMakeMovie_Callback},'parent',f);
 
 %% Layout: Interaction options
 hy = hy - hheight - hmargin;
@@ -184,6 +188,22 @@ set(f,'Visible','on');
 
 %% Callbacks
 %
+    function pushbuttonMakeMovie_Callback(~,~)
+        baseDirectory = master.obj_fileManager.mainpath;
+        moviesDirectory = fullfile(baseDirectory, 'Movies');
+        if(~exist(moviesDirectory, 'dir'))
+            mkdir(moviesDirectory)
+        end
+        if(master.obj_imageViewer.selectedCell > 0)
+            movieFilename = sprintf('%s_s%d_w%s_c%d.TIF', master.obj_fileManager.selectedGroup, master.obj_fileManager.selectedPosition, master.obj_fileManager.selectedChannel, master.obj_imageViewer.selectedCell);
+            centroids = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCellTrack(master.obj_imageViewer.selectedCell);
+            centroids = centroids(master.obj_fileManager.currentImageTimepoints,:);
+            set(hpushbuttonMakeMovie, 'Enable', 'off');
+            createSingleCellMovie(master.obj_imageViewer.imageBuffer, centroids, [], [80,80], fullfile(moviesDirectory, movieFilename))
+            set(hpushbuttonMakeMovie, 'Enable', 'on');
+        end
+    end
+
     function togglebuttonTrackingMode_Callback(~,~)
         trackingStatus = get(htogglebuttonTrackingMode, 'Value');
         master.obj_imageViewer.obj_cellTracker.isTracking = trackingStatus;

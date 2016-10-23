@@ -83,7 +83,7 @@ function [IM, max_temp] = makegain(ffpath, filenames, exposure, chan)
         end
     end
     gainIM=gainIM/mean(mean(gainIM));
-    gainIM=xysmoothen(gainIM,5);
+    %gainIM=xysmoothen(gainIM,5);
     max_temp=max(max(gainIM));
     max_temp=round(max_temp*1000)/1000;
     im_temp=gainIM*2^16/max_temp;
