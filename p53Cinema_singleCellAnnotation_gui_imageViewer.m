@@ -186,10 +186,12 @@ set(f,'Visible','on');
                         master.obj_imageViewer.setFrame(breakpoints(jumpFrame));
                     end
                 end
-            case 'space'
+            case 'shift'
                 master.obj_imageViewer.obj_featureTracker.setAddMode;
             case 'control'
                 master.obj_imageViewer.obj_featureTracker.setDeleteMode;
+            case 'space'
+                master.obj_imageViewer.obj_featureTracker.editAnnotation('left');
         end
     end
 

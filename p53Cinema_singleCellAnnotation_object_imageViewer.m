@@ -167,12 +167,19 @@ classdef p53Cinema_singleCellAnnotation_object_imageViewer < handle
         function obj = autoContrast(obj)
             handles = guidata(obj.gui_contrast);
             if(obj.master.obj_fileManager.preallocateMode)
-                randomSample = obj.imageBuffer(ceil(rand(1,10000) * (size(obj.imageBuffer,1) * size(obj.imageBuffer,2) - 1) + 1));
+                validPixels = obj.imageBuffer(find(obj.imageBuffer > 0));
+                randomSample = validPixels(ceil(rand(1,100000) * length(validPixels) - 1) + 1);
                 minValue = min(randomSample(randomSample > quantile(randomSample, 0.01)));
                 maxValue = max(randomSample(randomSample < quantile(randomSample(:), 0.9999)));
             else
                 minValue = min(obj.currentImage);
                 maxValue = max(obj.currentImage);
+            end
+            if(isempty(minValue))
+                minValue = 0;
+            end
+            if(isempty(maxValue))
+                maxValue = 2^16 - 1;
             end
             set(handles.sliderMin,'Value', double(minValue)/(2^16-1));
             set(handles.sliderMax,'Value', double(maxValue)/(2^16-1));
