@@ -235,6 +235,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             maxPossibleValue = 2^obj.display_resolution - 1;
             
             handles = guidata(obj.gui_contrast);
+
             sstep = get(handles.sliderMin,'SliderStep');
             mymin = ceil(get(handles.sliderMin,'Value')/sstep(1));
             mymax = ceil(get(handles.sliderMax,'Value')/sstep(1));
@@ -263,8 +264,8 @@ classdef p53CinemaManual_object_imageViewer < handle
             obj.gui_imageViewer = p53CinemaManual_gui_imageViewer(obj.master, obj.master.obj_fileManager.maxHeight);
             obj.gui_contrast = p53CinemaManual_gui_contrast(obj.master);
             obj.gui_zoomMap = p53CinemaManual_gui_zoomMap(obj.master);
-            obj.autoContrast;
             obj.setFrame(1);
+            obj.autoContrast;
         end
         
         %% Frame switching functions
@@ -424,6 +425,35 @@ classdef p53CinemaManual_object_imageViewer < handle
             [~, dyingCells] = obj.obj_cellTracker.centroidsDeath.getCentroids(obj.currentTimepoint);
             cellFateEventCentroids = trackedCentroids(ismember(currentFrameCentroids, horzcat(dividingCells', dyingCells')),:);
             set(handles.cellFateEventPatch, 'XData', cellFateEventCentroids(:,2), 'YData', cellFateEventCentroids(:,1));
+                        
+            % Set the completed centroids patch
+            [~, firstFrameCentroids] = obj.obj_cellTracker.centroidsTracks.getCentroids(min(obj.master.obj_fileManager.currentImageTimepoints));
+            [~, lastFrameCentroids] = obj.obj_cellTracker.centroidsTracks.getCentroids(max(obj.master.obj_fileManager.currentImageTimepoints));
+            completedCells = ismember(currentFrameCentroids, intersect(firstFrameCentroids, lastFrameCentroids));
+            set(handles.completeCellsPatch, 'XData', trackedCentroids(completedCells,2), 'YData', trackedCentroids(completedCells,1));
+            
+            if(obj.master.obj_fileManager.preprocessMode)
+                lookupRadius = obj.obj_cellTracker.getDistanceRadius;
+                currentPoint = obj.pixelxy;
+                if(~isempty(currentPoint))
+                    highlightedCentroids = obj.obj_cellTracker.centroidsLocalMaxima.getCentroidsInRange(obj.currentTimepoint, fliplr(currentPoint), lookupRadius);
+                    set(handles.cellsInRangePatch, 'XData', highlightedCentroids(:,2), 'YData', highlightedCentroids(:,1));
+                    
+                    closestCentroid = obj.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(obj.currentTimepoint, fliplr(currentPoint), lookupRadius);
+                    set(handles.closestCellPatch, 'XData', closestCentroid(:,2), 'YData', closestCentroid(:,1));
+                end
+            end
+
+            if(obj.selectedCell == 0)
+                return;
+            end
+            
+            currentCentroid = obj.obj_cellTracker.centroidsDivisions.getCentroid(obj.currentTimepoint, obj.selectedCell);
+            if(ismember(currentCentroid, trackedCentroids(dividingCells,:), 'rows'))
+                set(cellTrackerHandles.trackSisterPushbutton, 'Enable', 'on');
+            else
+                set(cellTrackerHandles.trackSisterPushbutton, 'Enable', 'off');
+            end
             
             % Set sister cell path
             set(handles.sisterCellPatch, 'XData', [], 'YData', []);
@@ -434,6 +464,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                 repeatedDivisions = uniqueDivisions(centroidFreq(centroidFreq(:,2) == 2,1),:);
                 if(~isempty(repeatedDivisions))
                     set(handles.sisterCellPatch, 'XData', repeatedDivisions(:,2), 'YData', repeatedDivisions(:,1));
+                    set(cellTrackerHandles.trackSisterPushbutton, 'Enable', 'off');
                 end
             end
             
@@ -493,27 +524,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                         end
                     end
                 end
-            end
-                        
-            % Set the completed centroids patch
-            [~, firstFrameCentroids] = obj.obj_cellTracker.centroidsTracks.getCentroids(min(obj.master.obj_fileManager.currentImageTimepoints));
-            [~, lastFrameCentroids] = obj.obj_cellTracker.centroidsTracks.getCentroids(max(obj.master.obj_fileManager.currentImageTimepoints));
-            completedCells = ismember(currentFrameCentroids, intersect(firstFrameCentroids, lastFrameCentroids));
-            set(handles.completeCellsPatch, 'XData', trackedCentroids(completedCells,2), 'YData', trackedCentroids(completedCells,1));
-            
-            if(~obj.master.obj_fileManager.preprocessMode)
-                return;
-            end
-            
-            lookupRadius = obj.obj_cellTracker.getDistanceRadius;
-            currentPoint = obj.pixelxy;
-            if(~isempty(currentPoint))
-                highlightedCentroids = obj.obj_cellTracker.centroidsLocalMaxima.getCentroidsInRange(obj.currentTimepoint, fliplr(currentPoint), lookupRadius);
-                set(handles.cellsInRangePatch, 'XData', highlightedCentroids(:,2), 'YData', highlightedCentroids(:,1));
-                
-                closestCentroid = obj.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(obj.currentTimepoint, fliplr(currentPoint), lookupRadius);
-                set(handles.closestCellPatch, 'XData', closestCentroid(:,2), 'YData', closestCentroid(:,1));
-            end
+            end            
         end
         
         %%

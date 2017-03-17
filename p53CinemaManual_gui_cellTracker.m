@@ -50,6 +50,10 @@ hradiobuttonPropagate = uicontrol('Style','radiobutton','Units','characters',...
     'Enable', 'on','parent',hbuttonGroupTrackingStyle, 'Tag', 'PropagateTracking');
 
 hy = hy - hheight * 2 - hmargin_short;
+hcheckboxPlayWhileTracking =  uicontrol('Style','checkbox','Units','characters',...
+    'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
+    'String','Play and Track','Value',1,'Position',[hx + hmargin + hwidth, hy, hwidth, hheight],...
+    'Callback', {@checkboxPlayWhileTracking_Callback},'parent',f);
 htextTimeDelay = uicontrol('Style','text','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','center',...
     'String','Delay','Position',[hx + hmargin + hwidth*2,hy,hwidth*0.5,hheight],...
@@ -133,11 +137,14 @@ htextTrackEvent = uicontrol('Style','text','Units','characters',...
     'parent',f);
 hy = hy - hheight;
 hbuttongroupTrackEvent = uibuttongroup('Visible','off','Units',get(f,'Units'),...
-    'Position',[hx + hwidth + hmargin, hy, hwidth + hmargin_short, hheight * 2 + hmargin_short], 'Parent', f);
+    'Position',[hx + hwidth + hmargin, hy, 2*hwidth + 4*hmargin_short, hheight * 2 + hmargin_short], 'Parent', f);
 % Create three radio buttons in the button group.
 u0 = uicontrol('Style','pushbutton','String','Division','Units',get(f,'Units'),...
     'Position',[0.5, hheight, hwidth - 1, hheight],'parent',hbuttongroupTrackEvent,'HandleVisibility','on',...
     'Callback',{@u0Pushbutton_Callback});
+trackSisterPushbutton = uicontrol('Style','pushbutton','String','Follow sister','Units',get(f,'Units'),...
+    'Position',[hwidth + hmargin_short + 0.5, hheight, hwidth, hheight],'Enable','off','parent',hbuttongroupTrackEvent,'HandleVisibility','on',...
+    'Callback',{@trackSisterPushbutton_Callback});
 u1 = uicontrol('Style','pushbutton','String','Death','Units',get(f,'Units'),...
     'Position',[0.5, 0, hwidth - 1, hheight],'parent',hbuttongroupTrackEvent,'HandleVisibility','on','Visible', 'on', ...
     'Callback',{@u1Pushbutton_Callback});
@@ -180,6 +187,7 @@ handles.u0 = u0;
 handles.u1 = u1;
 handles.hmergePushbutton = hmergePushbutton;
 handles.hsplitPushbutton = hsplitPushbutton;
+handles.trackSisterPushbutton = trackSisterPushbutton;
 guidata(f, handles);
 
 %%
@@ -231,6 +239,10 @@ set(f,'Visible','on');
 
     function checkboxAutoCenter_Callback(~,~)
         master.obj_imageViewer.setImage;
+    end
+
+    function checkboxPlayWhileTracking_Callback(~,~)
+        master.obj_imageViewer.obj_cellTracker.setPlayWhileTracking(get(hcheckboxPlayWhileTracking, 'Value'));
     end
 
     function pushbuttonSaveAnnotations_Callback(~,~)
@@ -355,6 +367,10 @@ set(f,'Visible','on');
     function u1Pushbutton_Callback(source, eventdata)
         master.obj_imageViewer.obj_cellTracker.setDeathEvent;
         master.obj_imageViewer.setImage;
+    end
+
+    function trackSisterPushbutton_Callback(source, eventdata)
+        master.obj_imageViewer.obj_cellTracker.trackSister;
     end
 
     function mergePushbutton_Callback(source, eventdata)

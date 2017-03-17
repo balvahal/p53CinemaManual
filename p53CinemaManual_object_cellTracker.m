@@ -14,6 +14,7 @@ classdef p53CinemaManual_object_cellTracker < handle
         trackingDirection;
         trackingStyle;
         trackingDelay;
+        playWhileTracking;
         
         centroidsLocalMaxima;
         centroidsTracks;
@@ -41,6 +42,7 @@ classdef p53CinemaManual_object_cellTracker < handle
             obj.trackingStyle = 'SingleFramePropagate';
             obj.trackingDirection = 'Forward';
             obj.trackingDelay = 0;
+            obj.playWhileTracking = 1;
             
         end
         function initializeKalman(obj,previousFrame)
@@ -167,6 +169,24 @@ classdef p53CinemaManual_object_cellTracker < handle
                     predictedCentroid = closestCentroid;
                 otherwise
             end
+        end
+        
+        function setPlayWhileTracking(obj, value)
+            obj.playWhileTracking = value;
+        end
+        
+        function trackSister(obj)
+            newCell = obj.centroidsTracks.getAvailableCellId;
+            obj.centroidsTracks.setCentroid(obj.master.obj_imageViewer.currentTimepoint, newCell, obj.centroidsTracks.getCentroid(obj.master.obj_imageViewer.currentTimepoint, obj.master.obj_imageViewer.selectedCell), 1);
+            obj.centroidsDivisions.setCentroid(obj.master.obj_imageViewer.currentTimepoint, newCell, obj.centroidsTracks.getCentroid(obj.master.obj_imageViewer.currentTimepoint, obj.master.obj_imageViewer.selectedCell), 1);
+           
+            obj.master.obj_imageViewer.setSelectedCell(newCell);
+            handles = guidata(obj.gui_cellTracker);
+            set(handles.htogglebuttonTrackingMode, 'Value', 1);
+            obj.isTracking = 1;
+            obj.master.obj_imageViewer.obj_cellTracker.firstClick = 0;
+            obj.master.obj_imageViewer.nextFrame;
+            obj.master.obj_imageViewer.setImage;            
         end
                 
         %% Delete function

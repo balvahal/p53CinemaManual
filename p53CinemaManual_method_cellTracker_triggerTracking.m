@@ -127,10 +127,12 @@ if(length(frameOrdering) > 1)
         else
             break
         end
-        master.obj_imageViewer.setFrame(frameOrdering(j));
-        obj_cellT.master.obj_imageViewer.setImage;
-        pause(obj_cellT.trackingDelay);
-        drawnow;
+        if(master.obj_imageViewer.obj_cellTracker.playWhileTracking)
+            master.obj_imageViewer.setFrame(frameOrdering(j));
+            obj_cellT.master.obj_imageViewer.setImage;
+            pause(obj_cellT.trackingDelay);
+            drawnow;
+        end
     end
     master.obj_imageViewer.setFrame(frameOrdering(j-1));
     master.obj_imageViewer.setFrame(frameOrdering(j));
