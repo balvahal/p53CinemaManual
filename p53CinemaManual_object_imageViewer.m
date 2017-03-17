@@ -419,13 +419,7 @@ classdef p53CinemaManual_object_imageViewer < handle
 %                 maxTimepointCentroids = intersect(maxTimepointCentroids, maxTimepointCentroids(logical(cellDivided)));
 %             end
             set(handles.trackedCellsPatch, 'XData', trackedCentroids(ismember(currentFrameCentroids, maxTimepointCentroids),2), 'YData', trackedCentroids(ismember(currentFrameCentroids, maxTimepointCentroids),1));
-           
-            % Set division event patch
-            [~, dividingCells] = obj.obj_cellTracker.centroidsDivisions.getCentroids(obj.currentTimepoint);
-            [~, dyingCells] = obj.obj_cellTracker.centroidsDeath.getCentroids(obj.currentTimepoint);
-            cellFateEventCentroids = trackedCentroids(ismember(currentFrameCentroids, horzcat(dividingCells', dyingCells')),:);
-            set(handles.cellFateEventPatch, 'XData', cellFateEventCentroids(:,2), 'YData', cellFateEventCentroids(:,1));
-                        
+                                   
             % Set the completed centroids patch
             [~, firstFrameCentroids] = obj.obj_cellTracker.centroidsTracks.getCentroids(min(obj.master.obj_fileManager.currentImageTimepoints));
             [~, lastFrameCentroids] = obj.obj_cellTracker.centroidsTracks.getCentroids(max(obj.master.obj_fileManager.currentImageTimepoints));
@@ -443,13 +437,19 @@ classdef p53CinemaManual_object_imageViewer < handle
                     set(handles.closestCellPatch, 'XData', closestCentroid(:,2), 'YData', closestCentroid(:,1));
                 end
             end
+            
+            % Set division event patch
+            [~, dividingCells] = obj.obj_cellTracker.centroidsDivisions.getCentroids(obj.currentTimepoint);
+            [~, dyingCells] = obj.obj_cellTracker.centroidsDeath.getCentroids(obj.currentTimepoint);
+            cellFateEventCentroids = trackedCentroids(ismember(currentFrameCentroids, horzcat(dividingCells', dyingCells')),:);
+            set(handles.cellFateEventPatch, 'XData', cellFateEventCentroids(:,2), 'YData', cellFateEventCentroids(:,1));
 
             if(obj.selectedCell == 0)
                 return;
             end
             
             currentCentroid = obj.obj_cellTracker.centroidsDivisions.getCentroid(obj.currentTimepoint, obj.selectedCell);
-            if(ismember(currentCentroid, trackedCentroids(dividingCells,:), 'rows'))
+            if(ismember(currentCentroid, trackedCentroids(ismember(currentFrameCentroids,dividingCells),:), 'rows'))
                 set(cellTrackerHandles.trackSisterPushbutton, 'Enable', 'on');
             else
                 set(cellTrackerHandles.trackSisterPushbutton, 'Enable', 'off');

@@ -186,7 +186,8 @@ classdef p53CinemaManual_object_cellTracker < handle
             obj.isTracking = 1;
             obj.master.obj_imageViewer.obj_cellTracker.firstClick = 0;
             obj.master.obj_imageViewer.nextFrame;
-            obj.master.obj_imageViewer.setImage;            
+            obj.master.obj_imageViewer.setImage;
+            obj.setAvailableCells;
         end
                 
         %% Delete function
