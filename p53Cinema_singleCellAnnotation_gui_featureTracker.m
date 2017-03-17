@@ -101,7 +101,7 @@ set(f,'Visible','on');
         end
         
         uisave({'selectedGroup', 'selectedCell', 'selectedPosition','databaseFile','rawdatapath','centroidsFeatures'},...
-            fullfile(mainpath, sprintf('%s_s%d_tracking.mat', selectedGroup, selectedPosition)));
+            fullfile(mainpath, sprintf('%s_s%d_c%d_tracking.mat', selectedGroup, selectedPosition, selectedCell)));
         
         % Bring back centroid positions to current scale
         for i=1:length(centroidsFeatures.singleCells)
@@ -147,8 +147,6 @@ set(f,'Visible','on');
             % Make sure to rescale the centroids to fit current image size
             for i=1:length(master.obj_imageViewer.obj_featureTracker.centroidsFeatures.singleCells)
                 master.obj_imageViewer.obj_featureTracker.centroidsFeatures.singleCells(i).point = master.obj_imageViewer.obj_featureTracker.centroidsFeatures.singleCells(i).point * master.obj_imageViewer.imageResizeFactor;
-                master.obj_imageViewer.obj_featureTracker.centroidsDivisions.singleCells(i).point = master.obj_imageViewer.obj_featureTracker.centroidsDivisions.singleCells(i).point * master.obj_imageViewer.imageResizeFactor;
-                master.obj_imageViewer.obj_featureTracker.centroidsDeath.singleCells(i).point = master.obj_imageViewer.obj_featureTracker.centroidsDeath.singleCells(i).point * master.obj_imageViewer.imageResizeFactor;
             end
         end
         master.obj_imageViewer.selectedCell = 0;

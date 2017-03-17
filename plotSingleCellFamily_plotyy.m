@@ -7,6 +7,13 @@ subTraces2 = traces2(familyMembers,:);
 subDivisions = divisions(familyMembers,:);
 subTree = lineageTree(familyMembers,:);
 
+% subTraces1 = vertcat(subTraces1, zeros(2, size(subTraces1,2)));
+% subTraces2 = vertcat(subTraces2, zeros(2, size(subTraces1,2)));
+% subDivisions = vertcat(subDivisions, zeros(2, size(subTraces1,2)));
+% subTree = vertcat(subTree, (max(subTree(:))+1) * ones(2, size(subTraces1,2)));
+% subTree(:,1) = (max(subTree(:))+1); subTree(end,end) = (max(subTree(:))+2);
+% familyMembers = [familyMembers', (max(subTree(:))+1), (max(subTree(:))+2)];
+
 blue = [3,126,199]/255;
 red = [230, 91, 98]/255;
 green = [0, 162, 37] / 255;
@@ -15,8 +22,8 @@ green = [0, 162, 37] / 255;
 ylim1 = [min(subTraces1(:)), max(subTraces1(:)) * 0.9];
 ylim2 = [min(subTraces2(:)), max(subTraces2(:)) * 0.9];
 % Limits based on traces from the whole dataset
-ylim1 = [min(traces1(:)), max(traces1(:)) * 0.9];
-ylim2 = [min(traces2(:)), max(traces2(:)) * 0.9];
+% ylim1 = [min(traces1(:)), max(traces1(:)) * 0.9];
+% ylim2 = [min(traces2(:)), max(traces2(:)) * 0.9];
 
 xlimits = [min(timepoints), max(timepoints)];
 color2 = red;
@@ -38,7 +45,7 @@ p(2).margin = [10,2,2,2];
 
 dist = pDist_lastCommonAncestor(subTree);
 p(1).select();
-[H,~,outperm] = dendrogram(linkage(dist), 'Orientation', 'left');
+[H,~,outperm] = dendrogram(linkage(dist, 'single'), 'Orientation', 'left');
 set(H, 'Color', [0.4, 0.4, 0.4], 'LineWidth', 1.5);
 set(gca, 'xtick', [], 'ytick', [], 'ylim', [0.5, length(familyMembers) + 0.5], 'XColor', [1,1,1], 'YColor', [1,1,1]);
 
@@ -60,7 +67,10 @@ for j=1:length(familyMembers)
     
     % Plot division events
     divisionEvents = find(subDivisions(outperm(j),:));
-    plot(timepoints(divisionEvents), subTraces1(outperm(j),divisionEvents), 'p', 'MarkerFaceColor', [0.9, 0.9, 0], 'Color', [0,0,0]);
+    %plot(timepoints(divisionEvents), subTraces1(outperm(j),divisionEvents), 'p', 'MarkerFaceColor', [0.9, 0.9, 0], 'Color', [0,0,0]);
+    for i=1:length(divisionEvents)
+        plot([timepoints(divisionEvents(i)), timepoints(divisionEvents(i))], ylim1, 'Color', [0.5, 0.5, 0.5], 'LineStyle', '--');
+    end
     %ylim(ylimit);
     if(j < length(familyMembers))
         set(gca, 'xtick', []);

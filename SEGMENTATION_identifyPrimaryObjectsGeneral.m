@@ -73,7 +73,7 @@ BlurredImage = imfilter(OriginalImage_normalized, fspecial('gaussian', round(Siz
 
 %% THRESHOLDING
 %
-ThresholdedImage = imfill(BlurredImage > MinimumThreshold, 'holes');
+ThresholdedImage = imfill(OriginalImage > MinimumThreshold, 'holes');
 edgeImage = imfill(imdilate(edge(OriginalImage, 'canny'), strel('disk', 2)), 'holes');
 edgeImage = imerode(edgeImage, strel('disk', 2));
 % ObjectsLabeled = bwlabel(edgeImage);
@@ -83,8 +83,8 @@ edgeImage = imerode(edgeImage, strel('disk', 2));
 % Option 1: only edge image
 % Objects = edgeImage;
 % Option 2: complement with intensity based thresholding
-Objects = imfill((OriginalImage > SEGMENTATION_TriangleMethod(OriginalImage, 1)), 'holes');
-Objects = imfill(im2bw(OriginalImage, graythresh_dynamicRange(OriginalImage)), 'holes');
+Objects = imfill((OriginalImage > SEGMENTATION_TriangleMethod(OriginalImage, 1) * 1.5), 'holes');
+%Objects = imfill(im2bw(BlurredImage, graythresh(BlurredImage)), 'holes');
 Objects = (Objects & ThresholdedImage) | edgeImage;
 
 %Objects = Objects & ~imdilate(primarySegmentation,strel('disk',2)) & ThresholdedImage; 
@@ -117,7 +117,7 @@ primarySegmentation = primarySegmentation | ismember(ObjectsLabeled, find([props
 if(sum(primarySegmentation(:)) > 0)
     props = bwconncomp(primarySegmentation);
     SizeOfSmoothingFilter = round(2 * sqrt(median(cellfun(@length, props.PixelIdxList))) / pi);
-    MaximaSuppressionSize = round(0.2 * SizeOfSmoothingFilter);
+    MaximaSuppressionSize = round(0.15 * SizeOfSmoothingFilter);
 end
 
 MaximaMask = getnhood(strel('disk', MaximaSuppressionSize));
@@ -148,7 +148,8 @@ if(sum(logical(Objects(:))) > 0)
         MaximaImage(~Objects) = 0;
         MaximaImage = bwmorph(MaximaImage,'shrink',inf);
     end
-    
+    %figure; imagesc(Objects + imdilate(MaximaImage, strel('disk', 3)))
+
     %%% GENERATE WATERSHEDS TO SEPARATE TOUCHING NUCLEI
     %
     if strcmp(p.Results.WatershedTransformImageType,'Intensity')
@@ -173,6 +174,10 @@ end
 %props = regionprops(ObjectsLabeled, 'Area');
 %ObjectsLabeled = ObjectsLabeled .* ismember(ObjectsLabeled, find([props.Area] >= p.Results.AreaThreshold));
 %ObjectsLabeled = bwlabel(ObjectsLabeled);
+
+% figure;
+% image(imoverlay(imoverlay(imnormalize(OriginalImage), bwperim(ObjectsLabeled), [0.9, 0.5, 0]), bwperim(primarySegmentation), [0.3, 1, 0.3]));
+
 Centroids = regionprops(ObjectsLabeled, 'Centroid');
 Centroids = reshape([Centroids.Centroid],2,length(Centroids))';
 end

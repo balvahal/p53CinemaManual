@@ -19,8 +19,8 @@ classdef p53Cinema_singleCellAnnotation_object_featureTracker < handle
         %% Constructor
         function obj = p53Cinema_singleCellAnnotation_object_featureTracker(master)
             obj.gui_featureTracker = p53Cinema_singleCellAnnotation_gui_featureTracker(master);
-            obj.centroidsLocalMaxima = CentroidTimeseries(master.obj_fileManager.maxTimepoint, 10000);
-            obj.centroidsFeatures = CentroidTimeseries(master.obj_fileManager.maxTimepoint, 1000);
+            obj.centroidsLocalMaxima = CentroidTimeseries_nonLinked(master.obj_fileManager.maxTimepoint, 10000);
+            obj.centroidsFeatures = CentroidTimeseries_nonLinked(master.obj_fileManager.maxTimepoint, 1000);
             
             obj.master = master;
         end
@@ -94,15 +94,15 @@ classdef p53Cinema_singleCellAnnotation_object_featureTracker < handle
             % If the user right clicked, add the centroid to both the
             % localMaxima database and to the current features database
             if(strcmp(selectionType, 'alt'))
-                obj.centroidsLocalMaxima.setCentroid(currentTimepoint, obj.centroidsLocalMaxima.getAvailableCellId, currentPoint, 0);
-                obj.centroidsFeatures.setCentroid(currentTimepoint, obj.centroidsFeatures.getAvailableCellId, currentPoint, 0);
+                obj.centroidsLocalMaxima.setCentroid(currentTimepoint, obj.centroidsLocalMaxima.getAvailableCellId(currentTimepoint), currentPoint, 0);
+                obj.centroidsFeatures.setCentroid(currentTimepoint, obj.centroidsFeatures.getAvailableCellId(currentTimepoint), currentPoint, 0);
             else
                 [closestCentroidLocalMaxima, ~, distanceLocalMaxima] = obj.centroidsLocalMaxima.getClosestCentroid(currentTimepoint, currentPoint, lookupRadius);
                 [~, cellIdFeatures, distanceFeatures] = obj.centroidsFeatures.getClosestCentroid(currentTimepoint, currentPoint, lookupRadius);
                 
                 if(distanceLocalMaxima < distanceFeatures)
                     if(obj.addMode)
-                        selectedCell = obj.centroidsFeatures.getAvailableCellId;
+                        selectedCell = obj.centroidsFeatures.getAvailableCellId(currentTimepoint);
                         obj.centroidsFeatures.setCentroid(currentTimepoint, selectedCell, closestCentroidLocalMaxima, 0);
                         obj.master.obj_imageViewer.setSelectedCell(selectedCell);
                     end

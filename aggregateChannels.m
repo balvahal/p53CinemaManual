@@ -14,17 +14,22 @@ for g=1:length(group_number);
         for t=1:length(unique_timepoints)
             current_timepoint = unique_timepoints(t);
             numChannels = length(channels);
+            sampleFilename = getDatabaseFile2(database, uniqueGroups{g}, channels{1}, currentPosition, current_timepoint);
+            outputFilename = regexprep(sampleFilename, 'w\d.*_s', 'w0MergedChannels_s');
+            if(exist(fullfile(rawdatapath, outputFilename), 'file'))
+                continue;
+            end
             FinalImage = zeros(file_info.Height, file_info.Width);
             for i=1:length(channels)
                 currentFilename = getDatabaseFile2(database, uniqueGroups{g}, channels{i}, currentPosition, current_timepoint);
                 if(exist(fullfile(rawdatapath, currentFilename), 'file'))
                     IM = imread(fullfile(rawdatapath, currentFilename));
+                    IM = imbackground(IM, 10, 100);
                     IM = imnormalize_quantile(IM, 0.99) / numChannels;
                     FinalImage = FinalImage + IM;
                 end
             end
             FinalImage = uint16(FinalImage * (2^16-1));
-            outputFilename = regexprep(currentFilename, 'w\d.*_s', 'w0MergedChannels_s');
             imwrite(FinalImage, fullfile(rawdatapath, outputFilename), 'TIF', 'Compression', 'none');
         end
     end

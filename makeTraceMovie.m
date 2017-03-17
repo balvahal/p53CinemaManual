@@ -1,7 +1,8 @@
 function [] = makeTraceMovie(timepoints, trace, divisions, outputFile, dimensions, ylimit, color, xlab, ylab)
 for i=1:length(trace)
+    set(gcf, 'Color', 'w', 'Units', 'pixels');
     plot(timepoints((i):end), trace((i):end), 'Color', [1, 1, 1], 'LineSmoothing', 'off'); ylim(ylimit); xlim([min(timepoints), max(timepoints)]);
-    set(gcf, 'Color', 'w'); set(gca, 'FontName', 'Arial', 'FontSize', 12);
+    set(gca, 'FontName', 'Arial', 'FontSize', 12);
     position = get(gcf, 'Position');
     position(3:4) = dimensions;
     set(gcf, 'Position', position);

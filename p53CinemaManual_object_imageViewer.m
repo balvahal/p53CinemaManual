@@ -66,7 +66,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             
             % Read an image in the center of the sequence to determine
             % normalization factor
-            referenceImage = imresize(obj.readImage(round(master.obj_fileManager.numImages / 2)), obj.imageResizeFactor);
+            referenceImage = imresize(obj.readImage(round(master.obj_fileManager.numImages)), obj.imageResizeFactor);
             referenceImage = medfilt2(referenceImage, [2,2]);
             referenceImage = imbackground(referenceImage, 10, 100);
             normalizationFactor = double(quantile(referenceImage(:), 0.999));
@@ -400,7 +400,24 @@ classdef p53CinemaManual_object_imageViewer < handle
             
             % Set tracked centroids patch
             [trackedCentroids, currentFrameCentroids] = obj.obj_cellTracker.centroidsTracks.getCentroids(obj.currentTimepoint);
-            set(handles.trackedCellsPatch, 'XData', trackedCentroids(:,2), 'YData', trackedCentroids(:,1));
+            
+            maxTimepoint = obj.currentTimepoint;
+            [~, maxTimepointCentroids] = obj.obj_cellTracker.centroidsTracks.getCentroids(maxTimepoint);
+            
+%             if(obj.currentTimepoint == max(obj.master.obj_fileManager.currentImageTimepoints))
+%                 maxTimepoint = 96;
+%                 [~, excludedCentroids] = obj.obj_cellTracker.centroidsTracks.getCentroids(240);
+%                 
+%                 maxTimepointCentroids = maxTimepointCentroids(~ismember(maxTimepointCentroids, excludedCentroids));
+%                 
+%                 cellDivided = zeros(length(maxTimepointCentroids),1);
+%                 for i=1:length(maxTimepointCentroids)
+%                     divisionTrack = obj.obj_cellTracker.centroidsDivisions.getCellTrack(maxTimepointCentroids(i));
+%                     cellDivided(i) = sum(divisionTrack(:,1) > 0);
+%                 end
+%                 maxTimepointCentroids = intersect(maxTimepointCentroids, maxTimepointCentroids(logical(cellDivided)));
+%             end
+            set(handles.trackedCellsPatch, 'XData', trackedCentroids(ismember(currentFrameCentroids, maxTimepointCentroids),2), 'YData', trackedCentroids(ismember(currentFrameCentroids, maxTimepointCentroids),1));
            
             % Set division event patch
             [~, dividingCells] = obj.obj_cellTracker.centroidsDivisions.getCentroids(obj.currentTimepoint);

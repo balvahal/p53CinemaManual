@@ -35,23 +35,23 @@ for i=1:length(uniqueGroups);
             timepoint = database.timepoint(files(k));
             outputFilename = regexprep(database.filename(files(k)), '\.', '_segment.');
             
-            if(~exist(fullfile(segmentDataPath,outputFilename{1}), 'file'))
+            %if(~exist(fullfile(segmentDataPath,outputFilename{1}), 'file'))
                 try
                     IM = imread(fullfile(rawDataPath, database.filename{files(k)}));
-                    IM = medfilt2(IM, [2,2]);
-                    IM = imbackground(IM, 5, 60);
+                    %IM = medfilt2(IM, [2,2]);
+                    IM = imbackground(IM, 10, 100);
                     [Objects, Centroids] = SEGMENTATION_identifyPrimaryObjectsGeneral(IM);
                     imwrite(Objects, fullfile(segmentDataPath,outputFilename{1}), 'tif');
                 catch e
                     fprintf('%s\t%s\n', outputFilename{1}, e.message);
                 end
-            else
+            %else
                 try
                     info = imfinfo(fullfile(segmentDataPath,outputFilename{1}));
                 catch e
                     fprintf('%s\t%s\n', outputFilename{1}, e.message);
                 end 
-            end
+            %end
         end
 %         allCentroids = zeros(sum(centroidNumber),3);
 %         numberOfCentroidsCounter = 1;

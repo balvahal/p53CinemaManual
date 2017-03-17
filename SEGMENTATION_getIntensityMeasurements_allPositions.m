@@ -17,7 +17,7 @@ for i=1:length(files)
     currentPositionNumber = database.position_number(files(i));
     currentTimepoint = database.timepoint(files(i));
     
-    segmentFilename = regexprep(database.filename{files(i)}, '_w\d.*?_', '_');
+    segmentFilename = regexprep(database.filename{files(i)}, '\.', '_segment.');
     if(~exist(fullfile(segmentDataPath, segmentFilename), 'file'))
         continue;
     end
