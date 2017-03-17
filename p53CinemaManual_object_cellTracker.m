@@ -99,6 +99,7 @@ classdef p53CinemaManual_object_cellTracker < handle
             centroid = obj.centroidsTracks.getCentroid(obj.master.obj_imageViewer.currentTimepoint, obj.master.obj_imageViewer.selectedCell);
             if(centroid(1) > 0)
                 obj.centroidsDivisions.setCentroid(obj.master.obj_imageViewer.currentTimepoint, obj.master.obj_imageViewer.selectedCell, centroid, 0);
+                obj.centroidsTracks.setCentroid(obj.master.obj_imageViewer.currentTimepoint, obj.master.obj_imageViewer.selectedCell, centroid, 1);
             end
         end
         
