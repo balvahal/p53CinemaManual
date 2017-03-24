@@ -109,6 +109,9 @@ if(length(frameOrdering) > 1)
         currentCentroid = obj_cellT.centroidsTracks.getCentroid(currentTimepoint, selectedCell);
         if(currentCentroid(1) == 0)
             [predictedCentroids, ~, distance] = obj_cellT.centroidsLocalMaxima.getCentroidsInRange(currentTimepoint, previousCentroid, lookupRadius);
+            if(isempty(predictedCentroids))
+                break
+            end
             occupiedCentroids = obj_cellT.centroidsTracks.getCentroids(currentTimepoint);
             notOccupied = ~ismember(predictedCentroids, occupiedCentroids, 'rows');
             predictedCentroids = predictedCentroids(notOccupied,:); distance = distance(notOccupied);
