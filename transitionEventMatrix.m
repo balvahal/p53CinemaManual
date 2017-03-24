@@ -13,7 +13,7 @@ for i=1:size(traces,1)
         if(~isempty(frame))
             dropEvent = min(frame);
             matrix_down(i,dropEvent) = 1;
-            frame = findpattern(thresholded_traces(i,:), 2*ones(1,window));
+            frame = findpattern_once(thresholded_traces(i,:), 2*ones(1,window));
             frame = frame(frame > dropEvent);
             if(~isempty(frame))
                 j = min(frame);

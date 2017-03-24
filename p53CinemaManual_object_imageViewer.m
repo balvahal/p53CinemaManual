@@ -329,15 +329,36 @@ classdef p53CinemaManual_object_imageViewer < handle
 %                 end
                 
                 d1 = Inf; d2 = Inf;
+                
+                [occupiedCentroids, occupied_id] = obj.obj_cellTracker.centroidsTracks.getCentroids(obj.currentTimepoint);
+                occupiedCentroids = occupiedCentroids(occupied_id ~= obj.selectedCell,:);
                 if(obj.currentFrame > 1)
                     referenceTimepoint = obj.master.obj_fileManager.currentImageTimepoints(frame-1);
                     referenceCentroid = obj.obj_cellTracker.centroidsTracks.getCentroid(referenceTimepoint, obj.selectedCell);
-                    [prediction1, ~, d1] = obj.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(obj.currentTimepoint, referenceCentroid, obj.obj_cellTracker.getDistanceRadius);
+                    [predictedCentroids, ~, distance] = obj.obj_cellTracker.centroidsLocalMaxima.getCentroidsInRange(obj.currentTimepoint, referenceCentroid, obj.obj_cellTracker.getDistanceRadius);
+                    if(~isempty(predictedCentroids) && ~isempty(occupiedCentroids))
+                        notOccupied = ~ismember(predictedCentroids, occupiedCentroids, 'rows');
+                        predictedCentroids = predictedCentroids(notOccupied,:); distance = distance(notOccupied);
+                    end
+                    if(~isempty(predictedCentroids))
+                        closestCentroidIndex = find(distance == min(distance), 1, 'first');
+                        prediction1 = predictedCentroids(closestCentroidIndex,:);
+                        d1 = distance(closestCentroidIndex);
+                    end
                 end
                 if(obj.currentFrame < length(obj.master.obj_fileManager.currentImageTimepoints))
                     referenceTimepoint = obj.master.obj_fileManager.currentImageTimepoints(frame+1);
                     referenceCentroid = obj.obj_cellTracker.centroidsTracks.getCentroid(referenceTimepoint, obj.selectedCell);
-                    [prediction2, ~, d2] = obj.obj_cellTracker.centroidsLocalMaxima.getClosestCentroid(obj.currentTimepoint, referenceCentroid, obj.obj_cellTracker.getDistanceRadius);
+                    [predictedCentroids, ~, distance] = obj.obj_cellTracker.centroidsLocalMaxima.getCentroidsInRange(obj.currentTimepoint, referenceCentroid, obj.obj_cellTracker.getDistanceRadius);
+                    if(~isempty(predictedCentroids) && ~isempty(occupiedCentroids))
+                        notOccupied = ~ismember(predictedCentroids, occupiedCentroids, 'rows');
+                        predictedCentroids = predictedCentroids(notOccupied,:); distance = distance(notOccupied);
+                    end
+                    if(~isempty(predictedCentroids))
+                        closestCentroidIndex = find(distance == min(distance), 1, 'first');
+                        prediction2 = predictedCentroids(closestCentroidIndex,:);
+                        d2 = distance(closestCentroidIndex);
+                    end
                 end
                 if(~isinf(d1) || ~isinf(d2))
                     if(d1 < d2)
@@ -464,7 +485,9 @@ classdef p53CinemaManual_object_imageViewer < handle
                 repeatedDivisions = uniqueDivisions(centroidFreq(centroidFreq(:,2) == 2,1),:);
                 if(~isempty(repeatedDivisions))
                     set(handles.sisterCellPatch, 'XData', repeatedDivisions(:,2), 'YData', repeatedDivisions(:,1));
-                    set(cellTrackerHandles.trackSisterPushbutton, 'Enable', 'off');
+                    if(ismember(currentCentroid, repeatedDivisions))
+                        set(cellTrackerHandles.trackSisterPushbutton, 'Enable', 'off');
+                    end
                 end
             end
             
