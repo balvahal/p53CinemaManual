@@ -3,7 +3,7 @@ files = find(strcmp(database.channel_name, segmentationChannel));
 uniqueGroups = unique(database.group_label);
 [~, group_number] = ismember(database.group_label, uniqueGroups);
 database.group_number = group_number;
-output = zeros(length(unique(database.position_number)) * length(unique(database.timepoint)) * 200, 7 + 2 * length(measurementChannels));
+output = zeros(length(unique(database.position_number)) * length(unique(database.timepoint)) * 1000, 7 + 2 * length(measurementChannels));
 counter = 1;
 progress = 0;
 for i=1:length(files)
@@ -19,6 +19,7 @@ for i=1:length(files)
     
     segmentFilename = regexprep(database.filename{files(i)}, '\.', '_segment.');
     if(~exist(fullfile(segmentDataPath, segmentFilename), 'file'))
+        fprintf('%s\t%s\n', segmentFilename, 'File does not exist');
         continue;
     end
     try

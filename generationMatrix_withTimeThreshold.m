@@ -1,16 +1,13 @@
-function [generationMatrix, indexes] = generationMatrix(divisionMatrix)
+function [generationMatrix, indexes] = generationMatrix_withTimeThreshold(divisionMatrix, timeThreshold)
 generationMatrix = zeros(size(divisionMatrix));
 indexes = 1:size(divisionMatrix,1);
 
-divisionTiming = getDivisionTiming(divisionMatrix);
-if(isempty(divisionTiming))
-    return;
-end
+divisionTiming = getDivisionTiming(divisionMatrix(:,timeThreshold:end));
 [~,ordering] = sort(divisionTiming(:,1));
 divisionMatrix = divisionMatrix(ordering,:);
 indexes = indexes(ordering);
 
-[~,ordering] = sort(sum(divisionMatrix,2));
+[~,ordering] = sort(sum(divisionMatrix(:,timeThreshold:end),2));
 divisionMatrix = divisionMatrix(ordering,:);
 indexes = indexes(ordering);
 

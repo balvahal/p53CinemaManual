@@ -83,7 +83,7 @@ edgeImage = imerode(edgeImage, strel('disk', 2));
 % Option 1: only edge image
 % Objects = edgeImage;
 % Option 2: complement with intensity based thresholding
-Objects = imfill((OriginalImage > SEGMENTATION_TriangleMethod(OriginalImage, 1) * 1.5), 'holes');
+Objects = imfill((OriginalImage > SEGMENTATION_TriangleMethod(OriginalImage, 1) * 1), 'holes');
 %Objects = imfill(im2bw(BlurredImage, graythresh(BlurredImage)), 'holes');
 Objects = (Objects & ThresholdedImage) | edgeImage;
 
@@ -123,6 +123,7 @@ end
 MaximaMask = getnhood(strel('disk', MaximaSuppressionSize));
 
 Objects = Objects & ~primarySegmentation;
+Objects = imopen(Objects, strel('disk', 2));
 BlurredImage(~Objects) = 0;
 
 if(sum(logical(Objects(:))) > 0)

@@ -96,7 +96,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                     if(get(fileManagerHandles.hcheckboxPrimaryBackground, 'Value'))
                         referenceImage = imbackground(referenceImage, 10, 100);
                         referenceImage = double(referenceImage) / normalizationFactor;
-                        %referenceImage = medfilt2(referenceImage, [2,2]);
+                        referenceImage = medfilt2(referenceImage, [2,2]);
                         obj.imageBuffer(:,:,i) = cast(referenceImage * maxPossibleValue, obj.buffer_resolution);
                     else
                         obj.imageBuffer(:,:,i) = cast(imnormalize(referenceImage) * maxPossibleValue, obj.buffer_resolution);

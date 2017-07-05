@@ -31,7 +31,7 @@ function measurements = getDatasetTraces_ignoreTraces(database, rawdata_path, tr
     counter = 1;
     maxUniqueCellIdentifier = 0;
     for i=1:length(trackingFiles)
-        fprintf('%s: ', trackingFiles{i});
+        fprintf('%s\n', trackingFiles{i});
         load(fullfile(trackingPath, trackingFiles{i}));
         
         currentLineageTree = generateLineageTree(centroidsTracks, centroidsDivisions);

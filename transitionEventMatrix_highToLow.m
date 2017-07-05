@@ -8,12 +8,12 @@ matrix_up = zeros(size(traces));
 for i=1:size(traces,1)
     j = time_threshold;
     while(j < size(traces,2))
-        frame = findpattern(thresholded_traces(i,:), 2*ones(1,window));
+        frame = findpattern_once(thresholded_traces(i,:), 2*ones(1,window));
         frame = frame(frame > j);
         if(~isempty(frame))
             dropEvent = min(frame);
             matrix_down(i,dropEvent) = 1;
-            frame = findpattern(thresholded_traces(i,:), zeros(1,window));
+            frame = findpattern_once(thresholded_traces(i,:), zeros(1,window));
             frame = frame(frame > dropEvent);
             if(~isempty(frame))
                 j = min(frame);

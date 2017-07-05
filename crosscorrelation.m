@@ -1,8 +1,10 @@
 function output = crosscorrelation(trace1, trace2, range)
+    trimming
     output = zeros(length(range), 1);
-    valid_elements = trace1 > -1;
-    mean_value = [mean(trace1(valid_elements)), mean(trace2(valid_elements))];
-    var_value = [var(trace1(valid_elements)),var(trace2(valid_elements))];
+    valid_elements1 = trace1 > -1;
+    valid_elements2 = trace2 > -1;
+    mean_value = [mean(trace1(valid_elements1)), mean(trace2(valid_elements2))];
+    var_value = [var(trace1(valid_elements1)),var(trace2(valid_elements2))];
     for tau_index = 1:length(range)
         tau = range(tau_index);
         max_index = length(trace1) - tau;
