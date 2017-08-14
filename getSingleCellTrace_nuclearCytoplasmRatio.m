@@ -24,7 +24,7 @@ for i=1:numTimepoints
             continue;
         end
 
-        segmentFile = regexprep(segmentFile, '_w\d_*.*?_([st])', '_$1');
+    segmentFile = regexprep(segmentFile, '\.', '_segment.');
         
         if(~exist(fullfile(segmentationpath, segmentFile), 'file'))
             continue;

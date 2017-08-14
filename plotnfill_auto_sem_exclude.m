@@ -2,7 +2,7 @@ function [] = plotnfill_auto_sem_exclude(xval, dataMatrix, multiplier, color, ex
 yval = zeros(1,size(dataMatrix,2));
 sem = yval;
 for i=1:length(yval)
-    validValues = ~ismember(dataMatrix(:,i), exclude);
+    validValues = ~ismember(dataMatrix(:,i), exclude) & ~isnan(dataMatrix(:,i));
     yval(i) = mean(dataMatrix(validValues,i));
     sem(i) = std(dataMatrix(validValues,i)) / sqrt(sum(validValues)) * multiplier;
 end

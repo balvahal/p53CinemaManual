@@ -7,14 +7,16 @@ for i=1:length(folderNames)
     dirCon = dir(fullfile(experimentPath, folderNames{i}));
     dirCon = {dirCon(:).name};
     [validFiles, dirDict] = getTokenDictionary(dirCon, '(\w) - (\d+)\(fld (\d+)[ wv ]*(\w*)'); % For metamorph scan
-    dirDict(strcmp(dirDict(:,4),''),4) = {'DAPI'};
-    dirCon = dirCon(validFiles);
-    dirDict = horzcat(dirCon', dirDict);
-    dirDict = horzcat(repmat(folderNames(i),size(dirDict,1),1),dirDict);
-    combinedDictionary = vertcat(combinedDictionary, dirDict);
+    if(~isempty(dirDict))
+        dirDict(strcmp(dirDict(:,4),''),4) = {'DAPI'};
+        dirCon = dirCon(validFiles);
+        dirDict = horzcat(dirCon', dirDict);
+        dirDict = horzcat(repmat(folderNames(i),size(dirDict,1),1),dirDict);
+        combinedDictionary = vertcat(combinedDictionary, dirDict);
+    end
 end
 
-database = cell2table(combinedDictionary, 'VariableNames', {'subfolder', 'filename', 'column', 'row', 'field', 'channel_name'}); % For metamorph scan
+database = cell2table(combinedDictionary, 'VariableNames', {'subfolder', 'filename', 'row', 'column', 'field', 'channel_name'}); % For metamorph scan
 writetable(database, outputFilePath, 'Delimiter', '\t');
 database = readtable(outputFilePath, 'Delimiter', '\t');
 

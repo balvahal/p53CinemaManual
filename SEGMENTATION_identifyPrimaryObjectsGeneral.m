@@ -74,8 +74,9 @@ BlurredImage = imfilter(OriginalImage_normalized, fspecial('gaussian', round(Siz
 %% THRESHOLDING
 %
 ThresholdedImage = imfill(OriginalImage > MinimumThreshold, 'holes');
-edgeImage = imfill(imdilate(edge(OriginalImage, 'canny'), strel('disk', 2)), 'holes');
-edgeImage = imerode(edgeImage, strel('disk', 2));
+%edgeImage = imfill(imdilate(edge(OriginalImage, 'canny'), strel('disk', 2)), 'holes');
+edgeImage = imfill(imdilate(edge(BlurredImage, 'canny'), strel('disk', 2)), 'holes');
+edgeImage = imdilate(imopen(imerode(edgeImage, strel('disk', 3)), strel('disk', 2)), strel('disk', 1));
 % ObjectsLabeled = bwlabel(edgeImage);
 % props = regionprops(ObjectsLabeled, 'Solidity');
 % primarySegmentation = ismember(ObjectsLabeled, find([props.Solidity] >= p.Results.SolidityThreshold));
@@ -83,9 +84,17 @@ edgeImage = imerode(edgeImage, strel('disk', 2));
 % Option 1: only edge image
 % Objects = edgeImage;
 % Option 2: complement with intensity based thresholding
-Objects = imfill((OriginalImage > SEGMENTATION_TriangleMethod(OriginalImage, 1) * 1), 'holes');
+Objects = imfill((log(OriginalImage+1) > SEGMENTATION_TriangleMethod(log(OriginalImage+1), 0.99) * 1), 'holes');
+%Objects = imfill((BlurredImage > SEGMENTATION_TriangleMethod(BlurredImage, 1) * 1.2), 'holes');
 %Objects = imfill(im2bw(BlurredImage, graythresh(BlurredImage)), 'holes');
 Objects = (Objects & ThresholdedImage) | edgeImage;
+Objects = imopen(Objects, strel('disk', 5));
+
+Objects = bwlabel(Objects .* ~imdilate(edgeImage, strel('disk', 5)) + edgeImage);
+
+% figure;
+% image(imoverlay(imoverlay(imnormalize_quantile(OriginalImage, 0.99), bwperim(Objects), [0.9, 0.5, 0]), bwperim(edgeImage), [0.3, 1, 0.3]));
+% image(imoverlay(imoverlay(imnormalize_quantile(OriginalImage, 0.99), bwperim(Objects .* ~edgeImage), [0.9, 0.5, 0]), bwperim(edgeImage), [0.3, 1, 0.3]));
 
 %Objects = Objects & ~imdilate(primarySegmentation,strel('disk',2)) & ThresholdedImage; 
 %Objects = imopen(Objects, strel('disk',2));
@@ -95,7 +104,8 @@ primarySegmentation = zeros(size(Objects));
 % over-segmenting
 ObjectsLabeled = bwlabel(Objects);
 props = regionprops(ObjectsLabeled, 'Solidity', 'Area');
-Objects = imfill(ismember(ObjectsLabeled, find([props.Area] >= p.Results.AreaThreshold)), 'holes');
+%Objects = imfill(ismember(ObjectsLabeled, find([props.Area] >= p.Results.AreaThreshold)), 'holes');
+Objects = ismember(ObjectsLabeled, find([props.Area] >= p.Results.AreaThreshold));
 primarySegmentation = primarySegmentation | ismember(ObjectsLabeled, find([props.Solidity] >= p.Results.SolidityThreshold & [props.Area] >= p.Results.AreaThreshold));
 
 % Optional for certain cell lines: filter out objects that look like beans
@@ -172,9 +182,9 @@ else
     ObjectsLabeled = bwlabel(primarySegmentation);
 end
 
-%props = regionprops(ObjectsLabeled, 'Area');
-%ObjectsLabeled = ObjectsLabeled .* ismember(ObjectsLabeled, find([props.Area] >= p.Results.AreaThreshold));
-%ObjectsLabeled = bwlabel(ObjectsLabeled);
+props = regionprops(ObjectsLabeled, 'Area');
+ObjectsLabeled = ObjectsLabeled .* ismember(ObjectsLabeled, find([props.Area] >= p.Results.AreaThreshold));
+ObjectsLabeled = bwlabel(ObjectsLabeled);
 
 % figure;
 % image(imoverlay(imoverlay(imnormalize(OriginalImage), bwperim(ObjectsLabeled), [0.9, 0.5, 0]), bwperim(primarySegmentation), [0.3, 1, 0.3]));

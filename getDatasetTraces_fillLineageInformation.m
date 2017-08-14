@@ -25,7 +25,7 @@ function measurements = getDatasetTraces_fillLineageInformation(database, rawdat
     if(~isempty(ffpath) && ~strcmp(ffpath, ''))
         [ff_offset, ff_gain] = flatfield_readFlatfieldImages(ffpath, channel);
     else
-        ff_offset = 0; ff_gain = 0;
+        ff_offset = []; ff_gain = [];
     end
     
     counter = 1;

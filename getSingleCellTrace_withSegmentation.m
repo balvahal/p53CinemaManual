@@ -1,4 +1,4 @@
-function singleCellTracks = getSingleCellTrace_withSegmentation(rawdatapath, segmentationpath, database, group, position, measurementChannel, segmentationChannel, centroids, measurementParameter)
+function singleCellTracks = getSingleCellTrace_withSegmentation(rawdatapath, segmentationpath, database, group, position, measurementChannel, segmentationChannel, centroids, measurementParameter, ff_offset, ff_gain)
 trackedCells = centroids.getTrackedCellIds;
 numTracks = length(trackedCells);
 numTimepoints = length(centroids.singleCells);
@@ -34,7 +34,12 @@ for i=1:numTimepoints
     % Read image and object files
     if(~isempty(measurementFile))
         IntensityImage = double(imread(fullfile(rawdatapath, measurementFile)));
-        IntensityImage = medfilt2(IntensityImage, [2,2]);
+        
+        if(~isempty(ff_gain))
+            IntensityImage = flatfield_correctImage(IntensityImage, ff_offset, ff_gain);
+        end
+        
+        %IntensityImage = medfilt2(IntensityImage, [2,2]);
         IntensityImage = imbackground(IntensityImage, 10, 100);
     else
         IntensityImage = [];
