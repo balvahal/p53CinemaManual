@@ -19,7 +19,7 @@
 %
 %%% Other Notes
 %
-function [] = SEGMENTATION_segmentDataset(database, rawDataPath, segmentDataPath, channel, ffpath)
+function [] = SEGMENTATION_segmentDataset_flatfield(database, rawDataPath, segmentDataPath, channel, ffpath)
 database = database(strcmp(database.channel_name, channel),:);
 uniqueGroups = unique(database.group_label);
 

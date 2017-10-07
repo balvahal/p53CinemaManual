@@ -120,7 +120,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                             case 'Shape'
                                 localMaxima = getImageMaxima_Shape(referenceImage, obj.master.obj_fileManager.cellSize);
                             case 'Prediction'
-                                localMaxima = fliplr(round(wellsss{timepoint}(:,1:2)));
+                                localMaxima = fliplr(round(wellsss{timepoint}(:,1:2))* obj.imageResizeFactor);
                         end
                         
                         obj.obj_cellTracker.centroidsLocalMaxima.insertCentroids(timepoint, localMaxima);

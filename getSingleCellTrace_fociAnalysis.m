@@ -1,4 +1,4 @@
-function [singleCellTracks_foci, singleCellTracks_background, singleCellTracks_dilation] = getSingleCellTrace_fociAnalysis(rawdatapath, segmentationpath, database, group, position, measurementChannel, segmentationChannel, centroids, ff_offset, ff_gain)
+function [singleCellTracks_foci, singleCellTracks_background, singleCellTracks_dilation, singleCellTracks_dilation_background] = getSingleCellTrace_fociAnalysis(rawdatapath, segmentationpath, database, group, position, measurementChannel, segmentationChannel, centroids, ff_offset, ff_gain)
 trackedCells = centroids.getTrackedCellIds;
 numTracks = length(trackedCells);
 numTimepoints = length(centroids.singleCells);
@@ -6,6 +6,7 @@ numTimepoints = length(centroids.singleCells);
 singleCellTracks_foci = -ones(numTracks, numTimepoints);
 singleCellTracks_background = -ones(numTracks, numTimepoints);
 singleCellTracks_dilation = -ones(numTracks, numTimepoints);
+singleCellTracks_dilation_background = -ones(numTracks, numTimepoints);
 
 progress = 0;
 for i=1:numTimepoints
@@ -43,11 +44,11 @@ for i=1:numTimepoints
         end
         
         %IntensityImage = medfilt2(IntensityImage, [2,2]);
-        %IntensityImage = imbackground(IntensityImage, 10, 100);
+        IntensityImage = imbackground(IntensityImage, 10, 100);
         
-        [y,x] = hist(log(IntensityImage(IntensityImage > 0)), 1000);
-        x_background = x(find(y == max(y), 1, 'first'));
-        IntensityImage = max(0, IntensityImage - exp(x_background));
+%         [y,x] = hist(log(IntensityImage(IntensityImage > 0)), 1000);
+%         x_background = x(find(y == max(y), 1, 'first'));
+%         IntensityImage = max(0, IntensityImage - exp(x_background));
         IntensityImage_blurred = imfilter(IntensityImage, fspecial('gaussian', 5, 1));
 
     else
@@ -55,17 +56,23 @@ for i=1:numTimepoints
         IntensityImage_blurred = [];
     end
     if(~isempty(segmentFile))
-        %segmentFile = regexprep(segmentFile, '\.tiff', '_segment.TIF', 'ignoreCase');
-        segmentFile = regexprep(segmentFile, '_w\d_*.*?_([st])', '_$1');
-        %segmentFile = regexprep(segmentFile, '\..*', '.PNG');
-        Objects = double(imread(fullfile(segmentationpath, segmentFile)));
+        segmentFile = regexprep(segmentFile, '\.', '_segment.', 'ignoreCase');
+        if(exist(fullfile(segmentationpath, segmentFile), 'file'))
+            %segmentFile = regexprep(segmentFile, '_w\d_*.*?_([st])', '_$1');
+            %segmentFile = regexprep(segmentFile, '\..*', '.PNG');
+            Objects = double(imread(fullfile(segmentationpath, segmentFile)));
+        else
+            Objects = zeros(size(IntensityImage));
+        end
+    else
+        Objects = zeros(size(IntensityImage));
     end
 
     scalingFactor = 1;
     currentCentroids(:,1) = min(currentCentroids(:,1) * scalingFactor, size(Objects,1));
     currentCentroids(:,2) = min(currentCentroids(:,2) * scalingFactor, size(Objects,2));
     
-    measurements1 = regionprops_withKnownCentroids_fun(Objects, IntensityImage_blurred, currentCentroids, @(x) mean(x(x > quantile(x, 0.9))));
+    measurements1 = regionprops_withKnownCentroids_fun(Objects, IntensityImage_blurred, currentCentroids, @meanSortedPixels);
     measurements2 = regionprops_withKnownCentroids_fun(Objects, IntensityImage_blurred, currentCentroids, @median);
     singleCellTracks_foci(validCells, i) = measurements1(:,2);
     singleCellTracks_background(validCells, i) = measurements2(:,2);
@@ -73,11 +80,11 @@ for i=1:numTimepoints
     % Per centroid segmentation and thresholding, from Jacob's script
     siz = 111;
     for j=1:size(currentCentroids,1)
-        g=GetBlock(IntensityImage_blurred,currentCentroids(j,2),currentCentroids(j,1),siz);
-        g2=GetBlock(IntensityImage,currentCentroids(j,2),currentCentroids(j,1),siz);
+        g=GetBlock(IntensityImage_blurred,currentCentroids(j,1),currentCentroids(j,2),siz);
+        g2=GetBlock(IntensityImage,currentCentroids(j,1),currentCentroids(j,2),siz);
         g2=(imfilter(g2,fspecial('gaussian',5,2),'replicate'));
         g2=autoscale(g2);
-        g3=g2(floor(siz/2)-5:floor(siz/2)+5,floor(siz/2)-5:floor(siz/2)+5);
+        g3=g2(max(floor(siz/2)-5, 1):min(floor(siz/2)+5, size(g2,1)),max(floor(siz/2)-5, 1):min(floor(siz/2)+5, size(g2,2)));
         the=median(g3(:));
         the=the-1*mad(g3(:));
         g2=g2>(min(median(g2(:)),graythresh(g2))+the)/2;
@@ -94,6 +101,7 @@ for i=1:numTimepoints
         g=g.*g2;
         s=sort(g(:),'descend');
         singleCellTracks_dilation(validCells(j),i)=mean(s(1:min(9,length(s))));     
+        singleCellTracks_dilation_background(validCells(j),i)=median(s(s > 0));     
     end
         
     % Repeated values (divisions, for instance)
@@ -106,6 +114,7 @@ for i=1:numTimepoints
             singleCellTracks_foci(repeatedIndexes,i) = max(singleCellTracks_foci(repeatedIndexes,i));
             singleCellTracks_background(repeatedIndexes,i) = max(singleCellTracks_background(repeatedIndexes,i));
             singleCellTracks_dilation(repeatedIndexes,i) = max(singleCellTracks_dilation(repeatedIndexes,i));
+            singleCellTracks_dilation_background(repeatedIndexes,i) = max(singleCellTracks_dilation_background(repeatedIndexes,i));
         end
     end
 end
@@ -117,4 +126,30 @@ function [tim]=GetBlock(im,locX,locY,siz)
     hd=(siz-1)/2;
     tim=im(max(1,locX-hd):min(size(im,1),locX+hd),max(1,locY-hd):min(locY+hd,size(im,2)));
 
+end
+
+function [ino, fmi, fma]=autoscale(in,f,m)
+
+in=double(in);
+a=find(~isnan(in));
+s=sort(in(a));
+if nargin==1; 
+    f=0.01;
+    fmi=s(floor(f*length(s))+1);
+    fma=s(floor((1-f)*length(s))+1);
+elseif nargin==2; 
+    fmi=s(max(1,floor(f*length(s))));
+    fma=s(max(1,floor((1-f)*length(s))));
+elseif nargin==3
+    fmi=f; fma=m;
+end
+
+ino=(in-fmi)/(fma-fmi);
+ino=max(0,ino);
+ino=min(1,ino);
+end
+
+function val = meanSortedPixels(x)
+    s = sort(x,'descend');
+    val = mean(s(1:min(9,length(s))));
 end

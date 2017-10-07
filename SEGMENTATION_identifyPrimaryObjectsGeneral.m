@@ -74,9 +74,9 @@ BlurredImage = imfilter(OriginalImage_normalized, fspecial('gaussian', round(Siz
 %% THRESHOLDING
 %
 ThresholdedImage = imfill(OriginalImage > MinimumThreshold, 'holes');
-%edgeImage = imfill(imdilate(edge(OriginalImage, 'canny'), strel('disk', 2)), 'holes');
-edgeImage = imfill(imdilate(edge(BlurredImage, 'canny'), strel('disk', 2)), 'holes');
-edgeImage = imdilate(imopen(imerode(edgeImage, strel('disk', 3)), strel('disk', 2)), strel('disk', 1));
+edgeImage = imfill(imdilate(edge(OriginalImage, 'canny'), strel('disk', 2)), 'holes');
+%edgeImage = imfill(imdilate(edge(BlurredImage, 'canny'), strel('disk', 2)), 'holes');
+%edgeImage = imdilate(imopen(imerode(edgeImage, strel('disk', 3)), strel('disk', 2)), strel('disk', 1));
 % ObjectsLabeled = bwlabel(edgeImage);
 % props = regionprops(ObjectsLabeled, 'Solidity');
 % primarySegmentation = ismember(ObjectsLabeled, find([props.Solidity] >= p.Results.SolidityThreshold));
@@ -84,7 +84,8 @@ edgeImage = imdilate(imopen(imerode(edgeImage, strel('disk', 3)), strel('disk', 
 % Option 1: only edge image
 % Objects = edgeImage;
 % Option 2: complement with intensity based thresholding
-Objects = imfill((log(OriginalImage+1) > SEGMENTATION_TriangleMethod(log(OriginalImage+1), 0.99) * 1), 'holes');
+%Objects = imfill((log(OriginalImage+1) > SEGMENTATION_TriangleMethod(log(OriginalImage+1), 0.99) * 1), 'holes');
+Objects = imfill(OriginalImage > SEGMENTATION_TriangleMethod(OriginalImage, 1) * 1.25, 'holes');
 %Objects = imfill((BlurredImage > SEGMENTATION_TriangleMethod(BlurredImage, 1) * 1.2), 'holes');
 %Objects = imfill(im2bw(BlurredImage, graythresh(BlurredImage)), 'holes');
 Objects = (Objects & ThresholdedImage) | edgeImage;

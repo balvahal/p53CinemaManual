@@ -37,7 +37,7 @@ for i=1:length(uniqueGroups);
             
             if(~exist(fullfile(segmentDataPath,outputFilename{1}), 'file'))
                 try
-                    IM = imread(fullfile(rawDataPath, database.filename{files(k)}));
+                    IM = double(imread(fullfile(rawDataPath, database.filename{files(k)})));
                     %IM = medfilt2(IM, [2,2]);
                     IM = imbackground(IM, 10, 100);
                     [Objects, Centroids] = SEGMENTATION_identifyPrimaryObjectsGeneral(IM);

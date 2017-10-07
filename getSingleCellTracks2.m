@@ -22,11 +22,11 @@ function singleCellTracks = getSingleCellTracks2(rawdatapath, database, group, p
         end
         %YFP_background = YFP;
         %YFP = medfilt2(YFP, [2,2]);
-        %YFP_background = imbackground(YFP, 10, 100);
+        YFP_background = imbackground(YFP, 10, 100);
         
-        [y,x] = hist(log(YFP(YFP > 0)), 1000);
-        x_background = x(find(y == max(y), 1, 'first'));
-        YFP_background = max(0, YFP - exp(x_background));
+%         [y,x] = hist(log(YFP(YFP > 0)), 1000);
+%         x_background = x(find(y == max(y), 1, 'first'));
+%         YFP_background = max(0, YFP - exp(x_background));
         
         %YFP_background = imfilter(YFP_background, fspecial('gaussian', 30, 4));
         scalingFactor = 1;
@@ -34,7 +34,7 @@ function singleCellTracks = getSingleCellTracks2(rawdatapath, database, group, p
         currentCentroids(:,2) = min(ceil(currentCentroids(:,2) * scalingFactor), size(YFP,2));
         
         currentCentroids = sub2ind(size(YFP), currentCentroids(:,1), currentCentroids(:,2));
-        diskMask = getnhood(strel('disk',20));
+        diskMask = getnhood(strel('disk',7));
         diskMask = diskMask / sum(diskMask(:));
         diskFilteredImage = imfilter(YFP_background, diskMask, 'replicate');
         

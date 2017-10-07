@@ -1,4 +1,4 @@
-function measurements = getDatasetTraces_fillLineageInformation_withSegmentation(database, rawdata_path, tracking_path, segment_path, measurementChannel, segmentationChannel, measurementParameter)
+function measurements = getDatasetTraces_fillLineageInformation_withSegmentation(database, rawdata_path, tracking_path, segment_path, ffpath, measurementChannel, segmentationChannel, measurementParameter)
     trackingFiles = dir(tracking_path);
     trackingFiles = {trackingFiles(:).name};
     validFiles = regexp(trackingFiles, '\.mat', 'once');
@@ -14,11 +14,17 @@ function measurements = getDatasetTraces_fillLineageInformation_withSegmentation
     filledSingleCellTraces = -ones(maxCells, numTimepoints);
     cellAnnotation = cell(maxCells, 3);
     
+    if(~isempty(ffpath) && ~strcmp(ffpath, ''))
+        [ff_offset, ff_gain] = flatfield_readFlatfieldImages(ffpath, channel);
+    else
+        ff_offset = []; ff_gain = [];
+    end
+
     counter = 1;
     for i=1:length(trackingFiles)
         fprintf('%s: ', trackingFiles{i});
         load(fullfile(tracking_path, trackingFiles{i}));
-        traces = getSingleCellTrace_withSegmentation(rawdata_path, segment_path, database, selectedGroup, selectedPosition, measurementChannel, segmentationChannel, centroidsTracks, measurementParameter);
+        traces = getSingleCellTrace_withSegmentation(rawdata_path, segment_path, database, selectedGroup, selectedPosition, measurementChannel, segmentationChannel, centroidsTracks, measurementParameter, ff_offset, ff_gain);
         divisionMatrix = getDivisionMatrix(centroidsTracks, centroidsDivisions);
         filledTraces = fillLineageInformation(traces, centroidsTracks, centroidsDivisions);
         filledDivisionMatrix = fillLineageInformation(divisionMatrix, centroidsTracks, centroidsDivisions);
