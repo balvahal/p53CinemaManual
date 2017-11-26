@@ -43,7 +43,8 @@ classdef p53CinemaManual_object_master < handle
             obj.obj_fileManager = p53CinemaManual_object_fileManager(obj);
         end
         function initializeImageViewer(obj)
-            if(obj.obj_imageViewer.isvalid)
+            
+            if(~isempty(obj.obj_imageViewer) && obj.obj_imageViewer.isvalid)
                 obj.obj_imageViewer.delete;
             end
             obj.obj_imageViewer = p53CinemaManual_object_imageViewer(obj);
@@ -51,7 +52,9 @@ classdef p53CinemaManual_object_master < handle
         end
         function delete(obj)
             delete(obj.obj_fileManager);
-            delete(obj.obj_imageViewer);
+            if(~isempty(obj.obj_imageViewer) && obj.obj_imageViewer.isvalid)
+                delete(obj.obj_imageViewer);
+            end
             delete(obj.data);
         end
     end
