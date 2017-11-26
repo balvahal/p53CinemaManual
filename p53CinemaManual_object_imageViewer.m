@@ -206,8 +206,9 @@ classdef p53CinemaManual_object_imageViewer < handle
             handles = guidata(obj.gui_contrast);
             if(obj.master.obj_fileManager.preallocateMode)
                 randomSample = obj.imageBuffer(ceil(rand(1,10000) * (size(obj.imageBuffer,1) * size(obj.imageBuffer,2) - 1) + 1));
+                randomSample = obj.imageBuffer(:);
                 minValue = min(randomSample(randomSample > quantile(randomSample, 0.01)));
-                maxValue = max(randomSample(randomSample < quantile(randomSample(:), 0.9999)));
+                maxValue = max(randomSample(randomSample < quantile(randomSample(:), 0.99999)));
             else
                 minValue = min(obj.currentImage);
                 maxValue = max(obj.currentImage);
@@ -369,6 +370,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                 end
             end
             obj.setImage;
+            %obj.autoContrast;
         end
         
         function nextFrame(obj)
@@ -504,6 +506,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                 deathCell = any(obj.obj_cellTracker.centroidsDeath.getCentroid(obj.currentTimepoint, obj.selectedCell) > 0);
                 
                 currentTrack = obj.obj_cellTracker.centroidsTracks.getCellTrack(obj.selectedCell);
+                % Show active track
                 set(handles.currentCellTrace, 'xdata', currentTrack(currentTrack(:,2) > 0,2), 'ydata', currentTrack(currentTrack(:,2) > 0,1));
                 if(sum(obj.obj_cellTracker.centroidsTracks.getCentroid(obj.currentTimepoint, obj.selectedCell) == 0) > 0)
                     set(handles.currentCellTrace, 'color', 'green');

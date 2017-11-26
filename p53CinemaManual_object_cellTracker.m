@@ -136,6 +136,39 @@ classdef p53CinemaManual_object_cellTracker < handle
             end
         end
         
+        function findCells(obj, blurRadius)
+            obj.centroidsLocalMaxima.delete;
+            obj.centroidsLocalMaxima = CentroidTimeseries(obj.master.obj_fileManager.maxTimepoint, 10000);
+            
+            handles = guidata(obj.gui_cellTracker);
+            set(handles.hprogressbarhandleFindCells, 'Maximum', obj.master.obj_fileManager.numImages);
+            set(handles.hprogressbarhandleFindCells, 'Value', 1);
+            
+            fileManagerHandles = guidata(obj.master.obj_fileManager.gui_fileManager);
+            predictionMode = getCurrentPopupString(fileManagerHandles.hpopupPredictionMode);
+            if(strcmp(predictionMode, 'Prediction'))
+                load(fullfile('Prediction', sprintf('wellsss_s%d.mat', obj.master.obj_fileManager.selectedPosition)));
+            end
+
+            for i=1:obj.master.obj_fileManager.numImages
+                timepoint = obj.master.obj_fileManager.currentImageTimepoints(i);
+                set(handles.hprogressbarhandleFindCells, 'Value', i);
+                referenceImage = obj.master.obj_imageViewer.imageBuffer(:,:,i);
+                                
+                % Preprocess and find local maxima
+                switch predictionMode
+                    case 'Intensity'
+                        localMaxima = getImageMaxima_Intensity(referenceImage, blurRadius);
+                    case 'Shape'
+                        localMaxima = getImageMaxima_Shape(referenceImage, blurRadius);
+                    case 'Prediction'
+                        localMaxima = fliplr(round(wellsss{timepoint}(:,1:2))* obj.imageResizeFactor);
+                end
+                obj.centroidsLocalMaxima.insertCentroids(timepoint, localMaxima);
+            end
+            set(handles.hprogressbarhandleFindCells, 'Value', 0);
+        end
+        
         function replaceCellTimepoints(obj, sourceCell, targetCell, timepoints)
             for i=timepoints
                 obj.centroidsTracks.setCentroid(i, targetCell, obj.centroidsTracks.getCentroid(i, sourceCell), obj.centroidsTracks.getValue(i, sourceCell));

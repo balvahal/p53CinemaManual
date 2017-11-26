@@ -11,6 +11,7 @@ fx = Char_SS(3) - (Char_SS(3)*.1 + fwidth);
 fy = Char_SS(4) - (Char_SS(4)*.1 + fheight);
 f = figure('Visible','off','Units','characters','MenuBar','none',...
     'Renderer','OpenGL','Position',[fx fy fwidth fheight],...
+    'CloseRequestFcn',{@fCloseRequestFcn},...
     'KeyPressFcn',{@fKeyPressFcn});
 %% Construct the components
 hwidth = 120/master.ppChar(1);
@@ -209,6 +210,10 @@ set(f,'Visible','on');
 
 %% Callbacks
 %
+    function fCloseRequestFcn(~,~)
+        master.delete;
+    end
+
     function heditMaxHeight_callBack(~,~)
         maxHeight = str2double(get(heditMaxHeight, 'String'));
         screenSize = get(0, 'screensize');

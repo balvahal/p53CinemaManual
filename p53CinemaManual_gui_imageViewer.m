@@ -104,11 +104,12 @@ hsliderExploreStack = uicontrol('Style','slider','Units','characters',...
     'Min',0,'Max',1,'BackgroundColor',[255 215 0]/255,...
     'Value',0,'SliderStep',[sliderStep sliderStep],'Position',[hx hy hwidth hheight],...
     'Callback',{@sliderExploreStack_Callback});
-try    % R2013b and older
-    addlistener(hsliderExploreStack,'ActionEvent',@sliderExploreStack_Callback);
-catch  % R2014a and newer
     addlistener(hsliderExploreStack,'ContinuousValueChange',@sliderExploreStack_Callback);
-end
+% try    % R2013b and older
+%     addlistener(hsliderExploreStack,'ActionEvent',@sliderExploreStack_Callback);
+% catch  % R2014a and newer
+%     addlistener(hsliderExploreStack,'ContinuousValueChange',@sliderExploreStack_Callback);
+% end
 
 hx = 0;
 hy = hy + hheight + 1;
@@ -191,8 +192,7 @@ set(f,'Visible','on');
 %%
 %
     function fCloseRequestFcn(~,~)
-        %do nothing. This means only the master object can close this
-        %window.
+        master.obj_imageViewer.delete;
     end
 %%
 %
