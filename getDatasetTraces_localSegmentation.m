@@ -100,4 +100,5 @@ function measurements = getDatasetTraces_localSegmentation(database, rawdata_pat
     measurements.centroid_row = centroid_row(1:(counter-1),:);    
     measurements.lineageTree = lineageTree(1:(counter-1),:);    
     measurements.cellAnnotation = cellAnnotation(1:(counter-1),:);
+    measurements.channels = measurementChannels;
 end
