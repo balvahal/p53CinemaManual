@@ -8,6 +8,14 @@ function measurements = getDatasetTraces_localSegmentation(database, rawdata_pat
     numTimepoints = length(centroidsTracks.singleCells);
     maxCells = 10000;
     
+    if(~iscell(measurementChannels))
+        measurementChannels = {measurementChannels};
+    end
+    
+    if(~ismember(segmentationChannel, measurementChannels))
+        measurementChannels = [measurementChannels, segmentationChannel];
+    end
+    
     singleCellTracks_mean = repmat({-ones(maxCells, numTimepoints)},1,length(measurementChannels));
     singleCellTracks_median = repmat({-ones(maxCells, numTimepoints)},1,length(measurementChannels));
     singleCellTracks_foci = repmat({-ones(maxCells, numTimepoints)},1,length(measurementChannels));
