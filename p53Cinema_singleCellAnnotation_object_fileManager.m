@@ -99,16 +99,20 @@ classdef p53Cinema_singleCellAnnotation_object_fileManager < handle
             obj.timepointRange = [from, to, by];
         end
         
-        %% Generate image sequence
-        function generateImageSequence(obj)
+        function setCurrentImageFilename(obj)
             if(~iscell(obj.database.channel_name))
                 channel_filter = obj.database.channel_name == str2double(obj.selectedChannel);
             else
                 channel_filter = strcmp(obj.database.channel_name, obj.selectedChannel);
             end
             relevantImageIndex = strcmp(obj.database.group_label, obj.selectedGroup) & channel_filter & obj.database.position_number == obj.selectedPosition & obj.database.cell_id == obj.selectedCell;
-            
             obj.currentImageFilename = obj.database.filename{relevantImageIndex};
+            info = imfinfo(fullfile(obj.rawdatapath, obj.currentImageFilename));
+            obj.setMaxTimepoint(numel(info));            
+        end
+        
+        %% Generate image sequence
+        function generateImageSequence(obj)
             obj.currentImageTimepoints = obj.timepointRange(1):obj.timepointRange(3):obj.timepointRange(2);
             obj.numImages = length(obj.currentImageTimepoints);
         end

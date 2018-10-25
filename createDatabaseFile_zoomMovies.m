@@ -20,7 +20,9 @@ dirDict = horzcat(dirCon', dirDict);
 %database = cell2table(dirDict, 'VariableNames', {'filename', 'group_label','channel_name', 'position_number', 'timepoint'}); %For NIS elements
 %database = cell2table(dirDict, 'VariableNames', {'filename', 'group_label', 'position_number','channel_name', 'timepoint'});
 %database = cell2table(dirDict, 'VariableNames', {'filename', 'group_label', 'channel_name', 'position_number', 'timepoint'}); % For metamorph
-database = cell2table(dirDict, 'VariableNames', {'filename', 'group_label', 'channel_name', 'position_number', 'cell_id'}); % For zoom movies
+database = cell2table(dirDict, 'VariableNames', {'filename', 'group_label_original', 'channel_name', 'position_number_original', 'cell_id'}); % For zoom movies
+database.group_label = strcat(strcat(database.group_label_original, '_'), database.position_number_original);
+database.position_number = database.cell_id;
 
 % database = cell2table(dirDict, 'VariableNames', {'filename', 'row', 'column', 'field', 'channel_name', 'timepoint'}); % For inCell
 %     database.group_label = repmat({'Exp'}, size(database, 1), 1);

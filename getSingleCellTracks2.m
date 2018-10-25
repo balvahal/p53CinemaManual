@@ -1,4 +1,4 @@
-function singleCellTracks = getSingleCellTracks2(rawdatapath, database, group, position, channel, centroids, ff_offset, ff_gain)
+function singleCellTracks = getSingleCellTracks2(rawdatapath, database, group, position, channel, centroids, ff_offset, ff_gain, blurRadius)
     trackedCells = centroids.getTrackedCellIds;
     numTracks = length(trackedCells);
     numTimepoints = length(centroids.singleCells);
@@ -34,7 +34,7 @@ function singleCellTracks = getSingleCellTracks2(rawdatapath, database, group, p
         currentCentroids(:,2) = min(ceil(currentCentroids(:,2) * scalingFactor), size(YFP,2));
         
         currentCentroids = sub2ind(size(YFP), currentCentroids(:,1), currentCentroids(:,2));
-        diskMask = getnhood(strel('disk',7));
+        diskMask = getnhood(strel('disk',blurRadius));
         diskMask = diskMask / sum(diskMask(:));
         diskFilteredImage = imfilter(YFP_background, diskMask, 'replicate');
         

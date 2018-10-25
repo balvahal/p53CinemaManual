@@ -1,8 +1,12 @@
-function measurements = getDatasetTraces_localSegmentation(database, rawdata_path, tracking_path, ffpath, measurementChannels, segmentationChannel)
+function measurements = getDatasetTraces_localSegmentation_stacks_foci(database, rawdata_path, tracking_path, ffpath, measurementChannels, segmentationChannel)
     trackingFiles = dir(tracking_path);
     trackingFiles = {trackingFiles(:).name};
     validFiles = regexp(trackingFiles, '\.mat', 'once');
     trackingFiles = trackingFiles(~cellfun(@isempty, validFiles));
+    
+    if(~exist('SEGMENT_DATA', 'dir'))
+        mkdir('SEGMENT_DATA');
+    end
     
     load(fullfile(tracking_path, trackingFiles{1}));
     numTimepoints = length(centroidsTracks.singleCells);
@@ -51,8 +55,15 @@ function measurements = getDatasetTraces_localSegmentation(database, rawdata_pat
     for i=1:length(trackingFiles)
         fprintf('%s: ', trackingFiles{i});
         load(fullfile(tracking_path, trackingFiles{i}));
-        results = getSingleCellTracks_localSegmentation(database, rawdata_path, selectedGroup, selectedPosition, measurementChannels, segmentationChannel, centroidsTracks, ff_offset, ff_gain);
-        %[traces_mean, traces_median, traces_foci, traces_area, traces_solidity] = getSingleCellTracks_binucleatedCells(database, rawdata_path, selectedGroup, selectedPosition, measurementChannels, segmentationChannel, centroidsTracks, ff_offset, ff_gain);
+        [results, segmentationResults] = getSingleCellTracks_localSegmentation_stacks_foci(database, rawdata_path, selectedGroup, selectedPosition, measurementChannels, segmentationChannel, centroidsTracks, ff_offset, ff_gain);
+        
+        segmentationOutput = fullfile('SEGMENT_DATA', sprintf('%s_w%s_s%d_segment.TIF', selectedGroup, segmentationChannel, selectedPosition));
+        if(~exist(segmentationOutput, 'file'))
+            for t=1:size(segmentationResults,3)
+                imwrite(uint8(segmentationResults(:,:,t)), segmentationOutput, 'WriteMode', 'Append');
+            end
+        end
+                
         divisionMatrix = getDivisionMatrix(centroidsTracks, centroidsDivisions);
         deathMatrix = getDivisionMatrix(centroidsTracks, centroidsDeath);
         

@@ -1,4 +1,4 @@
-function results = getSingleCellTracks_localSegmentation(database, rawdatapath, group, position, measurementChannels, segmentationChannel, centroids, ff_offset, ff_gain)
+function [results, segmentationImages] = getSingleCellTracks_localSegmentation_stacks_foci(database, rawdatapath, group, position, measurementChannels, segmentationChannel, centroids, ff_offset, ff_gain)
 trackedCells = centroids.getTrackedCellIds;
 numTracks = length(trackedCells);
 numTimepoints = length(centroids.singleCells);
@@ -19,9 +19,12 @@ singleCellTracks_radius = -ones(numTracks, numTimepoints);
 [~, segmentationChannelIndex] = ismember(segmentationChannel, measurementChannels);
 
 %info = imfinfo(fullfile(rawdatapath, getDatabaseFile2(database, group, measurementChannels{1}, position, 1)));
-info = imfinfo(fullfile(rawdatapath, database.filename{1}));
+subDatabase = database(strcmp(database.channel_name, segmentationChannel),:);
+info = imfinfo(fullfile(rawdatapath, subDatabase.filename{1}));
+uniqueTimepoints = 1:length(info);
 info = info(1);
-uniqueTimepoints = unique(database.timepoint);
+
+segmentationImages = zeros(info.Height, info.Width, length(info));
 
 progress = 0;
 for t=1:1:length(uniqueTimepoints)
@@ -47,18 +50,15 @@ for t=1:1:length(uniqueTimepoints)
     
     % Read images for every channel
     for j=1:length(measurementChannels)
-        measurementFile = getDatabaseFile2(database, group, measurementChannels{j}, position, i);
+        measurementFile = database.filename{strcmp(database.group_label,group) & strcmp(database.channel_name, measurementChannels{j}) & database.position_number == position};
         if(isempty(measurementFile))
             continue;
         end
-        currentInfo = imfinfo(fullfile(rawdatapath, measurementFile));
-        if(length(currentInfo) > 1)
-            IM = TiffStack(fullfile(rawdatapath, measurementFile));
-            IntensityImages{j} = double(IM.maxProjection);
-        else
-            IntensityImages{j} = double(imread(fullfile(rawdatapath, measurementFile)));
+        try
+            IntensityImages{j} = double(imread(fullfile(rawdatapath, measurementFile),i));
+        catch e
+            continue;
         end
-        
         if(~isempty(ff_gain{j}))
             IntensityImages{j} = flatfield_correctImage(IntensityImages{j}, ff_offset{j}, ff_gain{j});
         end
@@ -76,66 +76,111 @@ for t=1:1:length(uniqueTimepoints)
     scalingFactor = 1;
     currentCentroids(:,1) = max(1,min(floor(currentCentroids(:,1) * scalingFactor), info.Height));
     currentCentroids(:,2) = max(1, min(floor(currentCentroids(:,2) * scalingFactor), info.Width));
-        
+    
+    currentCentroidIndexes = sub2ind(size(IntensityImages{segmentationChannelIndex}), currentCentroids(:,1), currentCentroids(:,2));
+    
     % Per centroid segmentation and thresholding, from Jacob's script
     siz = 51;
+    
+    zoomMask = NaN * ones(size(IntensityImages{segmentationChannelIndex}));
+    boundingBox(1,1) = max(1, min(currentCentroids(:,1)) - siz);
+    boundingBox(1,2) = min(size(zoomMask,1), max(currentCentroids(:,1)) + siz);
+    boundingBox(2,1) = max(1, min(currentCentroids(:,2)) - siz);
+    boundingBox(2,2) = min(size(zoomMask,2), max(currentCentroids(:,2)) + siz);
+    zoomMask(boundingBox(1,1):boundingBox(1,2), boundingBox(2,1):boundingBox(2,2)) = 1;
+    
+    segmentationImage = log(IntensityImages{segmentationChannelIndex} + 1);
+    segmentationImage = IntensityImages{segmentationChannelIndex};
+    centroidImage = zeros(size(segmentationImage));
+    centroidImage(currentCentroidIndexes) = 1;
+    
+    binaryMask = segmentationImage;
+    centroidMask = centroidImage;
+    
+    blurredSegmentationImage = segmentationImage;
+    %blurredSegmentationImage = medfilt2(blurredSegmentationImage, [10,10]);
+    blurredSegmentationImage = imfilter(blurredSegmentationImage, fspecial('gaussian',7,4));
+    
+    binaryMask=(imfilter(binaryMask,fspecial('gaussian',20,2),'replicate'));
+    binaryMask = imnormalize(binaryMask);
+    binaryMask = binaryMask .* zoomMask;
+    binaryMask = im2bw(binaryMask, graythresh(binaryMask));
+    binaryMask=imfill(binaryMask,'holes');
+    binaryMask=imopen(binaryMask,strel('disk', 5));
+
+    binaryMask = bwlabel(binaryMask);
+    binaryMask = ismember(binaryMask, binaryMask(currentCentroidIndexes));
+
+    distanceMask = bwdist(~binaryMask);
+    
+    refinedMaxima = imregionalmax(distanceMask .* (distanceMask > 20));
+    [refined_col, refined_row] = ind2sub(size(refinedMaxima), find(refinedMaxima));
+    newCentroids = zeros(size(currentCentroids,1),1);
+    for k=1:size(currentCentroids,1)
+        distance = sqrt((refined_col - currentCentroids(k,1)).^2 + (refined_row - currentCentroids(k,2)).^2);
+        newCentroids(k) = find(distance == min(distance), 1, 'first');
+    end
+    refinedCentroidMask = zeros(size(refinedMaxima));
+    refinedCentroidMask(sub2ind(size(refinedMaxima), refined_col(newCentroids), refined_row(newCentroids))) = 1;
+    
+    %watershedImage = imimposemin(-blurredSegmentationImage, refinedCentroidMask);
+    watershedImage = imimposemin(-distanceMask, refinedCentroidMask);
+    watershedImage = (watershed(watershedImage) > 0) .* double(binaryMask);
+    watershedImage = bwlabel(watershedImage);
+    
+    segmentationImages(:,:,t) = watershedImage;
+    
     for j=1:size(currentCentroids,1)
         currentCell = validCells(j);
         
-        segmentationImage = IntensityImages{segmentationChannelIndex};
+        if(watershedImage(currentCentroids(j,1), currentCentroids(j,2)) == 0)
+            continue;
+        end
         
-        binaryMask=GetBlock(segmentationImage,currentCentroids(j,1),currentCentroids(j,2),siz);
-        binaryMask=(imfilter(binaryMask,fspecial('gaussian',5,2),'replicate'));
-        binaryMask=autoscale(binaryMask);
+        currentBinaryMask = watershedImage == watershedImage(currentCentroids(j,1), currentCentroids(j,2));
         
-        g3=binaryMask(max(floor(siz/2)-5, 1):min(floor(siz/2)+5, size(binaryMask,1)),max(floor(siz/2)-5, 1):min(floor(siz/2)+5, size(binaryMask,2)));
-        the=median(g3(:));
-        the=the-1*mad(g3(:));
+        currentDistanceMask = distanceMask .* currentBinaryMask; currentDistanceMask = currentDistanceMask(:);
+        currentCentroidMask = imdilate(centroidMask, strel('disk', 10)) .* currentBinaryMask;
         
-        binaryMask=binaryMask>(min(median(binaryMask(:)),graythresh(binaryMask))+the)/2;
-        binaryMask=imfill(binaryMask,'holes');     
-        binaryMask=bwlabel(binaryMask); binaryMask=(binaryMask==binaryMask(floor(siz/2),floor(siz/2)));
-        %binaryMask = imdilate(binaryMask,strel('disk',3));
-        
-        distanceMask = bwdist(~binaryMask);
-        distanceMask = distanceMask(:);
-        
-        nuclearMask = binaryMask;
-        cytoplasmicMask = imdilate(binaryMask,strel('disk',3)) .* (~imdilate(binaryMask,strel('disk',1)));
+        nuclearMask = currentBinaryMask;
+        cytoplasmicMask = imdilate(currentBinaryMask,strel('disk',3)) .* (~imdilate(currentBinaryMask,strel('disk',1)));
         
         for w=1:length(measurementChannels)
-            subImage=GetBlock(IntensityImages_blurred{w},currentCentroids(j,1),currentCentroids(j,2),siz);
-            subImage=subImage.*binaryMask;
-            [pixelIntensities, ordering]=sort(subImage(:),'descend');
-            distanceMask_sorted = distanceMask(ordering);
+            subImage=IntensityImages_blurred{w};
+            subImage1=subImage.*currentCentroidMask;
+            subImage2=subImage.*currentCentroidMask;
+            [pixelIntensities1, ordering]=sort(subImage1(:),'descend');
+            [pixelIntensities2, ~]=sort(subImage2(:),'descend');
+            distanceMask_sorted = currentDistanceMask(ordering);
             
             try
-            singleCellTracks_mean{w}(currentCell,i) = mean(pixelIntensities(pixelIntensities > 0));
-            singleCellTracks_dilated{w}(currentCell,i) = IntensityImages_blurred{w}(currentCentroids(j,1),currentCentroids(j,2));
-            singleCellTracks_integrated{w}(currentCell,i) = sum(pixelIntensities(pixelIntensities > 0));
-            singleCellTracks_median{w}(currentCell,i) = median(pixelIntensities(pixelIntensities > 0));
-            singleCellTracks_foci{w}(currentCell,i) = mean(pixelIntensities(1:min(9,length(pixelIntensities))));
-            
-            singleCellTracks_distance{w}(currentCell,i) = mean(distanceMask_sorted(1:min(9,length(pixelIntensities))));
-            
-            subImage=GetBlock(IntensityImages_blurred{w},currentCentroids(j,1),currentCentroids(j,2),siz);
-            subImage=subImage.*(cytoplasmicMask & subImage > 100);
-            pixelIntensities=sort(subImage(:),'descend');
-            singleCellTracks_ratio{w}(currentCell,i) = mean(pixelIntensities(pixelIntensities > 0)) ./ singleCellTracks_mean{w}(currentCell,i);
+                foci_intensity = mean(pixelIntensities1(1:min(9,length(pixelIntensities1))));
+                singleCellTracks_foci{w}(currentCell,i) = foci_intensity;
+                singleCellTracks_mean{w}(currentCell,i) = mean(pixelIntensities2(pixelIntensities2 > 0));
+                singleCellTracks_dilated{w}(currentCell,i) = IntensityImages_blurred{w}(currentCentroids(j,1),currentCentroids(j,2));
+                singleCellTracks_integrated{w}(currentCell,i) = sum(pixelIntensities1(pixelIntensities1 > 0));
+                singleCellTracks_median{w}(currentCell,i) = median(pixelIntensities1(pixelIntensities1 > 0 & pixelIntensities1 < foci_intensity));
+                
+                singleCellTracks_distance{w}(currentCell,i) = mean(distanceMask_sorted(1:min(9,length(pixelIntensities1))));
+                
+                subImage=GetBlock(IntensityImages_blurred{w},currentCentroids(j,1),currentCentroids(j,2),siz);
+                subImage=subImage.*(cytoplasmicMask & subImage > 100);
+                pixelIntensities=sort(subImage(:),'descend');
+                singleCellTracks_ratio{w}(currentCell,i) = mean(pixelIntensities(pixelIntensities > 0)) ./ singleCellTracks_mean{w}(currentCell,i);
             catch e
                 a = 1;
             end
         end
-        singleCellTracks_area(currentCell,i) = sum(binaryMask(:));
-        singleCellTracks_radius(currentCell,i) = max(distanceMask);
-        
-        nuclearMask = imclearborder(nuclearMask);
-        if(sum(nuclearMask(:)) == 0)
-            singleCellTracks_solidity(currentCell,i) = -1;
-        else
-            props = regionprops(binaryMask, 'Solidity');
-            singleCellTracks_solidity(currentCell,i) = props.Solidity;
-        end
+    end
+    singleCellTracks_area(currentCell,i) = sum(binaryMask(:));
+    singleCellTracks_radius(currentCell,i) = max(currentDistanceMask);
+    
+    nuclearMask = imclearborder(nuclearMask);
+    if(sum(nuclearMask(:)) == 0)
+        singleCellTracks_solidity(currentCell,i) = -1;
+    else
+        props = regionprops(binaryMask, 'Solidity');
+        singleCellTracks_solidity(currentCell,i) = props.Solidity;
     end
     
     % Repeated values (divisions, for instance)

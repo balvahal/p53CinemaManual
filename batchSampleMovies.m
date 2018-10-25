@@ -6,11 +6,13 @@ validTimepoints = unique(database.timepoint);
 database = database(ordering,:);
 
 imageInfo = imfinfo(fullfile(rawDataPath, database.filename{1}));
-imageSequence = zeros(imageInfo.Height, imageInfo.Width, size(database,1));
+resizeFactor = 0.5;
+resizeFactor = 1;
+imageSequence = zeros(imageInfo.Height * resizeFactor, imageInfo.Width * resizeFactor, size(database,1));
 for i=1:size(database,1)
     IM = imread(fullfile(rawDataPath, database.filename{i}));
     %IM = imbackground(IM, 10, 100);
-    imageSequence(:,:,i) = IM;
+    imageSequence(:,:,i) = imresize(IM, resizeFactor);
 end
 
 for i=1:length(cell_index)
@@ -21,7 +23,12 @@ for i=1:length(cell_index)
     end
     fprintf('%s\n', outputFilename);
     currentCentroids = centroidsTracks.getCellTrack(cell_index(i));
+    
+    % Remove timepoints without centroid
     currentCentroids = currentCentroids(validTimepoints,:);
+    currentCentroids(:,1) = max(1, floor(currentCentroids(:,1) * resizeFactor));
+    currentCentroids(:,2) = max(1, floor(currentCentroids(:,2) * resizeFactor));
+    
 %     if(sum(currentCentroids(:,1) == 0)>0)
 %         fprintf('%s: Unknown centroids will cause problems. File cannot be generated.\n', outputFilename);
 %         continue;

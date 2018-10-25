@@ -166,15 +166,15 @@ classdef p53Cinema_singleCellAnnotation_object_imageViewer < handle
         %% AutoContrast
         function obj = autoContrast(obj)
             handles = guidata(obj.gui_contrast);
-            if(obj.master.obj_fileManager.preallocateMode)
-                validPixels = obj.imageBuffer(find(obj.imageBuffer > 0));
-                randomSample = validPixels(ceil(rand(1,100000) * length(validPixels) - 1) + 1);
-                minValue = min(randomSample(randomSample > quantile(randomSample, 0.01)));
-                maxValue = max(randomSample(randomSample < quantile(randomSample(:), 0.9999)));
-            else
-                minValue = min(obj.currentImage);
-                maxValue = max(obj.currentImage);
-            end
+%             if(obj.master.obj_fileManager.preallocateMode)
+%                 validPixels = obj.imageBuffer(find(obj.imageBuffer > 0));
+%                 randomSample = validPixels(ceil(rand(1,100000) * length(validPixels) - 1) + 1);
+%                 minValue = min(randomSample(randomSample > quantile(randomSample, 0.01)));
+%                 maxValue = max(randomSample(randomSample < quantile(randomSample(:), 0.9999)));
+%             else
+                minValue = quantile(obj.currentImage(:), 0.05);
+                maxValue = quantile(obj.currentImage(:), 0.999);
+%             end
             if(isempty(minValue))
                 minValue = 0;
             end
@@ -215,8 +215,8 @@ classdef p53Cinema_singleCellAnnotation_object_imageViewer < handle
             obj.gui_imageViewer = p53Cinema_singleCellAnnotation_gui_imageViewer(obj.master, obj.master.obj_fileManager.maxHeight);
             obj.gui_contrast = p53Cinema_singleCellAnnotation_gui_contrast(obj.master);            
             obj.gui_zoomMap = p53Cinema_singleCellAnnotation_gui_zoomMap(obj.master);
-            obj.autoContrast;
             obj.setFrame(1);
+            obj.autoContrast;
         end
         
         %% Frame switching functions
@@ -264,6 +264,7 @@ classdef p53Cinema_singleCellAnnotation_object_imageViewer < handle
             end
             %obj.updateContrastHistogram;
             
+            %obj.autoContrast;
             obj.setImage;
         end
         
@@ -284,7 +285,11 @@ classdef p53Cinema_singleCellAnnotation_object_imageViewer < handle
         %% Image manipulation
         function IM = readImage(obj, index)
             fname = fullfile(obj.master.obj_fileManager.rawdatapath,obj.master.obj_fileManager.currentImageFilename);
-            IM = imread(fname,obj.master.obj_fileManager.currentImageTimepoints(index));
+            try
+                IM = imread(fname,obj.master.obj_fileManager.currentImageTimepoints(index));
+            catch e
+                a = 1;
+            end
         end
         
         function setImage(obj)

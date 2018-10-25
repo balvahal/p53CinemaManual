@@ -276,8 +276,7 @@ set(f,'Visible','on');
         % Generate a sequence of images representing the current data to
         % visualize, save the timepoints each image corresponds to and sort
         % the filenames by timepoint.
-        info = imfinfo(fullfile(master.obj_fileManager.rawdatapath, master.obj_fileManager.database.filename{1}));
-        master.obj_fileManager.setMaxTimepoint(numel(info));
+        master.obj_fileManager.setCurrentImageFilename;
         master.obj_fileManager.setTimepointRange(get(heditFromTimepoint,'String'), get(heditToTimepoint,'String'), get(heditByTimepoint,'String'));
         master.obj_fileManager.generateImageSequence;
         master.obj_fileManager.setPreprocessMode(get(hcheckboxPreprocess,'Value'));

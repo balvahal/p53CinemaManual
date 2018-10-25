@@ -1,4 +1,4 @@
-function results = getSingleCellTracks_localSegmentation(database, rawdatapath, group, position, measurementChannels, segmentationChannel, centroids, ff_offset, ff_gain)
+function results = getSingleCellTracks_localSegmentation_original(database, rawdatapath, group, position, measurementChannels, segmentationChannel, centroids, ff_offset, ff_gain)
 trackedCells = centroids.getTrackedCellIds;
 numTracks = length(trackedCells);
 numTimepoints = length(centroids.singleCells);
@@ -78,7 +78,7 @@ for t=1:1:length(uniqueTimepoints)
     currentCentroids(:,2) = max(1, min(floor(currentCentroids(:,2) * scalingFactor), info.Width));
         
     % Per centroid segmentation and thresholding, from Jacob's script
-    siz = 51;
+    siz = 111;
     for j=1:size(currentCentroids,1)
         currentCell = validCells(j);
         

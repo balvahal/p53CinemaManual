@@ -1,4 +1,4 @@
-function measurements = getDatasetTraces_ignoreTraces(database, rawdata_path, trackingPath, ffpath, channel)
+function measurements = getDatasetTraces_fillLineageInformation_originalScript(database, rawdata_path, trackingPath, ffpath, channel)
     trackingFiles = dir(trackingPath);
     trackingFiles = {trackingFiles(:).name};
     validFiles = regexp(trackingFiles, '\.mat', 'once');
@@ -25,37 +25,36 @@ function measurements = getDatasetTraces_ignoreTraces(database, rawdata_path, tr
     if(~isempty(ffpath) && ~strcmp(ffpath, ''))
         [ff_offset, ff_gain] = flatfield_readFlatfieldImages(ffpath, channel);
     else
-        ff_offset = 0; ff_gain = 0;
+        ff_offset = []; ff_gain = [];
     end
     
+    blurRadius = 7;
     counter = 1;
     maxUniqueCellIdentifier = 0;
     for i=1:length(trackingFiles)
-        fprintf('%s\n', trackingFiles{i});
+        fprintf('%s: ', trackingFiles{i});
         load(fullfile(trackingPath, trackingFiles{i}));
+
+        traces = getSingleCellTracks2(rawdata_path, database, selectedGroup, selectedPosition, channel, centroidsTracks, ff_offset, ff_gain, blurRadius);
+        filledTraces = fillLineageInformation(traces, centroidsTracks, centroidsDivisions);
         
         currentLineageTree = generateLineageTree(centroidsTracks, centroidsDivisions);
         currentLineageTree(currentLineageTree > 0) = currentLineageTree(currentLineageTree > 0) + maxUniqueCellIdentifier;
-        newUniqueCellIdentifier = max(currentLineageTree(:));
-        
-        currentLineageTree = generateLineageTree_uniqueCellCycleIdentifier(centroidsTracks, centroidsDivisions);
-        currentLineageTree(currentLineageTree > 0) = currentLineageTree(currentLineageTree > 0) + maxUniqueCellIdentifier;
-        
-        maxUniqueCellIdentifier = newUniqueCellIdentifier;
+        maxUniqueCellIdentifier = max(currentLineageTree(:));
         
         divisionMatrix = getDivisionMatrix(centroidsTracks, centroidsDivisions);
         deathMatrix = getDivisionMatrix(centroidsTracks, centroidsDeath);
         filledDivisionMatrix = fillLineageInformation(divisionMatrix, centroidsTracks, centroidsDivisions);
         filledDeathMatrix = fillLineageInformation(deathMatrix, centroidsTracks, centroidsDivisions);
         [centroid_col_matrix, centroid_row_matrix] = getCentroidMatrices(centroidsTracks);
-%         centroid_col_matrix = fillLineageInformation(centroid_col_matrix, centroidsTracks, centroidsDivisions);
-%         centroid_row_matrix = fillLineageInformation(centroid_row_matrix, centroidsTracks, centroidsDivisions);
+        centroid_col_matrix = fillLineageInformation(centroid_col_matrix, centroidsTracks, centroidsDivisions);
+        centroid_row_matrix = fillLineageInformation(centroid_row_matrix, centroidsTracks, centroidsDivisions);
         
         n = size(divisionMatrix,1);
         
         % Dont measure traces
-        traces = zeros(n,numTimepoints);
-        filledTraces = fillLineageInformation(traces, centroidsTracks, centroidsDivisions);
+%         traces = zeros(n,numTimepoints);
+%         filledTraces = fillLineageInformation(traces, centroidsTracks, centroidsDivisions);
 
         subsetIndex = counter:(counter + n - 1);
         singleCellTraces(subsetIndex,:) = traces;

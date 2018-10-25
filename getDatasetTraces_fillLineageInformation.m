@@ -1,4 +1,4 @@
-function measurements = getDatasetTraces_fillLineageInformation(database, rawdata_path, trackingPath, ffpath, channel)
+function measurements = getDatasetTraces_fillLineageInformation(database, rawdata_path, trackingPath, ffpath, channel, blurRadius)
     trackingFiles = dir(trackingPath);
     trackingFiles = {trackingFiles(:).name};
     validFiles = regexp(trackingFiles, '\.mat', 'once');
@@ -34,7 +34,7 @@ function measurements = getDatasetTraces_fillLineageInformation(database, rawdat
         fprintf('%s: ', trackingFiles{i});
         load(fullfile(trackingPath, trackingFiles{i}));
 
-        traces = getSingleCellTracks2(rawdata_path, database, selectedGroup, selectedPosition, channel, centroidsTracks, ff_offset, ff_gain);
+        traces = getSingleCellTracks2(rawdata_path, database, selectedGroup, selectedPosition, channel, centroidsTracks, ff_offset, ff_gain, blurRadius);
         filledTraces = fillLineageInformation(traces, centroidsTracks, centroidsDivisions);
         
         currentLineageTree = generateLineageTree(centroidsTracks, centroidsDivisions);

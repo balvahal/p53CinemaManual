@@ -67,9 +67,10 @@ classdef p53CinemaManual_object_imageViewer < handle
             % Read an image in the center of the sequence to determine
             % normalization factor
             referenceImage = imresize(obj.readImage(round(master.obj_fileManager.numImages)), obj.imageResizeFactor);
-            referenceImage = medfilt2(referenceImage, [2,2]);
-            referenceImage = imbackground(referenceImage, 10, 100);
             normalizationFactor = double(quantile(referenceImage(:), 0.999));
+%             referenceImage = medfilt2(referenceImage, [2,2]);
+%             referenceImage = imbackground(referenceImage, 10, 100);
+%             normalizationFactor = double(quantile(referenceImage(:), 0.999));
             
             % Check if the preprocessing mode is 'Prediction'. If so,
             % import corresponding mat file in the prediction folder
@@ -80,6 +81,8 @@ classdef p53CinemaManual_object_imageViewer < handle
             
             obj.buffer_resolution = 'uint8';
             obj.display_resolution = 8;
+%             obj.buffer_resolution = 'uint16';
+%             obj.display_resolution = 16;
             
             if master.obj_fileManager.preallocateMode
                 master.obj_fileManager.setProgressBar(1,master.obj_fileManager.numImages,'Loading status');
@@ -91,15 +94,18 @@ classdef p53CinemaManual_object_imageViewer < handle
                 for i=1:master.obj_fileManager.numImages
                     master.obj_fileManager.setProgressBar(i,master.obj_fileManager.numImages,'Loading status');
                     % Load image
-                    referenceImage = imresize(obj.readImage(i), obj.imageResizeFactor);
+                    OriginalImage = imresize(obj.readImage(i), obj.imageResizeFactor);
                     
                     if(get(fileManagerHandles.hcheckboxPrimaryBackground, 'Value'))
-                        referenceImage = imbackground(referenceImage, 10, 100);
+                        referenceImage = imbackground(OriginalImage, 10, 100);
                         referenceImage = double(referenceImage) / normalizationFactor;
                         referenceImage = medfilt2(referenceImage, [2,2]);
-                        obj.imageBuffer(:,:,i) = cast(referenceImage * maxPossibleValue, obj.buffer_resolution);
+                        %obj.imageBuffer(:,:,i) = cast(OriginalImage, obj.buffer_resolution);
+                        %obj.imageBuffer(:,:,i) = cast(imnormalize(referenceImage) * maxPossibleValue, obj.buffer_resolution);
+                        %obj.imageBuffer(:,:,i) = cast(imnormalize(OriginalImage) * maxPossibleValue, obj.buffer_resolution);
+                        obj.imageBuffer(:,:,i) = cast(double(OriginalImage) / normalizationFactor * maxPossibleValue, obj.buffer_resolution);
                     else
-                        obj.imageBuffer(:,:,i) = cast(imnormalize(referenceImage) * maxPossibleValue, obj.buffer_resolution);
+                        obj.imageBuffer(:,:,i) = cast(imnormalize(OriginalImage) * maxPossibleValue, obj.buffer_resolution);
                     end
                     
                     % Preprocess and find local maxima
@@ -206,13 +212,15 @@ classdef p53CinemaManual_object_imageViewer < handle
             handles = guidata(obj.gui_contrast);
             if(obj.master.obj_fileManager.preallocateMode)
                 randomSample = obj.imageBuffer(ceil(rand(1,10000) * (size(obj.imageBuffer,1) * size(obj.imageBuffer,2) - 1) + 1));
-                randomSample = obj.imageBuffer(:);
+                %randomSample = obj.imageBuffer(:);
                 minValue = min(randomSample(randomSample > quantile(randomSample, 0.01)));
                 maxValue = max(randomSample(randomSample < quantile(randomSample(:), 0.99999)));
             else
-                minValue = min(obj.currentImage);
-                maxValue = max(obj.currentImage);
+                minValue = min(obj.currentImage(:));
+                maxValue = max(obj.currentImage(:));
             end
+                minValue = quantile(obj.currentImage(:), 0.01);
+                maxValue = quantile(obj.currentImage(:), 0.99);
             set(handles.sliderMin,'Value', double(minValue)/maxPossibleValue);
             set(handles.sliderMax,'Value', double(maxValue)/maxPossibleValue);
             obj.newColormapFromContrastHistogram;
@@ -369,6 +377,13 @@ classdef p53CinemaManual_object_imageViewer < handle
                     end
                 end
             end
+            handles = guidata(obj.gui_imageViewer);
+            handlesZoomMap = guidata(obj.gui_zoomMap);
+            cellTrackerHandles = guidata(obj.obj_cellTracker.gui_cellTracker);
+
+            set(handles.sourceImage,'CData',obj.currentImage);
+            set(handlesZoomMap.sourceImage,'CData',obj.currentImage);
+
             obj.setImage;
             %obj.autoContrast;
         end
@@ -417,10 +432,9 @@ classdef p53CinemaManual_object_imageViewer < handle
             handlesZoomMap = guidata(obj.gui_zoomMap);
             cellTrackerHandles = guidata(obj.obj_cellTracker.gui_cellTracker);
 
-            set(handles.sourceImage,'CData',obj.currentImage);
-            set(handlesZoomMap.sourceImage,'CData',obj.currentImage);
             sliderStep = get(handles.hsliderExploreStack,'SliderStep');
             set(handles.hsliderExploreStack,'Value',sliderStep(1)*(obj.currentFrame-1));
+            set(handles.currentCellTrace, 'xdata', [], 'ydata', []);
             
             % Set tracked centroids patch
             [trackedCentroids, currentFrameCentroids] = obj.obj_cellTracker.centroidsTracks.getCentroids(obj.currentTimepoint);
@@ -515,7 +529,7 @@ classdef p53CinemaManual_object_imageViewer < handle
                 end
                 
                 currentTrackLength = sum(currentTrack(:,1) > 0);
-                if(currentTrackLength >= 3 && any(selectedCentroid > 0));
+                if(currentTrackLength >= 3 && any(selectedCentroid > 0))
                     obj.obj_cellTracker.setEnableSplit('on');
                 else
                     obj.obj_cellTracker.setEnableSplit('off');

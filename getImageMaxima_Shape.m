@@ -5,6 +5,7 @@ BlurredImage = double(imfilter(IM, fspecial('gaussian', blurRadius, 4), 'replica
 nbin = 100;
 threshold = SEGMENTATION_TriangleMethod(BlurredImage,0.99)  * 1.25;
 Objects = imfill(imerode(BlurredImage > threshold, strel('disk', 5)), 'holes');
+%Objects = imfill(imerode(im2bw(BlurredImage, graythresh(BlurredImage)), strel('disk', 5)), 'holes');
 
 EdgeImage = imdilate(edge(IM, 'canny'), strel('disk', 1));
 Objects = Objects | imfill(EdgeImage, 'holes');
