@@ -338,7 +338,8 @@ set(f,'Visible','on');
     function popupMarkerSize_Callback(~,~)
         markerSizeMap = [20, 10, 5; 10, 5, 3; 8, 3, 2];
         sizeOption = get(hpopupMarkerSize, 'Value');
-        set(cellFateEventPatch, 'MarkerSize', markerSizeMap(sizeOption, 1));
+        set(divisionEventPatch, 'MarkerSize', markerSizeMap(sizeOption, 1));
+        set(deathEventPatch, 'MarkerSize', markerSizeMap(sizeOption, 1));
         set(sisterCellPatch, 'MarkerSize', markerSizeMap(sizeOption, 1));
         set(mergeEventPatch, 'MarkerSize', markerSizeMap(sizeOption, 1));
         set(trackedCellsPatch, 'MarkerSize', markerSizeMap(sizeOption, 2));
