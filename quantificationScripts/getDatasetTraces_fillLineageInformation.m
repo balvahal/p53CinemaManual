@@ -1,4 +1,9 @@
-function measurements = getDatasetTraces_fillLineageInformation(database, rawdata_path, trackingPath, ffpath, channel, blurRadius)
+function measurements = getDatasetTraces_fillLineageInformation(database, rawdata_path, trackingPath, ffpath, channel, varargin)
+    if(nargin > 5)
+        blurRadius = varargin;
+    else
+        blurRadius = 7;
+    end
     trackingFiles = dir(trackingPath);
     trackingFiles = {trackingFiles(:).name};
     validFiles = regexp(trackingFiles, '\.mat', 'once');

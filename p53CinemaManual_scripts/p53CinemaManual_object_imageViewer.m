@@ -507,7 +507,6 @@ classdef p53CinemaManual_object_imageViewer < handle
                 end
             end
             
-            set(handles.currentCellTrace, 'xdata', [], 'ydata', []);            
             if(obj.selectedCell)
                 % Set selected cell patch
                 selectedCentroid = obj.obj_cellTracker.centroidsTracks.getCentroid(obj.currentTimepoint, obj.selectedCell);
@@ -521,7 +520,9 @@ classdef p53CinemaManual_object_imageViewer < handle
                 
                 currentTrack = obj.obj_cellTracker.centroidsTracks.getCellTrack(obj.selectedCell);
                 % Show active track
-                set(handles.currentCellTrace, 'xdata', currentTrack(currentTrack(:,2) > 0,2), 'ydata', currentTrack(currentTrack(:,2) > 0,1));
+                if(get(handles.hcheckboxShowTrack, 'Value'))
+                    set(handles.currentCellTrace, 'xdata', currentTrack(currentTrack(:,2) > 0,2), 'ydata', currentTrack(currentTrack(:,2) > 0,1));
+                end
                 if(sum(obj.obj_cellTracker.centroidsTracks.getCentroid(obj.currentTimepoint, obj.selectedCell) == 0) > 0)
                     set(handles.currentCellTrace, 'color', 'green');
                 else
