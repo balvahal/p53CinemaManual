@@ -212,15 +212,12 @@ classdef p53CinemaManual_object_imageViewer < handle
             handles = guidata(obj.gui_contrast);
             if(obj.master.obj_fileManager.preallocateMode)
                 randomSample = obj.imageBuffer(ceil(rand(1,10000) * (size(obj.imageBuffer,1) * size(obj.imageBuffer,2) - 1) + 1));
-                %randomSample = obj.imageBuffer(:);
                 minValue = min(randomSample(randomSample > quantile(randomSample, 0.01)));
                 maxValue = max(randomSample(randomSample < quantile(randomSample(:), 0.99999)));
             else
                 minValue = min(obj.currentImage(:));
                 maxValue = max(obj.currentImage(:));
             end
-                minValue = quantile(obj.currentImage(:), 0.01);
-                maxValue = quantile(obj.currentImage(:), 0.99);
             set(handles.sliderMin,'Value', double(minValue)/maxPossibleValue);
             set(handles.sliderMax,'Value', double(maxValue)/maxPossibleValue);
             obj.newColormapFromContrastHistogram;
@@ -429,7 +426,7 @@ classdef p53CinemaManual_object_imageViewer < handle
         
         function setImage(obj)
             handles = guidata(obj.gui_imageViewer);
-            handlesZoomMap = guidata(obj.gui_zoomMap);
+            %handlesZoomMap = guidata(obj.gui_zoomMap);
             cellTrackerHandles = guidata(obj.obj_cellTracker.gui_cellTracker);
 
             sliderStep = get(handles.hsliderExploreStack,'SliderStep');
@@ -476,10 +473,11 @@ classdef p53CinemaManual_object_imageViewer < handle
             end
             
             % Set division event patch
-            [~, dividingCells] = obj.obj_cellTracker.centroidsDivisions.getCentroids(obj.currentTimepoint);
-            [~, dyingCells] = obj.obj_cellTracker.centroidsDeath.getCentroids(obj.currentTimepoint);
-            cellFateEventCentroids = trackedCentroids(ismember(currentFrameCentroids, horzcat(dividingCells', dyingCells')),:);
-            set(handles.cellFateEventPatch, 'XData', cellFateEventCentroids(:,2), 'YData', cellFateEventCentroids(:,1));
+            [divisionCentroids, dividingCells] = obj.obj_cellTracker.centroidsDivisions.getCentroids(obj.currentTimepoint);
+            [deathCentroids, dyingCells] = obj.obj_cellTracker.centroidsDeath.getCentroids(obj.currentTimepoint);
+            %cellFateEventCentroids = trackedCentroids(ismember(currentFrameCentroids, horzcat(dividingCells', dyingCells')),:);
+            set(handles.divisionEventPatch, 'XData', divisionCentroids(:,2), 'YData', divisionCentroids(:,1));
+            set(handles.deathEventPatch, 'XData', deathCentroids(:,2), 'YData', deathCentroids(:,1));
 
             if(obj.selectedCell == 0)
                 return;
