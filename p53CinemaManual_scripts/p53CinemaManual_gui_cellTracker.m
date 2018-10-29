@@ -25,6 +25,10 @@ htogglebuttonTrackingMode = uicontrol('Style','togglebutton','Units','characters
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','Tracking mode','Position',[hx, hy, hwidth, hheight],...
     'Callback',{@togglebuttonTrackingMode_Callback},'Enable', 'on','parent',f);
+hpushButtonCreateEditTrack = uicontrol('Style','pushbutton','Units','characters',...
+    'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
+    'String','Create/Edit track','Position',[hx, hy-hheight, hwidth, hheight],...
+    'Callback',{@pushbuttonCreateEditTrack_Callback},'Enable', 'on','parent',f);
 
 hbuttonGroupTrackingDirection = uibuttongroup('Units','characters',...
     'Position',[hx + hmargin + hwidth, hy - hheight, hwidth * 1.1, hheight * 2.3],...
@@ -187,6 +191,7 @@ hsplitPushbutton = uicontrol('Style','pushbutton','String','Split','Units',get(f
     'Enable', 'off', 'Callback',{@splitPushbutton_Callback});
 set(hbuttongroupMergeSplit,'Visible','on');
 
+handles.hpushButtonCreateEditTrack = hpushButtonCreateEditTrack;
 handles.htogglebuttonTrackingMode = htogglebuttonTrackingMode;
 handles.hradiobuttonDontPropagate = hradiobuttonDontPropagate;
 handles.hradiobuttonPropagate = hradiobuttonPropagate;
@@ -434,6 +439,10 @@ set(f,'Visible','on');
         master.obj_imageViewer.obj_cellTracker.deleteCellTimepoints(selectedCell, (currentTimepoint+1):maxTimepoint);
         master.obj_imageViewer.obj_cellTracker.setEnableSplit('off');
         master.obj_imageViewer.obj_cellTracker.setAvailableCells;
+    end
+
+    function pushbuttonCreateEditTrack_Callback(source, eventdata)
+        master.obj_imageViewer.obj_cellTracker.firstClick = 1;
     end
 
 %% Auxiliary functions
