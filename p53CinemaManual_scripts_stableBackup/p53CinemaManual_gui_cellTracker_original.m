@@ -6,7 +6,7 @@ function [f] = p53CinemaManual_gui_cellTracker(master)
 set(0,'units','characters');
 Char_SS = get(0,'screensize');
 fwidth = 450/master.ppChar(1);
-fheight = 460/master.ppChar(2);
+fheight = 430/master.ppChar(2);
 fx = Char_SS(3) - (Char_SS(3)*.1 + fwidth);
 fy = Char_SS(4) - (Char_SS(4)*.1 + fheight*2.75);
 f = figure('Visible','off','Units','characters','Name','Cell Tracker','MenuBar','none',...
@@ -159,35 +159,19 @@ htextTrackEvent = uicontrol('Style','text','Units','characters',...
     'FontSize',10,'FontName','Arial','HorizontalAlignment','right',...
     'String','Cell fate','Position',[hx, hy, hwidth, hheight],...
     'parent',f);
-annotationNames = master.additionalAnnotationNames;
-hy = hy - hheight*(1+length(annotationNames));
+hy = hy - hheight;
 hbuttongroupTrackEvent = uibuttongroup('Visible','off','Units',get(f,'Units'),...
-    'Position',[hx + hwidth + hmargin, hy, 2*hwidth + 4*hmargin_short, hheight * (2+length(annotationNames)) + hmargin_short], 'Parent', f);
+    'Position',[hx + hwidth + hmargin, hy, 2*hwidth + 4*hmargin_short, hheight * 2 + hmargin_short], 'Parent', f);
 % Create three radio buttons in the button group.
 u0 = uicontrol('Style','pushbutton','String','Division','Units',get(f,'Units'),...
-    'Position',[0.5, hheight*(length(annotationNames)+1), hwidth - 1, hheight],'parent',hbuttongroupTrackEvent,'HandleVisibility','on',...
+    'Position',[0.5, hheight, hwidth - 1, hheight],'parent',hbuttongroupTrackEvent,'HandleVisibility','on',...
     'Callback',{@u0Pushbutton_Callback});
 trackSisterPushbutton = uicontrol('Style','pushbutton','String','Follow sister','Units',get(f,'Units'),...
-    'Position',[hwidth + hmargin_short + 0.5, hheight*(length(annotationNames)+1), hwidth, hheight],'Enable','off','parent',hbuttongroupTrackEvent,'HandleVisibility','on',...
+    'Position',[hwidth + hmargin_short + 0.5, hheight, hwidth, hheight],'Enable','off','parent',hbuttongroupTrackEvent,'HandleVisibility','on',...
     'Callback',{@trackSisterPushbutton_Callback});
 u1 = uicontrol('Style','pushbutton','String','Death','Units',get(f,'Units'),...
-    'Position',[0.5, hheight*length(annotationNames), hwidth - 1, hheight],'parent',hbuttongroupTrackEvent,'HandleVisibility','on','Visible', 'on', ...
+    'Position',[0.5, 0, hwidth - 1, hheight],'parent',hbuttongroupTrackEvent,'HandleVisibility','on','Visible', 'on', ...
     'Callback',{@u1Pushbutton_Callback});
-u = zeros(length(annotationNames),1);
-v = zeros(length(annotationNames),1);
-for index=1:length(annotationNames)
-    u(index) = uicontrol('Style','pushbutton','String',annotationNames{index},'Units',get(f,'Units'),...
-        'Position',[0.5, hheight*(length(annotationNames)-index), hwidth - 1, hheight],'Tag',num2str(index),...
-        'parent',hbuttongroupTrackEvent,'HandleVisibility','on','Visible', 'on', ...
-        'Callback',{@cellFatePushbutton_Callback});
-    if(master.additionalAnnotationTypes(index) > 0)
-        v(index) = uicontrol('Style','edit','String','0','Units',get(f,'Units'),...
-            'Position',[hwidth + hmargin_short + 0.5, hheight*(length(annotationNames)-index), hwidth - 1, hheight],...
-            'Tag',num2str(index),...
-            'parent',hbuttongroupTrackEvent, ...
-            'HandleVisibility','on','Visible', 'on');
-    end
-end
 set(hbuttongroupTrackEvent,'Visible','on');
 
 hy = hy - hmargin - hheight;
@@ -332,15 +316,6 @@ set(f,'Visible','on');
             % object (a patch at this moment)
             myCentroids = readtable(fullfile(sourcePath, annotationFile), 'Delimiter', '\t');
             [validFields, fieldLocation] = ismember({'centroid_col', 'centroid_row'}, myCentroids.Properties.VariableNames);
-            
-            savedAnnotations = myCentroids.Properties.VariableNames;
-            currentAnnotations = master.additionalAnnotationNames;
-            lostAnnotations = find(~ismember(savedAnnotations, currentAnnotations));
-            if(~isempty(lostAnnotations))
-                fprintf(strcat('The following annotation names were not declared and will be lost in the current tracking session:\n',sprintf('%s\n', savedAnnotations{lostAnnotations}),'\n'));
-            end
-            savedAnnotations = savedAnnotations(ismember(savedAnnotations, currentAnnotations));
-            
             if(sum(validFields) < 2)
                 fprintf('Failed to import centroids. There should be a field names centroid_col and one named centroid_row\n');
             else
@@ -368,31 +343,13 @@ set(f,'Visible','on');
                             master.obj_imageViewer.obj_cellTracker.centroidsDeath.singleCells(i).point(subIndex(subDeath),:) = subCentroids(subDeath,:) * master.obj_imageViewer.imageResizeFactor;
                         end
                     end
-                    for j=1:length(savedCentroids)
-                        [~, annotationIndex] = ismember(savedAnnotations(j), currentAnnotations);
-                        master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(t).annotations(:,annotationIndex) = loadStruct.centroidsTracks.singleCells(t).annotations(:,annotationIndex);
-                    end
                 end
             end
         else
             loadStruct = load(fullfile(sourcePath, annotationFile));
-            
-            % Check intersection of annotationNames
-            savedAnnotations = loadStruct.centroidsTracks.annotationNames;
-            currentAnnotations = master.additionalAnnotationNames;
-            lostAnnotations = find(~ismember(savedAnnotations, currentAnnotations));
-            if(~isempty(lostAnnotations))
-                fprintf(strcat('The following annotation names were not declared and will be lost in the current tracking session:\n',sprintf('%s\n', savedAnnotations{lostAnnotations}),'\n'));
-            end
-            savedAnnotations = savedAnnotations(ismember(savedAnnotations, currentAnnotations));
-            
             for t=1:min(length(loadStruct.centroidsTracks.singleCells), length(master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells))
                 master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(t).point = loadStruct.centroidsTracks.singleCells(t).point;
                 master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(t).value = loadStruct.centroidsTracks.singleCells(t).value;
-                for i=1:length(savedAnnotations)
-                    [~,annotationIndex] = ismember(savedAnnotations, currentAnnotations);
-                    master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(t).annotations(:,annotationIndex) = loadStruct.centroidsTracks.singleCells(t).annotations(:,annotationIndex);
-                end
                 if(any(strcmp(fieldnames(loadStruct), 'centroidsDivisions')))
                     master.obj_imageViewer.obj_cellTracker.centroidsDivisions.singleCells(t).point = loadStruct.centroidsDivisions.singleCells(t).point;
                     master.obj_imageViewer.obj_cellTracker.centroidsDivisions.singleCells(t).value = loadStruct.centroidsDivisions.singleCells(t).value;
@@ -448,17 +405,6 @@ set(f,'Visible','on');
 
     function trackSisterPushbutton_Callback(source, eventdata)
         master.obj_imageViewer.obj_cellTracker.trackSister;
-    end
-
-    function cellFatePushbutton_Callback(source, eventdata)
-        annotationIndex = str2double(get(source, 'Tag'));
-        if(master.additionalAnnotationTypes(annotationIndex) > 0)
-            value = str2double(get(v(annotationIndex), 'String'));
-        else
-            value = 1;
-        end
-        master.obj_imageViewer.obj_cellTracker.centroidsTracks.setAnnotation(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, annotationIndex, value);
-        master.obj_imageViewer.setImage;
     end
 
     function mergePushbutton_Callback(source, eventdata)

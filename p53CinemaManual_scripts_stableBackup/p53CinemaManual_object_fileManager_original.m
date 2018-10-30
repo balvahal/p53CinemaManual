@@ -27,9 +27,6 @@ classdef p53CinemaManual_object_fileManager < handle
         imageResizeFactor;
         cellSize;
         maxHeight;
-        
-        additionalAnnotation;
-        additionalAnnotationNumeric;
     end
     events
         

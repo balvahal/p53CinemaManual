@@ -51,16 +51,6 @@ currentCellTrace = plot(haxesImageViewer,1,1, 'Color', [1,0,0], 'LineSmoothing',
 
 neighborCellTrace = plot(haxesImageViewer,1,1, 'Color', [0.2,0.85,0.2], 'LineSmoothing', 'on', 'LineWidth', 1);
 
-annotationNames = master.additionalAnnotationNames;
-cellFateEventPatch = zeros(length(annotationNames),1);
-colors = jet(length(cellFateEventPatch));
-for i=1:length(annotationNames)
-cellFateEventPatch(i) = patch('XData',[],'YData',[],...
-    'EdgeColor','none','FaceColor','none','MarkerSize',20,...
-    'Marker','o','MarkerEdgeColor',colors(i,:),'MarkerFaceColor',colors(i,:),...
-    'Parent',haxesImageViewer,'LineSmoothing', 'off');
-end
-
 divisionEventPatch = patch('XData',[],'YData',[],...
     'EdgeColor','none','FaceColor','none','MarkerSize',20,...
     'Marker','o','MarkerEdgeColor',[0.9,0.75,0],'MarkerFaceColor',[255 215 0]/255,...
@@ -192,7 +182,6 @@ handles.pushbuttonFirstImage = hpushbuttonFirstImage;
 handles.pushbuttonLastImage = hpushbuttonLastImage;
 handles.hsliderExploreStack = hsliderExploreStack;
 handles.cmapHighlight = cmapHighlight;
-handles.cellFateEventPatch = cellFateEventPatch;
 handles.divisionEventPatch = divisionEventPatch;
 handles.deathEventPatch = deathEventPatch;
 handles.sisterCellPatch = sisterCellPatch;
@@ -263,7 +252,7 @@ set(f,'Visible','on');
             case 'backspace'
                 currentCentroid = master.obj_imageViewer.obj_cellTracker.centroidsTracks.getCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell);
                 if(currentCentroid(1) > 0)
-                    master.obj_imageViewer.obj_cellTracker.centroidsTracks.deleteCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell);
+                    master.obj_imageViewer.obj_cellTracker.centroidsTracks.setCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, [0,0], 0);
                     master.obj_imageViewer.obj_cellTracker.centroidsDivisions.setCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, [0,0], 0);
                     master.obj_imageViewer.obj_cellTracker.centroidsDeath.setCentroid(master.obj_imageViewer.currentTimepoint, master.obj_imageViewer.selectedCell, [0,0], 0);
                     master.obj_imageViewer.setImage;
@@ -349,9 +338,6 @@ set(f,'Visible','on');
     function popupMarkerSize_Callback(~,~)
         markerSizeMap = [20, 10, 5; 10, 5, 3; 8, 3, 2];
         sizeOption = get(hpopupMarkerSize, 'Value');
-        for index=1:length(cellFateEventPatch)
-            set(cellFateEventPatch(index), 'MarkerSize', markerSizeMap(sizeOption, 1));
-        end
         set(divisionEventPatch, 'MarkerSize', markerSizeMap(sizeOption, 1));
         set(deathEventPatch, 'MarkerSize', markerSizeMap(sizeOption, 1));
         set(sisterCellPatch, 'MarkerSize', markerSizeMap(sizeOption, 1));

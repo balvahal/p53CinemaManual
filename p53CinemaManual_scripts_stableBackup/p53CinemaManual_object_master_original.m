@@ -13,9 +13,6 @@ classdef p53CinemaManual_object_master < handle
         obj_fileManager;
         debugmode = true;
         outputdirectory = pwd;
-        
-        additionalAnnotationNames;
-        additionalAnnotationTypes;
     end
     properties (SetAccess = private)
         ppChar; % the guis are all in character units, but the images are defined by pixels.
@@ -24,15 +21,7 @@ classdef p53CinemaManual_object_master < handle
         
     end
     methods
-        function obj = p53CinemaManual_object_master(varargin)
-
-            p = inputParser;
-            addOptional(p,'annotationNames', {}, @iscell);
-            addOptional(p,'annotationTypes', {}, @isnumeric);
-            p.parse(varargin{:});
-            obj.additionalAnnotationNames = p.Results.annotationNames;
-            obj.additionalAnnotationTypes = p.Results.annotationTypes;
-
+        function obj = p53CinemaManual_object_master(varargin)          
             %%
             % get pixels to character info
             myunits = get(0,'units');
@@ -44,14 +33,14 @@ classdef p53CinemaManual_object_master < handle
             obj.ppChar = obj.ppChar([3,4]);
             set(0,'units',myunits);
             
+            %% Load settings
+            %
+            obj.data = p53CinemaManual_object_data;
+            obj.data.outputdirectory = obj.outputdirectory;
             %% Start all guis
             %
             
             obj.obj_fileManager = p53CinemaManual_object_fileManager(obj);
-            if(length(obj.additionalAnnotationTypes) ~= length(obj.additionalAnnotationNames))
-                fprintf('Number of annotation names should be the same as number of annotation types');
-                return;
-            end
         end
         function initializeImageViewer(obj)
             

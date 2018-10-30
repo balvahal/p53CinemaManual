@@ -1,4 +1,4 @@
-function [results, segmentationImages] = getSingleCellTracks_localSegmentation_stacks_foci(database, rawdatapath, group, position, measurementChannels, segmentationChannel, centroids, ff_offset, ff_gain, varargin)
+function [results, segmentationImages] = getSingleCellTracks_localSegmentation_stacks_foci_refined(database, rawdatapath, group, position, measurementChannels, segmentationChannel, centroids, ff_offset, ff_gain, varargin)
 if(nargin > 9)
     segmentationFile = varargin{1};
 else
@@ -116,26 +116,47 @@ for t=1:1:length(uniqueTimepoints)
         
         binaryMask = bwlabel(binaryMask);
         binaryMask = ismember(binaryMask, binaryMask(currentCentroidIndexes));
-        refinedMaxima = imregionalmax(distanceMask .* (distanceMask > 20));
-        [refined_col, refined_row] = ind2sub(size(refinedMaxima), find(refinedMaxima));
-        newCentroids = zeros(size(currentCentroids,1),1);
-        for k=1:size(currentCentroids,1)
-            distance = sqrt((refined_col - currentCentroids(k,1)).^2 + (refined_row - currentCentroids(k,2)).^2);
-            newCentroids(k) = find(distance == min(distance), 1, 'first');
-        end
-        refinedCentroidMask = zeros(size(refinedMaxima));
-        refinedCentroidMask(sub2ind(size(refinedMaxima), refined_col(newCentroids), refined_row(newCentroids))) = 1;
-        
-        %watershedImage = imimposemin(-blurredSegmentationImage, refinedCentroidMask);
-        watershedImage = imimposemin(-distanceMask, refinedCentroidMask);
-        watershedImage = (watershed(watershedImage) > 0) .* double(binaryMask);
-        watershedImage = bwlabel(watershedImage);
     else
-        binaryMask = imread(segmentationFile, i);
-        watershedImage = binaryMask;
+        binaryMask_preSegmented = imread(segmentationFile, i);
+        binaryMask_consensus = zeros(size(binaryMask_preSegmented));
+        
+        for j=1:size(currentCentroids,1)
+            binaryMask=segmentationImage;
+            binaryMask=(imfilter(binaryMask,fspecial('gaussian',5,2),'replicate'));
+            binaryMask=autoscale(binaryMask);
+            
+            binaryMask_cropped=GetBlock(binaryMask,currentCentroids(j,1),currentCentroids(j,2),siz);
+            
+            g3=binaryMask_cropped(max(floor(siz/2)-5, 1):min(floor(siz/2)+5, size(binaryMask_cropped,1)),max(floor(siz/2)-5, 1):min(floor(siz/2)+5, size(binaryMask_cropped,2)));
+            the=median(g3(:));
+            the=the-1*mad(g3(:));
+            
+            binaryMask=binaryMask>(min(median(binaryMask(:)),graythresh(binaryMask))+the)/2;
+            binaryMask=imfill(binaryMask,'holes');
+            binaryMask=bwlabel(binaryMask); binaryMask=(binaryMask==binaryMask(currentCentroids(j,1),currentCentroids(j,2)));
+            binaryMask_consensus = binaryMask_consensus | binaryMask;
+        end
+        binaryMask=binaryMask_consensus .* (binaryMask_preSegmented > 0);
+        binaryMask = imopen(binaryMask_consensus, strel('disk', 5));
     end
     
     distanceMask = bwdist(~binaryMask);
+    
+    refinedMaxima = imregionalmax(distanceMask .* (distanceMask > 20));
+    [refined_col, refined_row] = ind2sub(size(refinedMaxima), find(refinedMaxima));
+    newCentroids = zeros(size(currentCentroids,1),1);
+    for k=1:size(currentCentroids,1)
+        distance = sqrt((refined_col - currentCentroids(k,1)).^2 + (refined_row - currentCentroids(k,2)).^2);
+        newCentroids(k) = find(distance == min(distance), 1, 'first');
+    end
+    refinedCentroidMask = zeros(size(refinedMaxima));
+    refinedCentroidMask(sub2ind(size(refinedMaxima), refined_col(newCentroids), refined_row(newCentroids))) = 1;
+    
+    %watershedImage = imimposemin(-blurredSegmentationImage, refinedCentroidMask);
+    watershedImage = imimposemin(-distanceMask, refinedCentroidMask);
+    watershedImage = (watershed(watershedImage) > 0) .* double(binaryMask);
+    watershedImage = bwlabel(watershedImage);
+    
     segmentationImages(:,:,t) = watershedImage;
     
     for j=1:size(currentCentroids,1)

@@ -55,9 +55,13 @@ function measurements = getDatasetTraces_localSegmentation_stacks_foci(database,
     for i=1:length(trackingFiles)
         fprintf('%s: ', trackingFiles{i});
         load(fullfile(tracking_path, trackingFiles{i}));
-        [results, segmentationResults] = getSingleCellTracks_localSegmentation_stacks_foci(database, rawdata_path, selectedGroup, selectedPosition, measurementChannels, segmentationChannel, centroidsTracks, ff_offset, ff_gain);
-        
         segmentationOutput = fullfile('SEGMENT_DATA', sprintf('%s_w%s_s%d_segment.TIF', selectedGroup, segmentationChannel, selectedPosition));
+        if(exist(segmentationOutput, 'file'))
+            [results, segmentationResults] = getSingleCellTracks_localSegmentation_stacks_foci(database, rawdata_path, selectedGroup, selectedPosition, measurementChannels, segmentationChannel, centroidsTracks, ff_offset, ff_gain, segmentationOutput);
+        else
+            [results, segmentationResults] = getSingleCellTracks_localSegmentation_stacks_foci(database, rawdata_path, selectedGroup, selectedPosition, measurementChannels, segmentationChannel, centroidsTracks, ff_offset, ff_gain);            
+        end
+        
         if(~exist(segmentationOutput, 'file'))
             for t=1:size(segmentationResults,3)
                 imwrite(uint8(segmentationResults(:,:,t)), segmentationOutput, 'WriteMode', 'Append');

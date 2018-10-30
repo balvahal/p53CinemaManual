@@ -21,6 +21,7 @@ classdef p53CinemaManual_object_cellTracker < handle
         centroidsDivisions;
         centroidsDeath;
         
+        kalmanfilter
     end
     events
         
@@ -29,8 +30,8 @@ classdef p53CinemaManual_object_cellTracker < handle
         %% Constructor
         function obj = p53CinemaManual_object_cellTracker(master)
             obj.gui_cellTracker = p53CinemaManual_gui_cellTracker(master);
-            obj.centroidsTracks = CentroidTimeseries_withAnnotations(master.obj_fileManager.maxTimepoint, 10000, master.additionalAnnotationNames);
             obj.centroidsLocalMaxima = CentroidTimeseries(master.obj_fileManager.maxTimepoint, 10000);
+            obj.centroidsTracks = CentroidTimeseries(master.obj_fileManager.maxTimepoint, 10000);
             obj.centroidsDivisions = CentroidTimeseries(master.obj_fileManager.maxTimepoint, 10000);
             obj.centroidsDeath = CentroidTimeseries(master.obj_fileManager.maxTimepoint, 10000);
             obj.master = master;
@@ -43,6 +44,20 @@ classdef p53CinemaManual_object_cellTracker < handle
             obj.trackingDelay = 0;
             obj.playWhileTracking = 1;
             
+        end
+        function initializeKalman(obj,previousFrame)
+            centroids = obj.centroidsTracks.getCellTrack(obj.master.obj_imageViewer.selectedCell);
+            centroids = centroids(obj.master.obj_fileManager.currentImageTimepoints,:);
+            
+            obj.kalmanfilter.A = [1,1,0,0;0,1,0,0;0,0,1,1;0,0,0,1];
+            obj.kalmanfilter.R = diag([4,9,4,9]); % estimated from tracking data without Kalman filter
+            obj.kalmanfilter.U = 0; % there is no input
+            obj.kalmanfilter.B = 0; % there is no input
+            obj.kalmanfilter.Q = eye(4); % assume measurement error of centroid is 1 pixel
+            obj.kalmanfilter.H = eye(4); % measurement is the same a process
+            obj.kalmanfilter.I = eye(4);
+            obj.kalmanfilter.Ppri = [2,1,0,0;1,2,0,0;0,0,2,1;0,0,1,2]; % estimated from applying Kalman filter to a test track
+            obj.kalmanfilter.Xpri = [centroids(previousFrame,1);0;centroids(previousFrame,2);0];
         end
         function setAvailableCells(obj)
             availableCells = obj.centroidsTracks.getTrackedCellIds;
@@ -172,6 +187,21 @@ classdef p53CinemaManual_object_cellTracker < handle
             if(centroids(previousFrame,1) == 0)
                 predictedCentroid = [0,0];
                 return;
+            end
+            switch predictionMode
+                case 'NearestNeighbor'
+                case 'Kalman'
+                    %make prediction with Kalman Filter
+
+                    obj.kalmanfilter = p53CinemaManual_method_Kalman_Predict(obj.kalmanfilter);
+                    %use nearest neighbor with prediciton
+                    [closestCentroid, ~] = obj.centroidsLocalMaxima.getClosestCentroid(currentTimepoint, obj.kalmanfilter.Xpredict([1,3])', searchRadius);
+                    %update Kalman Filter
+                    obj.kalmanfilter.Z = [closestCentroid(1);closestCentroid(1)-centroids(previousFrame,1);closestCentroid(2);closestCentroid(2)-centroids(previousFrame,2)];
+                    obj.kalmanfilter = p53CinemaManual_method_Kalman_Correct(obj.kalmanfilter);
+                    obj.kalmanfilter = p53CinemaManual_method_Kalman_Predict_update(obj.kalmanfilter);
+                    predictedCentroid = closestCentroid;
+                otherwise
             end
         end
         
