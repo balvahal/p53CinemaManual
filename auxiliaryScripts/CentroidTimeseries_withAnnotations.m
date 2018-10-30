@@ -9,7 +9,7 @@ classdef CentroidTimeseries_withAnnotations < handle
     end
     
     methods
-        function obj = CentroidTimeseries(maxTimepoint, allocationSize, annotationNames)
+        function obj = CentroidTimeseries_withAnnotations(maxTimepoint, allocationSize, annotationNames)
             pointStructure.point = zeros(allocationSize, 2);
             pointStructure.value = zeros(allocationSize, 1);
             pointStructure.annotations = zeros(allocationSize, length(annotationNames));
