@@ -301,6 +301,7 @@ set(f,'Visible','on');
         %master.data.importCentroidsTracks(centroidsTracks,selectedPosition);
         centroidsDivisions = master.obj_imageViewer.obj_cellTracker.centroidsDivisions;
         centroidsDeath = master.obj_imageViewer.obj_cellTracker.centroidsDeath;
+        annotationNames = master.additionalAnnotationNames;
         
         % A patchy solution: scale centroids given imageResizeFactor
         for i=1:length(centroidsTracks.singleCells)
@@ -309,7 +310,7 @@ set(f,'Visible','on');
             centroidsDeath.singleCells(i).point = centroidsDeath.singleCells(i).point / master.obj_imageViewer.imageResizeFactor;
         end
         
-        uisave({'selectedGroup','selectedPosition','databaseFile','rawdatapath','centroidsTracks','centroidsDivisions','centroidsDeath'},...
+        uisave({'annotationNames', 'selectedGroup','selectedPosition','databaseFile','rawdatapath','centroidsTracks','centroidsDivisions','centroidsDeath'},...
             fullfile(mainpath, sprintf('%s_s%d_tracking.mat', selectedGroup, selectedPosition)));
         
         % Bring back centroid positions to current scale
