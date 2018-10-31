@@ -1,6 +1,6 @@
 function measurements = getDatasetTraces_fillLineageInformation(database, rawdata_path, trackingPath, ffpath, channel, varargin)
     if(nargin > 5)
-        blurRadius = varargin;
+        blurRadius = varargin{1};
     else
         blurRadius = 7;
     end
