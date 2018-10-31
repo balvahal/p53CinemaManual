@@ -298,7 +298,7 @@ set(f,'Visible','on');
         mainpath = master.obj_fileManager.mainpath;
         rawdatapath = master.obj_fileManager.rawdatapath;
         centroidsTracks = master.obj_imageViewer.obj_cellTracker.centroidsTracks;
-        master.data.importCentroidsTracks(centroidsTracks,selectedPosition);
+        %master.data.importCentroidsTracks(centroidsTracks,selectedPosition);
         centroidsDivisions = master.obj_imageViewer.obj_cellTracker.centroidsDivisions;
         centroidsDeath = master.obj_imageViewer.obj_cellTracker.centroidsDeath;
         

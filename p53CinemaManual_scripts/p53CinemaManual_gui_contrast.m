@@ -17,11 +17,11 @@ hwidth = 256/master.ppChar(1);
 hheight = 256/master.ppChar(2);
 hx = (fwidth-hwidth)/2;
 hy = (fheight-hheight-128/master.ppChar(2))/2+128/master.ppChar(2);
-haxesContrast = axes('Units','characters','DrawMode','fast',...
+haxesContrast = axes('Units','characters',...
     'Position',[hx hy hwidth hheight]);
 
 master.obj_imageViewer.findImageHistogram;
-plot(haxesContrast,master.obj_imageViewer.contrastHistogram,'LineSmoothing','on');
+plot(haxesContrast,master.obj_imageViewer.contrastHistogram);
 xlabel('Intensity');
 %% Create controls
 %  two slider bars

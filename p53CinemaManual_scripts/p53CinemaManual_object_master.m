@@ -66,7 +66,6 @@ classdef p53CinemaManual_object_master < handle
             if(~isempty(obj.obj_imageViewer) && obj.obj_imageViewer.isvalid)
                 delete(obj.obj_imageViewer);
             end
-            delete(obj.data);
         end
     end
 end

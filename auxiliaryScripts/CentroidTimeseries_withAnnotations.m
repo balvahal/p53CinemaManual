@@ -12,7 +12,7 @@ classdef CentroidTimeseries_withAnnotations < handle
         function obj = CentroidTimeseries_withAnnotations(maxTimepoint, allocationSize, annotationNames)
             pointStructure.point = zeros(allocationSize, 2);
             pointStructure.value = zeros(allocationSize, 1);
-            pointStructure.annotations = zeros(allocationSize, length(annotationNames));
+            pointStructure.annotations = NaN *ones(allocationSize, length(annotationNames));
             obj.singleCells = repmat(pointStructure, maxTimepoint, 1);
             obj.annotationNames = annotationNames;
         end
@@ -23,10 +23,9 @@ classdef CentroidTimeseries_withAnnotations < handle
             obj.singleCells(time).value(cell_id) = value;
         end
         
-        function setAnnotation(obj, time, cell_id, annotationName, annotationValue)
-            index = find(obj.annotationNames, annotationName);
-            if(~isempty(index))
-                obj.singleCells(time).annotations(cell_id, index) = annotationValue;
+        function setAnnotation(obj, time, cell_id, annotationIndex, annotationValue)
+            if(annotationIndex <= length(obj.annotationNames))
+                obj.singleCells(time).annotations(cell_id, annotationIndex) = annotationValue;
             end
         end
         
@@ -53,11 +52,12 @@ classdef CentroidTimeseries_withAnnotations < handle
         end
         
         % Get all values for existing cells in a frame
-        function [value, valid_cells] = getAnnotations(obj, time, annotationName)
+        function [value, valid_cells] = getAnnotations(obj, time, annotationIndex)
             valid_cells = find(obj.singleCells(time).point(:,1) >0);
-            index = find(obj.annotationNames, annotationName);
-            if(~isempty(index))
-                value = obj.singleCells(time).annotations(valid_cells, index);
+            if(annotationIndex <= length(obj.annotationNames))
+                value = obj.singleCells(time).annotations(valid_cells, annotationIndex);
+                valid_cells = valid_cells(~isnan(value));
+                value = value(~isnan(value));
             end
         end
         
@@ -65,11 +65,10 @@ classdef CentroidTimeseries_withAnnotations < handle
             value = obj.singleCells(time).value(cell_id);
         end
         
-        function value = getAnnotation(obj, time, cell_id, annotationName)
+        function value = getAnnotation(obj, time, cell_id, annotationIndex)
             value = NaN;
-            index = find(obj.annotationNames, annotationName);
-            if(~isempty(index))
-                value = obj.singleCells(time).annotations(cell_id, index);
+            if(annotationIndex <= length(obj.annotationNames))
+                value = obj.singleCells(time).annotations(cell_id, annotationIndex);
             end
         end
         
@@ -140,11 +139,15 @@ classdef CentroidTimeseries_withAnnotations < handle
         function deleteTrack(obj, cell_id)
             if(cell_id > 0)
                 for i=1:length(obj.singleCells)
-                    obj.singleCells(i).point(cell_id,:) = [0,0];
-                    obj.singleCells(i).value(cell_id,:) = 0;
-                    obj.singleCells(i).annotations(cell_id,:) = 0;
+                    obj.deleteCentroid(i,cell_id);
                 end
             end
+        end
+        
+        function deleteCentroid(obj, timepoint, cell_id)
+            obj.singleCells(timepoint).point(cell_id,:) = [0,0];
+            obj.singleCells(timepoint).value(cell_id,:) = 0;
+            obj.singleCells(timepoint).annotations(cell_id,:) = NaN;
         end
         
     end

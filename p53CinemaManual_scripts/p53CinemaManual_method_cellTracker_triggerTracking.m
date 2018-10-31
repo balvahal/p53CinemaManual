@@ -66,7 +66,6 @@ if(strcmp(altEvent, 'alt')) % Override predictions if user used left click
 end
 obj_cellT.centroidsTracks.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
 if(obj_cellT.firstClick)
-    obj_cellT.initializeKalman(obj_cellT.master.obj_imageViewer.currentFrame);
     obj_cellT.firstClick = 0;
 end
 % Move centroid if there was one in division or death events
