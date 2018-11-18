@@ -1,4 +1,4 @@
-function results = getSingleCellTracks_localSegmentation(database, rawdatapath, group, position, measurementChannels, segmentationChannel, centroids, ff_offset, ff_gain)
+function results = getSingleCellTracks_localSegmentation_enhancedThresholding(database, rawdatapath, group, position, measurementChannels, segmentationChannel, centroids, ff_offset, ff_gain)
 trackedCells = centroids.getTrackedCellIds;
 numTracks = length(trackedCells);
 numTimepoints = length(centroids.singleCells);
@@ -85,14 +85,19 @@ for t=1:1:length(uniqueTimepoints)
         segmentationImage = IntensityImages{segmentationChannelIndex};
         
         binaryMask=GetBlock(segmentationImage,currentCentroids(j,1),currentCentroids(j,2),siz);
+        
+        %binaryMask=log(binaryMask);
         binaryMask=(imfilter(binaryMask,fspecial('gaussian',5,2),'replicate'));
+        binaryMask(binaryMask >= quantile(binaryMask(:), 0.95)) = NaN;
         binaryMask=autoscale(binaryMask);
         
-        g3=binaryMask(max(floor(siz/2)-5, 1):min(floor(siz/2)+5, size(binaryMask,1)),max(floor(siz/2)-5, 1):min(floor(siz/2)+5, size(binaryMask,2)));
-        the=median(g3(:));
-        the=the-1*mad(g3(:));
+%         g3=binaryMask(max(floor(siz/2)-5, 1):min(floor(siz/2)+5, size(binaryMask,1)),max(floor(siz/2)-5, 1):min(floor(siz/2)+5, size(binaryMask,2)));
+%         the=median(g3(:));
+%         the=the-1*mad(g3(:));
+%         binaryMask=binaryMask>(min(median(binaryMask(:)),graythresh(binaryMask))+the)/2;
+
+        binaryMask = im2bw(binaryMask, graythresh(binaryMask));
         
-        binaryMask=binaryMask>(min(median(binaryMask(:)),graythresh(binaryMask))+the)/2;
         binaryMask=imfill(binaryMask,'holes');     
         binaryMask=bwlabel(binaryMask); binaryMask=(binaryMask==binaryMask(floor(siz/2),floor(siz/2)));
         %binaryMask = imdilate(binaryMask,strel('disk',3));
@@ -115,7 +120,7 @@ for t=1:1:length(uniqueTimepoints)
             singleCellTracks_integrated{w}(currentCell,i) = sum(pixelIntensities(pixelIntensities > 0));
             singleCellTracks_median{w}(currentCell,i) = median(pixelIntensities(pixelIntensities > 0));
             singleCellTracks_foci{w}(currentCell,i) = mean(pixelIntensities(1:min(9,length(pixelIntensities))));
-            
+           
             singleCellTracks_distance{w}(currentCell,i) = mean(distanceMask_sorted(1:min(9,length(pixelIntensities))));
             
             subImage=GetBlock(IntensityImages_blurred{w},currentCentroids(j,1),currentCentroids(j,2),siz);

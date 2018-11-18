@@ -379,7 +379,11 @@ set(f,'Visible','on');
             loadStruct = load(fullfile(sourcePath, annotationFile));
             
             % Check intersection of annotationNames
-            savedAnnotations = loadStruct.centroidsTracks.annotationNames;
+            if(isfield(loadStruct.centroidsTracks, 'annotationNames'))
+                savedAnnotations = loadStruct.centroidsTracks.annotationNames;
+            else
+                savedAnnotations = {};
+            end
             currentAnnotations = master.additionalAnnotationNames;
             lostAnnotations = find(~ismember(savedAnnotations, currentAnnotations));
             if(~isempty(lostAnnotations))

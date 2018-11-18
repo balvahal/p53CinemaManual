@@ -67,6 +67,7 @@ classdef p53CinemaManual_object_imageViewer < handle
             % Read an image in the center of the sequence to determine
             % normalization factor
             referenceImage = imresize(obj.readImage(round(master.obj_fileManager.numImages)), obj.imageResizeFactor);
+            referenceImage = imresize(obj.readImage(1), obj.imageResizeFactor);
             normalizationFactor = double(quantile(referenceImage(:), 0.999));
 %             referenceImage = medfilt2(referenceImage, [2,2]);
 %             referenceImage = imbackground(referenceImage, 10, 100);
@@ -100,9 +101,10 @@ classdef p53CinemaManual_object_imageViewer < handle
                         referenceImage = imbackground(OriginalImage, 10, 100);
                         referenceImage = double(referenceImage) / normalizationFactor;
                         referenceImage = medfilt2(referenceImage, [2,2]);
+                       
                         %obj.imageBuffer(:,:,i) = cast(OriginalImage, obj.buffer_resolution);
-                        %obj.imageBuffer(:,:,i) = cast(imnormalize(referenceImage) * maxPossibleValue, obj.buffer_resolution);
-                        %obj.imageBuffer(:,:,i) = cast(imnormalize(OriginalImage) * maxPossibleValue, obj.buffer_resolution);
+%                         obj.imageBuffer(:,:,i) = cast(imnormalize(referenceImage) * maxPossibleValue, obj.buffer_resolution);
+%                         obj.imageBuffer(:,:,i) = cast(imnormalize(OriginalImage) * maxPossibleValue, obj.buffer_resolution);
                         obj.imageBuffer(:,:,i) = cast(double(OriginalImage) / normalizationFactor * maxPossibleValue, obj.buffer_resolution);
                     else
                         obj.imageBuffer(:,:,i) = cast(imnormalize(OriginalImage) * maxPossibleValue, obj.buffer_resolution);

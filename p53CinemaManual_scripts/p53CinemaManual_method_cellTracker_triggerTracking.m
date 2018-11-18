@@ -42,28 +42,31 @@ end
 % If this is the first time the user clicks after starting a new track,
 % define the selected cell
 if(obj_cellT.firstClick)
-    lookupRadius = obj_cellT.getDistanceRadius / 6; % 6 was chosen empircally when comparing a 30 pixel radius search area with a 5 pixel radius selection area
-    [cellCentroid1, cell_id1] = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, queryCentroid, lookupRadius);
-    [cellCentroid2, cell_id2] = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, currentRowCol, 2);
-    if(~isempty(cell_id2))
-        obj_cellT.master.obj_imageViewer.setSelectedCell(cell_id2);
-        queryCentroid = cellCentroid2;
-    elseif(~isempty(cell_id1))
-        obj_cellT.master.obj_imageViewer.setSelectedCell(cell_id1);
-        queryCentroid = cellCentroid1;
-    else
+    if(strcmp(altEvent, 'alt'))
         obj_cellT.master.obj_imageViewer.setSelectedCell(obj_cellT.centroidsTracks.getAvailableCellId);
+    else
+        lookupRadius = obj_cellT.getDistanceRadius / 6; % 6 was chosen empircally when comparing a 30 pixel radius search area with a 5 pixel radius selection area
+        [cellCentroid1, cell_id1] = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, queryCentroid, lookupRadius);
+        [cellCentroid2, cell_id2] = obj_cellT.centroidsTracks.getClosestCentroid(currentTimepoint, currentRowCol, 2);
+        if(~isempty(cell_id2))
+            obj_cellT.master.obj_imageViewer.setSelectedCell(cell_id2);
+            queryCentroid = cellCentroid2;
+        elseif(~isempty(cell_id1))
+            obj_cellT.master.obj_imageViewer.setSelectedCell(cell_id1);
+            queryCentroid = cellCentroid1;
+        else
+            obj_cellT.master.obj_imageViewer.setSelectedCell(obj_cellT.centroidsTracks.getAvailableCellId);
+        end
     end
-    
 end
 
 %% Set the centroids in selected cell and time
-selectedCell = obj_cellT.master.obj_imageViewer.selectedCell;
 if(strcmp(altEvent, 'alt')) % Override predictions if user used left click
     queryCentroid = currentRowCol;
     newLocalMaxima = obj_cellT.centroidsLocalMaxima.getAvailableCellId;
     obj_cellT.centroidsLocalMaxima.setCentroid(currentTimepoint, newLocalMaxima, queryCentroid, 0);
 end
+selectedCell = obj_cellT.master.obj_imageViewer.selectedCell;
 obj_cellT.centroidsTracks.setCentroid(currentTimepoint, selectedCell, queryCentroid, 1);
 if(obj_cellT.firstClick)
     obj_cellT.firstClick = 0;

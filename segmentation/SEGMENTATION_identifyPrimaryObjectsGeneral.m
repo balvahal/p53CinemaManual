@@ -74,9 +74,9 @@ BlurredImage = imfilter(OriginalImage_normalized, fspecial('gaussian', round(Siz
 %% THRESHOLDING
 %
 ThresholdedImage = imfill(OriginalImage > MinimumThreshold, 'holes');
-edgeImage = imfill(imdilate(edge(OriginalImage, 'canny'), strel('disk', 2)), 'holes');
-%edgeImage = imfill(imdilate(edge(BlurredImage, 'canny'), strel('disk', 2)), 'holes');
-%edgeImage = imdilate(imopen(imerode(edgeImage, strel('disk', 3)), strel('disk', 2)), strel('disk', 1));
+%edgeImage = imfill(imdilate(edge(OriginalImage, 'canny'), strel('disk', 2)), 'holes');
+edgeImage = imfill(imdilate(edge(BlurredImage, 'canny'), strel('disk', 2)), 'holes');
+edgeImage = imdilate(imopen(imerode(edgeImage, strel('disk', 3)), strel('disk', 2)), strel('disk', 1));
 % ObjectsLabeled = bwlabel(edgeImage);
 % props = regionprops(ObjectsLabeled, 'Solidity');
 % primarySegmentation = ismember(ObjectsLabeled, find([props.Solidity] >= p.Results.SolidityThreshold));
@@ -85,13 +85,14 @@ edgeImage = imfill(imdilate(edge(OriginalImage, 'canny'), strel('disk', 2)), 'ho
 % Objects = edgeImage;
 % Option 2: complement with intensity based thresholding
 %Objects = imfill((log(OriginalImage+1) > SEGMENTATION_TriangleMethod(log(OriginalImage+1), 0.99) * 1), 'holes');
-Objects = imfill(OriginalImage > SEGMENTATION_TriangleMethod(OriginalImage, 1) * 1.25, 'holes');
-%Objects = imfill((BlurredImage > SEGMENTATION_TriangleMethod(BlurredImage, 1) * 1.2), 'holes');
+%Objects = imfill(OriginalImage > SEGMENTATION_TriangleMethod(OriginalImage, 0.9999), 'holes');
+Objects = imfill((BlurredImage > SEGMENTATION_TriangleMethod(BlurredImage, 1) * 1.5), 'holes');
 %Objects = imfill(im2bw(BlurredImage, graythresh(BlurredImage)), 'holes');
 Objects = (Objects & ThresholdedImage) | edgeImage;
 Objects = imopen(Objects, strel('disk', 5));
 
-Objects = bwlabel(Objects .* ~imdilate(edgeImage, strel('disk', 5)) + edgeImage);
+%Objects = bwlabel(Objects .* ~imdilate(edgeImage, strel('disk', 10)) + edgeImage);
+Objects = bwlabel(Objects + edgeImage);
 
 % figure;
 % image(imoverlay(imoverlay(imnormalize_quantile(OriginalImage, 0.99), bwperim(Objects), [0.9, 0.5, 0]), bwperim(edgeImage), [0.3, 1, 0.3]));

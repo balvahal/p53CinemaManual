@@ -48,11 +48,12 @@ function measurements = getDatasetTraces_localSegmentation(database, rawdata_pat
     
     counter = 1;
     maxUniqueCellIdentifier = 0;
+    %i = find(strcmp(trackingFiles, 'M20170724_5_5Gy_s53_tracking.mat')) %
+    % cell = 64
     for i=1:length(trackingFiles)
         fprintf('%s: ', trackingFiles{i});
         load(fullfile(tracking_path, trackingFiles{i}));
-        results = getSingleCellTracks_localSegmentation(database, rawdata_path, selectedGroup, selectedPosition, measurementChannels, segmentationChannel, centroidsTracks, ff_offset, ff_gain);
-        %[traces_mean, traces_median, traces_foci, traces_area, traces_solidity] = getSingleCellTracks_binucleatedCells(database, rawdata_path, selectedGroup, selectedPosition, measurementChannels, segmentationChannel, centroidsTracks, ff_offset, ff_gain);
+        results = getSingleCellTracks_localSegmentation_enhancedThresholding(database, rawdata_path, selectedGroup, selectedPosition, measurementChannels, segmentationChannel, centroidsTracks, ff_offset, ff_gain);
         divisionMatrix = getDivisionMatrix(centroidsTracks, centroidsDivisions);
         deathMatrix = getDivisionMatrix(centroidsTracks, centroidsDeath);
         
