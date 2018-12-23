@@ -5,11 +5,12 @@ traces_peaks_locs = zeros(size(traces));
 traces_valleys_locs = zeros(size(traces));
 traces_peaks_values = zeros(size(traces));
 traces_valleys_values = zeros(size(traces));
+traces_peaks_prominence = zeros(size(traces));
 
 for i=1:size(traces,1)
     try
         smoothTraces = smooth(traces(i,:),smoothWindow)';
-        [pks,p] = findpeaks(smoothTraces, 'MinPeakProminence', delta, 'MinPeakDistance', spacing);
+        [pks,p,w,prominence] = findpeaks(smoothTraces, 'MinPeakProminence', delta, 'MinPeakDistance', spacing);
         [valleys,v] = findpeaks(-smoothTraces, 'MinPeakProminence', delta, 'MinPeakDistance', spacing);
         
         limit(i) = length(smoothTraces);
@@ -18,6 +19,9 @@ for i=1:size(traces,1)
             validPoints = p < limit(i);
             p = p(validPoints);
             pks = pks(validPoints);
+            w = w(validPoints);
+            prominence = prominence(validPoints);
+            
             validPoints = v < limit(i);
             v = v(validPoints);
             valleys = -valleys(validPoints);
@@ -26,6 +30,7 @@ for i=1:size(traces,1)
         end
         traces_peaks_locs(i,p) = 1;
         traces_peaks_values(i,p) = traces(i,p);
+        traces_peaks_prominence(i,p) = prominence;
         traces_valleys_locs(i,v) = 1;
         traces_valleys_values(i,v) = traces(i,v);
         
@@ -59,4 +64,5 @@ resultTraces.traces_valleys_locs = traces_valleys_locs;
 resultTraces.traces_peaks_values = traces_peaks_values;
 resultTraces.traces_valleys_values = traces_valleys_values;
 resultTraces.traces_interp_valleys = traces_interp_valleys;
+resultTraces.traces_peaks_prominence = traces_peaks_prominence;
 end

@@ -1,5 +1,4 @@
 function output = crosscorrelation(trace1, trace2, range)
-    trimming
     output = zeros(length(range), 1);
     valid_elements1 = trace1 > -1;
     valid_elements2 = trace2 > -1;

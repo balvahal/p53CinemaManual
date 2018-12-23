@@ -120,6 +120,7 @@ for t=1:1:length(uniqueTimepoints)
             singleCellTracks_integrated{w}(currentCell,i) = sum(pixelIntensities(pixelIntensities > 0));
             singleCellTracks_median{w}(currentCell,i) = median(pixelIntensities(pixelIntensities > 0));
             singleCellTracks_foci{w}(currentCell,i) = mean(pixelIntensities(1:min(9,length(pixelIntensities))));
+            singleCellTracks_variance{w}(currentCell,i) = var(pixelIntensities(pixelIntensities > 0));
            
             singleCellTracks_distance{w}(currentCell,i) = mean(distanceMask_sorted(1:min(9,length(pixelIntensities))));
             

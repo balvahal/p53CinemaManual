@@ -72,7 +72,7 @@ for t=1:1:length(uniqueTimepoints)
         IntensityImages_blurred{j} = imfilter(IntensityImages{j}, fspecial('gaussian', 5, 1));
         %IntensityImages_blurred{j} = imfilter(IntensityImages{j}, fspecial('gaussian', 20, 5));
     end
-
+    
     scalingFactor = 1;
     currentCentroids(:,1) = max(1,min(floor(currentCentroids(:,1) * scalingFactor), info.Height));
     currentCentroids(:,2) = max(1, min(floor(currentCentroids(:,2) * scalingFactor), info.Width));
@@ -99,7 +99,7 @@ for t=1:1:length(uniqueTimepoints)
         
         distanceMask = bwdist(~binaryMask);
         distanceMask = distanceMask(:);
-        
+                
         nuclearMask = binaryMask;
         cytoplasmicMask = imdilate(binaryMask,strel('disk',3)) .* (~imdilate(binaryMask,strel('disk',1)));
         
@@ -115,6 +115,7 @@ for t=1:1:length(uniqueTimepoints)
             singleCellTracks_integrated{w}(currentCell,i) = sum(pixelIntensities(pixelIntensities > 0));
             singleCellTracks_median{w}(currentCell,i) = median(pixelIntensities(pixelIntensities > 0));
             singleCellTracks_foci{w}(currentCell,i) = mean(pixelIntensities(1:min(9,length(pixelIntensities))));
+            singleCellTracks_variance{w}(currentCell,i) = var(pixelIntensities(pixelIntensities > 0));
             
             singleCellTracks_distance{w}(currentCell,i) = mean(distanceMask_sorted(1:min(9,length(pixelIntensities))));
             

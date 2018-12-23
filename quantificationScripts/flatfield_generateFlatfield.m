@@ -40,7 +40,7 @@ function IM = makeoffset(ffpath, chan)
     filename = fullfile(ffpath, sprintf('%s_0', chan));
     info = imfinfo(filename,'tif');
     IM=double(imread(filename,'tif','Info',info));
-    IM=xysmoothen(IM,9);
+    %IM=xysmoothen(IM,9);
     IM=floor(IM);
     IM=uint16(IM);
     outputFile = fullfile(ffpath, sprintf('%s_offset.tif', chan));
@@ -51,7 +51,7 @@ end
 function [IM, max_temp] = makegain(ffpath, filenames, exposure, chan)
     % It is assumed that the filenames and exposures have a 1-to-1
     % correspondence
-    info = imfinfo(fullfile(ffpath, filenames{1}),'tif');
+    info = imfinfo(fullfile(ffpath, filenames{2}),'tif');
     % Allocate more space to put more weight on the dark image
     flatfieldIM = zeros(info.Height, info.Width, length(filenames) + 5);
     % flatfieldIM = cell(length(filenames));

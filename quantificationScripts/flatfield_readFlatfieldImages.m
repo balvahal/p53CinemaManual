@@ -11,6 +11,7 @@ function [ff_offset, ff_gain] = flatfield_readFlatfieldImages(ffpath, measured_c
     ff_gain = imread(fullfile(ffpath, gainFile));
     maxTemp = regexp(gainFile, 'gain(\d+)\.', 'tokens');
     maxTemp = str2double(maxTemp{1}) / 1000;
+    ff_gain(ff_gain == 0) = min(ff_gain(ff_gain > 0));
     ff_gain = double(double(ff_gain) * maxTemp / 2^16);
     
     % Correct for binning

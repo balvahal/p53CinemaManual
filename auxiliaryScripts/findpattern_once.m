@@ -1,4 +1,4 @@
-function idx = findpattern(in_array, pattern)
+function idx = findpattern_once(in_array, pattern)
 %FINDPATTERN  Find a pattern in an array.
 %
 %    K = FINDPATTERN(ARRAY, PATTERN) returns the starting indices
@@ -28,6 +28,11 @@ function idx = findpattern(in_array, pattern)
 % As currently implemented, this routine has poor performance for patterns
 % with more than half a dozen elements where the first element in the
 % pattern matches many positions in the array.
+
+if(numel(pattern) == 1)
+    idx = find(in_array == pattern, 1, 'first');
+    return;
+end
 
 locations = cell(1, numel(pattern));
 for p = 1:(numel(pattern))
