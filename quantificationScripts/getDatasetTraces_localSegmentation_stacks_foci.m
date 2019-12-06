@@ -1,4 +1,9 @@
-function measurements = getDatasetTraces_localSegmentation_stacks_foci(database, rawdata_path, tracking_path, ffpath, measurementChannels, segmentationChannel)
+function measurements = getDatasetTraces_localSegmentation_stacks_foci(database, rawdata_path, tracking_path, ffpath, measurementChannels, segmentationChannel, varargin)
+    if(nargin > 6)
+        separateCells = varargin{1};
+    else
+        separateCells = 1;
+    end
     trackingFiles = dir(tracking_path);
     trackingFiles = {trackingFiles(:).name};
     validFiles = regexp(trackingFiles, '\.mat', 'once');
@@ -57,9 +62,9 @@ function measurements = getDatasetTraces_localSegmentation_stacks_foci(database,
         load(fullfile(tracking_path, trackingFiles{i}));
         segmentationOutput = fullfile('SEGMENT_DATA', sprintf('%s_w%s_s%d_segment.TIF', selectedGroup, segmentationChannel, selectedPosition));
         if(exist(segmentationOutput, 'file'))
-            [results, segmentationResults] = getSingleCellTracks_localSegmentation_stacks_foci(database, rawdata_path, selectedGroup, selectedPosition, measurementChannels, segmentationChannel, centroidsTracks, ff_offset, ff_gain, segmentationOutput);
+            [results, segmentationResults] = getSingleCellTracks_localSegmentation_stacks_foci(database, rawdata_path, selectedGroup, selectedPosition, measurementChannels, segmentationChannel, centroidsTracks, ff_offset, ff_gain, separateCells, segmentationOutput);
         else
-            [results, segmentationResults] = getSingleCellTracks_localSegmentation_stacks_foci(database, rawdata_path, selectedGroup, selectedPosition, measurementChannels, segmentationChannel, centroidsTracks, ff_offset, ff_gain);            
+            [results, segmentationResults] = getSingleCellTracks_localSegmentation_stacks_foci(database, rawdata_path, selectedGroup, selectedPosition, measurementChannels, segmentationChannel, centroidsTracks, ff_offset, ff_gain, separateCells);            
         end
         
         if(~exist(segmentationOutput, 'file'))

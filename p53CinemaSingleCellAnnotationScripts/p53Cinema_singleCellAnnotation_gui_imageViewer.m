@@ -47,6 +47,11 @@ colormap(haxesImageViewer,gray(255));
 sourceImage = image('Parent',haxesImageViewer,'CData',master.obj_imageViewer.currentImage);
 hold(haxesImageViewer, 'on');
 
+annotatedCellsPatch = patch('XData',[],'YData',[],...
+    'EdgeColor','none','FaceColor','none','MarkerSize',15,...
+    'Marker','o','MarkerEdgeColor',[0.9,0.75,0],'MarkerFaceColor',[255 215 0]/255,...
+    'Parent',haxesImageViewer,'LineSmoothing', 'off');
+
 trackedCellsPatch = patch('XData',[],'YData',[],...
     'EdgeColor','none','FaceColor','none','MarkerSize',10,...
     'Marker','o','MarkerEdgeColor',[0,0.75,1],'MarkerFaceColor',[0,0.25,1],...
@@ -76,14 +81,19 @@ hx = 0;
 hy = 0;
 
 sliderStep = 1/(master.obj_fileManager.numImages - 1);
-hsliderExploreStack = uicontrol('Style','slider','Units','characters',...
-    'Min',0,'Max',1,'BackgroundColor',[255 215 0]/255,...
-    'Value',0,'SliderStep',[sliderStep sliderStep],'Position',[hwidth, hy, fwidth-(hwidth*2), hheight],...
-    'Callback',{@sliderExploreStack_Callback});
-try    % R2013b and older
-    addlistener(hsliderExploreStack,'ActionEvent',@sliderExploreStack_Callback);
-catch  % R2014a and newer
-    addlistener(hsliderExploreStack,'ContinuousValueChange',@sliderExploreStack_Callback);
+if(~isinf(sliderStep))
+    sliderStep = 0;
+    hsliderExploreStack = uicontrol('Style','slider','Units','characters',...
+        'Min',0,'Max',1,'BackgroundColor',[255 215 0]/255,...
+        'Value',0,'SliderStep',[sliderStep sliderStep],'Position',[hwidth, hy, fwidth-(hwidth*2), hheight],...
+        'Callback',{@sliderExploreStack_Callback});
+    try    % R2013b and older
+        addlistener(hsliderExploreStack,'ActionEvent',@sliderExploreStack_Callback);
+    catch  % R2014a and newer
+        addlistener(hsliderExploreStack,'ContinuousValueChange',@sliderExploreStack_Callback);
+    end
+else
+    hsliderExploreStack = [];
 end
 
 hpushbuttonFirstImage = uicontrol('Style','pushbutton','Units','characters',...
@@ -139,6 +149,7 @@ handles.pushbuttonLastImage = hpushbuttonLastImage;
 handles.hsliderExploreStack = hsliderExploreStack;
 handles.cmapHighlight = cmapHighlight;
 
+handles.annotatedCellsPatch = annotatedCellsPatch;
 handles.trackedCellsPatch = trackedCellsPatch;
 handles.selectedCellPatch = selectedCellPatch;
 handles.cellsInRangePatch = cellsInRangePatch;
@@ -166,6 +177,8 @@ set(f,'Visible','on');
 %
     function fKeyPressFcn(~,keyInfo)
         switch keyInfo.Key
+            case '1'
+                master.obj_imageViewer.setAnnotation(keyInfo.Key);
             case 'period'
                 master.obj_imageViewer.nextFrame;
             case 'comma'

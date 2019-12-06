@@ -53,8 +53,8 @@ function measurements = getDatasetTraces_localSegmentation(database, rawdata_pat
     for i=1:length(trackingFiles)
         fprintf('%s: ', trackingFiles{i});
         load(fullfile(tracking_path, trackingFiles{i}));
-        %results = getSingleCellTracks_localSegmentation_enhancedThresholding(database, rawdata_path, selectedGroup, selectedPosition, measurementChannels, segmentationChannel, centroidsTracks, ff_offset, ff_gain);
-        results = getSingleCellTracks_localSegmentation(database, rawdata_path, selectedGroup, selectedPosition, measurementChannels, segmentationChannel, centroidsTracks, ff_offset, ff_gain);
+        results = getSingleCellTracks_localSegmentation_enhancedThresholding(database, rawdata_path, selectedGroup, selectedPosition, measurementChannels, segmentationChannel, centroidsTracks, ff_offset, ff_gain);
+        %results = getSingleCellTracks_localSegmentation(database, rawdata_path, selectedGroup, selectedPosition, measurementChannels, segmentationChannel, centroidsTracks, ff_offset, ff_gain);
         divisionMatrix = getDivisionMatrix(centroidsTracks, centroidsDivisions);
         deathMatrix = getDivisionMatrix(centroidsTracks, centroidsDeath);
         

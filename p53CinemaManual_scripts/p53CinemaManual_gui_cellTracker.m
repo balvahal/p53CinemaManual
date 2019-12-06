@@ -325,7 +325,7 @@ set(f,'Visible','on');
         [annotationFile, sourcePath] = uigetfile(fullfile(master.obj_fileManager.mainpath, '*.mat;*.txt'));
         if(isempty(annotationFile))
             return
-        end;
+        end
         [~,~,etx] = fileparts(annotationFile);
         if(strcmp(etx, '.txt'))
             % If the extension of the file is txt, assume that it is a
@@ -369,7 +369,7 @@ set(f,'Visible','on');
                             master.obj_imageViewer.obj_cellTracker.centroidsDeath.singleCells(i).point(subIndex(subDeath),:) = subCentroids(subDeath,:) * master.obj_imageViewer.imageResizeFactor;
                         end
                     end
-                    for j=1:length(savedCentroids)
+                    for j=1:length(savedAnnotations)
                         [~, annotationIndex] = ismember(savedAnnotations(j), currentAnnotations);
                         master.obj_imageViewer.obj_cellTracker.centroidsTracks.singleCells(t).annotations(:,annotationIndex) = loadStruct.centroidsTracks.singleCells(t).annotations(:,annotationIndex);
                     end

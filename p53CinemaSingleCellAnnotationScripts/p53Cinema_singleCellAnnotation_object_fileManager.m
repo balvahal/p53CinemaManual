@@ -117,8 +117,13 @@ classdef p53Cinema_singleCellAnnotation_object_fileManager < handle
             obj.numImages = length(obj.currentImageTimepoints);
         end
         
-        function filename = getFilename(obj, position, channel, timepoint)
-            filename = getDatabaseFile(obj.database, channel, position, timepoint);
+        function filename = getFilename(obj, group, position, channel, cell_id)
+            validFile = strcmp(obj.database.group_label, group) & strcmp(obj.database.channel_name, channel) & obj.database.position_number == position & obj.database.cell_id == cell_id;
+            if(sum(validFile) == 1)
+                filename = obj.database.filename{validFile};
+            else
+                filename = [];
+            end
         end
         
         %% Delete function

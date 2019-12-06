@@ -14,10 +14,14 @@ classdef CentroidTimeseries_nonLinked < handle
             obj.singleCells = repmat(pointStructure, maxTimepoint, 1);
         end
         
+        function setValue(obj, time, cell_id, value)
+            obj.singleCells(time).value(cell_id) = value;
+        end
+        
         function setCentroid(obj, time, cell_id, centroid, value)
             obj.singleCells(time).point(cell_id,1) = max(0,centroid(1));
             obj.singleCells(time).point(cell_id,2) = max(0,centroid(2));
-            obj.singleCells(time).value(cell_id) = value;
+            obj.setValue(time, cell_id, value);
         end
         
         % A function for inserting centroids from the initial index,

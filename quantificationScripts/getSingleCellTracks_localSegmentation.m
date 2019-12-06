@@ -19,6 +19,7 @@ singleCellTracks_radius = -ones(numTracks, numTimepoints);
 [~, segmentationChannelIndex] = ismember(segmentationChannel, measurementChannels);
 
 %info = imfinfo(fullfile(rawdatapath, getDatabaseFile2(database, group, measurementChannels{1}, position, 1)));
+database = database(ismember(database.channel_name, measurementChannels),:);
 info = imfinfo(fullfile(rawdatapath, database.filename{1}));
 info = info(1);
 uniqueTimepoints = unique(database.timepoint);

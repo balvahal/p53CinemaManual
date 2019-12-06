@@ -112,16 +112,15 @@ hx = 0;
 hy = 0;
 
 sliderStep = 1/(master.obj_fileManager.numImages - 1);
-hsliderExploreStack = uicontrol('Style','slider','Units','characters',...
-    'Min',0,'Max',1,'BackgroundColor',[255 215 0]/255,...
-    'Value',0,'SliderStep',[sliderStep sliderStep],'Position',[hx hy hwidth hheight],...
-    'Callback',{@sliderExploreStack_Callback});
+if(~isinf(sliderStep))
+    hsliderExploreStack = uicontrol('Style','slider','Units','characters',...
+        'Min',0,'Max',1,'BackgroundColor',[255 215 0]/255,...
+        'Value',0,'SliderStep',[sliderStep sliderStep],'Position',[hx hy hwidth hheight],...
+        'Callback',{@sliderExploreStack_Callback});
     addlistener(hsliderExploreStack,'ContinuousValueChange',@sliderExploreStack_Callback);
-% try    % R2013b and older
-%     addlistener(hsliderExploreStack,'ActionEvent',@sliderExploreStack_Callback);
-% catch  % R2014a and newer
-%     addlistener(hsliderExploreStack,'ContinuousValueChange',@sliderExploreStack_Callback);
-% end
+else
+    hsliderExploreStack = [];
+end
 
 hx = 0;
 hy = hy + hheight + 1;

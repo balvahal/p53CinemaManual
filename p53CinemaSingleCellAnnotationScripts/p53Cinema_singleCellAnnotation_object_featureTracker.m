@@ -19,8 +19,8 @@ classdef p53Cinema_singleCellAnnotation_object_featureTracker < handle
         %% Constructor
         function obj = p53Cinema_singleCellAnnotation_object_featureTracker(master)
             obj.gui_featureTracker = p53Cinema_singleCellAnnotation_gui_featureTracker(master);
-            obj.centroidsLocalMaxima = CentroidTimeseries_nonLinked(master.obj_fileManager.maxTimepoint, 10000);
-            obj.centroidsFeatures = CentroidTimeseries_nonLinked(master.obj_fileManager.maxTimepoint, 1000);
+            obj.centroidsLocalMaxima = CentroidTimeseries_nonLinked(master.obj_fileManager.maxTimepoint, 100000);
+            obj.centroidsFeatures = CentroidTimeseries_nonLinked(master.obj_fileManager.maxTimepoint, 100000);
             
             obj.master = master;
         end

@@ -1,5 +1,5 @@
-function [results, segmentationImages] = getSingleCellTracks_localSegmentation_stacks_foci(database, rawdatapath, group, position, measurementChannels, segmentationChannel, centroids, ff_offset, ff_gain, varargin)
-if(nargin > 9)
+function [results, segmentationImages] = getSingleCellTracks_localSegmentation_stacks_foci(database, rawdatapath, group, position, measurementChannels, segmentationChannel, centroids, ff_offset, ff_gain, separateCells, varargin)
+if(nargin > 10)
     segmentationFile = varargin{1};
 else
     segmentationFile = [];
@@ -57,12 +57,17 @@ for t=1:1:length(uniqueTimepoints)
     
     % Read images for every channel
     for j=1:length(measurementChannels)
+        
         measurementFile = database.filename{strcmp(database.group_label,group) & strcmp(database.channel_name, measurementChannels{j}) & database.position_number == position};
         if(isempty(measurementFile))
             continue;
         end
         try
-            IntensityImages{j} = double(imread(fullfile(rawdatapath, measurementFile),i));
+            if(strcmp(measurementChannels{j}, 'Texas'))
+                IntensityImages{j} = double(imread(fullfile(rawdatapath, measurementFile),floor(i/3)+1));                
+            else     
+                IntensityImages{j} = double(imread(fullfile(rawdatapath, measurementFile),i));
+            end
         catch e
             continue;
         end
@@ -125,37 +130,41 @@ for t=1:1:length(uniqueTimepoints)
         binaryMask=imerode(binaryMask,strel('disk', 2));
         binaryMask=imopen(binaryMask,strel('disk', 10));
         binaryMask=imdilate(binaryMask,strel('disk', 2));
-
+        
         binaryMask = bwlabel(binaryMask);
         binaryMask = ismember(binaryMask, binaryMask(currentCentroidIndexes)) & binaryMask > 0;
-        
         distanceMask = bwdist(~binaryMask);
-        refinedMaxima = imregionalmax(distanceMask .* (distanceMask > 10));
-        refinedMaxima = bwmorph(refinedMaxima, 'shrink', 'Inf');
         
-        MaximaSuppressionSize = 10;
-        MaximaMask = getnhood(strel('disk', MaximaSuppressionSize));
-        refinedMaxima(distanceMask < ordfilt2(distanceMask,sum(MaximaMask(:)),MaximaMask)) = 0;
-
-        [refined_col, refined_row] = ind2sub(size(refinedMaxima), find(refinedMaxima));
-        if(length(refined_col) >= size(currentCentroids,1))
-            distanceMatrix = zeros(size(currentCentroids,1), length(refined_col));
-            for k=1:size(currentCentroids,1)
-                distance = sqrt((refined_col - currentCentroids(k,1)).^2 + (refined_row - currentCentroids(k,2)).^2);
-                %newCentroids(k) = find(distance == min(distance), 1, 'first');
-                distanceMatrix(k,:) = distance;
-            end
+        if(separateCells)
+            refinedMaxima = imregionalmax(distanceMask .* (distanceMask > 10));
+            refinedMaxima = bwmorph(refinedMaxima, 'shrink', 'Inf');
             
-            newCentroids = assignmentoptimal(distanceMatrix);
-            refinedCentroidMask = zeros(size(refinedMaxima));
-            refinedCentroidMask(sub2ind(size(refinedMaxima), refined_col(newCentroids), refined_row(newCentroids))) = 1;
+            MaximaSuppressionSize = 10;
+            MaximaMask = getnhood(strel('disk', MaximaSuppressionSize));
+            refinedMaxima(distanceMask < ordfilt2(distanceMask,sum(MaximaMask(:)),MaximaMask)) = 0;
+            
+            [refined_col, refined_row] = ind2sub(size(refinedMaxima), find(refinedMaxima));
+            if(length(refined_col) >= size(currentCentroids,1))
+                distanceMatrix = zeros(size(currentCentroids,1), length(refined_col));
+                for k=1:size(currentCentroids,1)
+                    distance = sqrt((refined_col - currentCentroids(k,1)).^2 + (refined_row - currentCentroids(k,2)).^2);
+                    %newCentroids(k) = find(distance == min(distance), 1, 'first');
+                    distanceMatrix(k,:) = distance;
+                end
+                
+                newCentroids = assignmentoptimal(distanceMatrix);
+                refinedCentroidMask = zeros(size(refinedMaxima));
+                refinedCentroidMask(sub2ind(size(refinedMaxima), refined_col(newCentroids), refined_row(newCentroids))) = 1;
+            else
+                refinedCentroidMask = centroidMask;
+            end
+            %watershedImage = imimposemin(-blurredSegmentationImage, refinedCentroidMask);
+            watershedImage = imimposemin(-distanceMask, refinedCentroidMask);
+            watershedImage = (watershed(watershedImage) > 0) .* double(binaryMask);
+            watershedImage = bwlabel(watershedImage);
         else
-            refinedCentroidMask = centroidMask;
+            watershedImage = binaryMask;
         end
-        %watershedImage = imimposemin(-blurredSegmentationImage, refinedCentroidMask);
-        watershedImage = imimposemin(-distanceMask, refinedCentroidMask);
-        watershedImage = (watershed(watershedImage) > 0) .* double(binaryMask);
-        watershedImage = bwlabel(watershedImage);
     else
         binaryMask = imread(segmentationFile, i);
         distanceMask = bwdist(~binaryMask);
@@ -174,7 +183,9 @@ for t=1:1:length(uniqueTimepoints)
         currentBinaryMask = watershedImage == watershedImage(currentCentroids(j,1), currentCentroids(j,2));
         
         currentDistanceMask = distanceMask .* currentBinaryMask; currentDistanceMask = currentDistanceMask(:);
-        currentCentroidMask = imdilate(centroidMask, strel('disk', 10)) .* currentBinaryMask;
+        currentCentroidMask = zeros(size(currentBinaryMask));
+        currentCentroidMask(currentCentroidIndexes(j)) = 1;
+        currentCentroidMask = imdilate(currentCentroidMask, strel('disk', 10)) .* currentBinaryMask;
         
         nuclearMask = currentBinaryMask;
         cytoplasmicMask = imdilate(currentBinaryMask,strel('disk',3)) .* (~imdilate(currentBinaryMask,strel('disk',1)));
@@ -185,12 +196,12 @@ for t=1:1:length(uniqueTimepoints)
             subImage1(currentBinaryMask == 0) = NaN;
             %subImage1=subImage.*currentBinaryMask;
             subImage2=subImage.*currentCentroidMask;
-            [pixelIntensities1, ordering]=sort(subImage1(:),'descend');
-            [pixelIntensities2, ~]=sort(subImage2(:),'descend');
+            [pixelIntensities1, ordering]=sort(subImage1(~isnan(subImage1)),'descend');
+            [pixelIntensities2, ~]=sort(subImage2(~isnan(subImage2)),'descend');
             distanceMask_sorted = currentDistanceMask(ordering);
             
             try
-                foci_intensity = nanmean(pixelIntensities1(1:min(9,length(pixelIntensities1))));
+                foci_intensity = nanmean(pixelIntensities2(1:min(9,length(pixelIntensities2))));
                 singleCellTracks_foci{w}(currentCell,i) = foci_intensity;
                 singleCellTracks_mean{w}(currentCell,i) = nanmean(pixelIntensities1(pixelIntensities1 > 0));
                 singleCellTracks_dilated{w}(currentCell,i) = IntensityImages_blurred{w}(currentCentroids(j,1),currentCentroids(j,2));
@@ -207,16 +218,15 @@ for t=1:1:length(uniqueTimepoints)
                 a = 1;
             end
         end
-    end
-    singleCellTracks_area(currentCell,i) = sum(binaryMask(:));
-    singleCellTracks_radius(currentCell,i) = max(currentDistanceMask);
-    
-    nuclearMask = imclearborder(nuclearMask);
-    if(sum(nuclearMask(:)) == 0)
-        singleCellTracks_solidity(currentCell,i) = -1;
-    else
-        props = regionprops(nuclearMask, 'Solidity');
-        singleCellTracks_solidity(currentCell,i) = props.Solidity;
+        singleCellTracks_radius(currentCell,i) = max(currentDistanceMask);
+        singleCellTracks_area(currentCell,i) = sum(binaryMask(:));
+        nuclearMask = imclearborder(nuclearMask);
+        if(sum(nuclearMask(:)) == 0)
+            singleCellTracks_solidity(currentCell,i) = -1;
+        else
+            props = regionprops(nuclearMask, 'Solidity');
+            singleCellTracks_solidity(currentCell,i) = props.Solidity;
+        end
     end
     
     % Repeated values (divisions, for instance)

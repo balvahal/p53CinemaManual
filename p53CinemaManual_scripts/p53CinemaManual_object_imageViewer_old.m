@@ -67,7 +67,8 @@ classdef p53CinemaManual_object_imageViewer < handle
             % Read an image in the center of the sequence to determine
             % normalization factor
             referenceImage = imresize(obj.readImage(round(master.obj_fileManager.numImages)), obj.imageResizeFactor);
-            referenceImage = imresize(obj.readImage(1), obj.imageResizeFactor);
+            %referenceImage = imresize(obj.readImage(1), obj.imageResizeFactor);
+            normalizationFactor = double(quantile(referenceImage(:), 0.999));
             normalizationFactor = double(quantile(referenceImage(:), 1));
 %             referenceImage = medfilt2(referenceImage, [2,2]);
 %             referenceImage = imbackground(referenceImage, 10, 100);
@@ -411,9 +412,11 @@ classdef p53CinemaManual_object_imageViewer < handle
             handles = guidata(obj.gui_imageViewer);
             %handlesZoomMap = guidata(obj.gui_zoomMap);
             cellTrackerHandles = guidata(obj.obj_cellTracker.gui_cellTracker);
-
-            sliderStep = get(handles.hsliderExploreStack,'SliderStep');
-            set(handles.hsliderExploreStack,'Value',sliderStep(1)*(obj.currentFrame-1));
+            
+            if(~isempty(handles.hsliderExploreStack))
+                sliderStep = get(handles.hsliderExploreStack,'SliderStep');
+                set(handles.hsliderExploreStack,'Value',sliderStep(1)*(obj.currentFrame-1));
+            end
             set(handles.currentCellTrace, 'xdata', [], 'ydata', []);
             
             % Set tracked centroids patch

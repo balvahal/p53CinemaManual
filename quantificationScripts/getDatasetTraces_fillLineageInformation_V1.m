@@ -1,17 +1,13 @@
-function measurements = getDatasetTraces_fillLineageInformation(database, rawdata_path, trackingPath, ffpath, channel, varargin)
+function measurements = getDatasetTraces_fillLineageInformation_V1(database, rawdata_path, trackingPath, ffpath, channel, varargin)
     if(nargin > 5)
         blurRadius = varargin{1};
     else
         blurRadius = 7;
     end
     trackingFiles = dir(trackingPath);
-    fprintf('Read tracking files: %d\n', length(trackingFiles));
     trackingFiles = {trackingFiles(:).name};
-    fprintf('Read tracking files: %d\n', length(trackingFiles));
     validFiles = regexp(trackingFiles, '\.mat', 'once');
-    fprintf('Valid tracking files: %d\n', sum(~cellfun(@isempty, validFiles)));
     trackingFiles = trackingFiles(~cellfun(@isempty, validFiles));
-    fprintf('Filtered tracking files: %d\n', length(trackingFiles));
     
     load(fullfile(trackingPath, trackingFiles{1}));
     numTimepoints = length(centroidsTracks.singleCells);

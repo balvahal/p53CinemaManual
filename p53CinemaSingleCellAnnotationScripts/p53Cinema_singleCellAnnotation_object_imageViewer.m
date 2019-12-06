@@ -238,7 +238,7 @@ classdef p53Cinema_singleCellAnnotation_object_imageViewer < handle
             else
                 % Load images one by one
                 viewerChannel = getCurrentPopupString(imageViewerHandles.hpopupViewerChannel);
-                filename = obj.master.obj_fileManager.getFilename(obj.master.obj_fileManager.selectedPosition, viewerChannel, obj.currentTimepoint);
+                filename = obj.master.obj_fileManager.getFilename(obj.master.obj_fileManager.selectedGroup, obj.master.obj_fileManager.selectedPosition, viewerChannel, obj.master.obj_fileManager.selectedCell);
                 if(~isempty(filename))
                     IM = imresize(imread(fullfile(obj.master.obj_fileManager.rawdatapath, filename)), obj.imageResizeFactor);
                     if(get(imageViewerHandles.hcheckboxPreprocessFrame, 'Value'))
@@ -300,12 +300,21 @@ classdef p53Cinema_singleCellAnnotation_object_imageViewer < handle
             set(handles.sourceImage,'CData',obj.currentImage);
             set(handlesZoomMap.sourceImage,'CData',obj.currentImage);
             sliderStep = get(handles.hsliderExploreStack,'SliderStep');
-            set(handles.hsliderExploreStack,'Value',sliderStep(1)*(obj.currentFrame-1));
-            
+            if(~isempty(sliderStep))
+                set(handles.hsliderExploreStack,'Value',sliderStep(1)*(obj.currentFrame-1));
+            end
             % Set tracked centroids patch
             [trackedCentroids, currentFrameCentroids] = obj.obj_featureTracker.centroidsFeatures.getCentroids(obj.currentTimepoint);
             set(handles.trackedCellsPatch, 'XData', trackedCentroids(:,2), 'YData', trackedCentroids(:,1));
 
+            %Set annotated centroids patch
+            [currentFrameValues, ~] = obj.obj_featureTracker.centroidsFeatures.getValues(obj.currentTimepoint);
+            if(sum(currentFrameValues > 0) > 0)
+                set(handles.annotatedCellsPatch, 'XData', trackedCentroids(currentFrameValues > 0,2), 'YData', trackedCentroids(currentFrameValues > 0,1));
+            else
+                set(handles.annotatedCellsPatch, 'XData', [], 'YData', []);
+            end                
+            
             if(obj.selectedCell)
                 % Set selected cell patch
                 selectedCentroid = obj.obj_featureTracker.centroidsFeatures.getCentroid(obj.currentTimepoint, obj.selectedCell);
@@ -323,6 +332,11 @@ classdef p53Cinema_singleCellAnnotation_object_imageViewer < handle
                 closestCentroid = obj.obj_featureTracker.centroidsLocalMaxima.getClosestCentroid(obj.currentTimepoint, fliplr(currentPoint), lookupRadius);
                 set(handles.closestCellPatch, 'XData', closestCentroid(:,2), 'YData', closestCentroid(:,1));
             end
+        end
+        
+        function setAnnotation(obj, value)
+            numericalValue = str2double(value);
+            obj.obj_featureTracker.centroidsFeatures.setValue(obj.currentTimepoint, obj.selectedCell, numericalValue);
         end
         
         %%
